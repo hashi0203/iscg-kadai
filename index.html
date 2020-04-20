@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title id="title">[utokyo-iscg-2020] Basic Assignment M1 (Spline)</title>
+<title id="title">[utokyo-iscg-2020] Basic Assignment</title>
 <script src="https://cdn.rawgit.com/toji/gl-matrix/v3.3.0/dist/gl-matrix.js"></script>
 <script src="https://legacygl-js.glitch.me/gl-matrix-util.js"></script>
 <script src="https://legacygl-js.glitch.me/legacygl.js"></script>
@@ -10,97 +10,14 @@
 <script src="https://legacygl-js.glitch.me/camera.js"></script>
 <script src="https://legacygl-js.glitch.me/util.js"></script>
 <script src="https://legacygl-js.glitch.me/glu.js"></script>
-<script src="script.js"></script>
 </head>
 <body onload="init(); draw();">
   <h2><a target="_blank" href="http://research.nii.ac.jp/~takayama/teaching/utokyo-iscg-2020/"><script type="text/javascript">document.write(document.getElementById("title").innerHTML);</script></a></h2>
-  <canvas id="canvas" width="640" height="480" style="border:1px solid #000000"></canvas>
-  <table>
-    <tr>
-      <td>Curve Type:</td>
-      <td><input type="radio" name="input_curvetype" id="input_bezier" onchange="draw();" checked>Bézier Curve
-          <input type="radio" name="input_curvetype" id="input_catmull" onchange="draw();">Catmull-Rom Spline</td>
-    </tr>
-    <tr class="bezier">
-      <td>Sampling Method:</td>
-      <td><input type="radio" name="input_b_evaltype" id="input_evalnormal" onchange="draw();" checked>Equal Division
-          <input type="radio" name="input_b_evaltype" id="input_evalcasteljau" onchange="draw();">De Casteljau's algorithm</td>
-    </tr>
-    <tr class="bezier">
-      <td>Number of Control Points (min: 3, max: 10):</td>
-      <td colspan="2"><input type="number" id="input_b_numcontrolpoints" onchange="draw();" step="1" min="3" max="10" value="3"></td>
-    </tr>
-    <tr id="row_rational">
-      <td>Rational Bézier Curve:</td>
-      <td colspan="2">
-        <span id="label_rational0">w0: <input type="number" id="input_rational0" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational1">w1: <input type="number" id="input_rational1" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational2">w2: <input type="number" id="input_rational2" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational3">w3: <input type="number" id="input_rational3" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational4">w4: <input type="number" id="input_rational4" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational5">w5: <input type="number" id="input_rational5" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational6">w6: <input type="number" id="input_rational6" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational7">w7: <input type="number" id="input_rational7" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational8">w8: <input type="number" id="input_rational8" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational9">w9: <input type="number" id="input_rational9" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-      </td>
-    </tr>
-    <tr class="bezier">
-      <td>Curve Division:</td>
-      <td colspan="2"><input type="checkbox" id="input_divide_curve" onchange="draw();" checked></td>
-    </tr>
-    <tr id="row_divisionrate">
-      <td>Curve Division Rate:</td>
-      <td colspan="2"><input type="number" id="input_ratedivision" onchange="draw();" step="0.1" min="0" max="1" value="0.2"></td>
-    </tr>
-    <tr class="catmull">
-      <td>Sampling Method:</td>
-      <td><input type="radio" name="input_c_evaltype" id="input_evaluniform" onchange="draw();" checked>Uniform
-          <input type="radio" name="input_c_evaltype" id="input_evalchordal" onchange="draw();">Chordal
-          <input type="radio" name="input_c_evaltype" id="input_evalcentripetal" onchange="draw();">Centripetal</td>
-    </tr>
-    <tr class="catmull">
-      <td>Number of Control Points (min: 4, max: 10):</td>
-      <td colspan="2"><input type="number" id="input_c_numcontrolpoints" onchange="draw();" step="1" min="4" max="10" value="4"></td>
-    </tr>
-    <tr id="row_positions1">
-      <td>Control Points' Position (x,y):</td>
-      <td colspan="2">
-        <span id="label_controlpoints0">w0: <input type="number" id="input_controlpoints_x0" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="-1" style="width:60px;"><input type="number" id="input_controlpoints_y0" onchange="draw();" step="0.1" min="-2" max="2" value="0.8" style="width:60px;"></span>
-        <span id="label_controlpoints1">w1: <input type="number" id="input_controlpoints_x1" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="1" style="width:60px;"><input type="number" id="input_controlpoints_y1" onchange="draw();" step="0.1" min="-2" max="2" value="1.1" style="width:60px;"></span>
-        <span id="label_controlpoints2">w2: <input type="number" id="input_controlpoints_x2" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="0.6" style="width:60px;"><input type="number" id="input_controlpoints_y2" onchange="draw();" step="0.1" min="-2" max="2" value="0.5" style="width:60px;"></span>
-        <span id="label_controlpoints3">w3: <input type="number" id="input_controlpoints_x3" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="1.7" style="width:60px;"><input type="number" id="input_controlpoints_y3" onchange="draw();" step="0.1" min="-2" max="2" value="-1.5" style="width:60px;"></span>
-        <span id="label_controlpoints4">w4: <input type="number" id="input_controlpoints_x4" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="-0.2" style="width:60px;"><input type="number" id="input_controlpoints_y4" onchange="draw();" step="0.1" min="-2" max="2" value="0.5" style="width:60px;"></span>
-      </td>  
-    <tr>
-    <tr id="row_positions2">
-      <td></td>
-      <td colspan="2">
-        <span id="label_controlpoints5">w5: <input type="number" id="input_controlpoints_x5" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="-1.9" style="width:60px;"><input type="number" id="input_controlpoints_y5" onchange="draw();" step="0.1" min="-2" max="2" value="0.8" style="width:60px;"></span>
-        <span id="label_controlpoints6">w6: <input type="number" id="input_controlpoints_x6" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="0.9" style="width:60px;"><input type="number" id="input_controlpoints_y6" onchange="draw();" step="0.1" min="-2" max="2" value="1.1" style="width:60px;"></span>
-        <span id="label_controlpoints7">w7: <input type="number" id="input_controlpoints_x7" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="0.2" style="width:60px;"><input type="number" id="input_controlpoints_y7" onchange="draw();" step="0.1" min="-2" max="2" value="1" style="width:60px;"></span>
-        <span id="label_controlpoints8">w8: <input type="number" id="input_controlpoints_x8" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="-1.5" style="width:60px;"><input type="number" id="input_controlpoints_y8" onchange="draw();" step="0.1" min="-2" max="2" value="-0.9" style="width:60px;"></span>
-        <span id="label_controlpoints9">w9: <input type="number" id="input_controlpoints_x9" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="1.4" style="width:60px;"><input type="number" id="input_controlpoints_y9" onchange="draw();" step="0.1" min="-2" max="2" value="0.3" style="width:60px;"></span>  
-      </td>
-    <tr>
-      <td>Number of Steps (min: 2):</td>
-      <td colspan="2"><input type="number" id="input_numsteps" onchange="draw();" step="1" min="2" value="20"></td>
-    </tr>
-    <tr>
-      <td>Show Control Points:</td>
-      <td colspan="2"><input type="checkbox" id="input_show_controlpoints" onchange="draw();" checked></td>
-    </tr>
-    <tr>
-      <td>Show Sample Points:</td>
-      <td colspan="2"><input type="checkbox" id="input_show_samplepoints" onchange="draw();" checked></td>
-    </tr>
-    
-  </table>
-  <h3>Usage:</h3>
+  <h3>
+    課題一覧
+  </h3>
   <ul>
-    <li>Drag: Move Control Points</li>
-    <li>Alt+Drag: Camera Pan</li>
-    <li>Alt+Shift+drag: Camera Zoom</li>
+    <li><a href="kadai1/">M1: パラメトリック曲線</a></li>
   </ul>
 
   <div class="glitchButton" style="position:fixed;top:20px;right:20px;"></div>
