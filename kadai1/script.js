@@ -210,9 +210,6 @@ function get_coefs(p, num_p, knot) {
       var c;
       var tmp;
       for (var i = 0; i < 3; i++) {
-        console.log(j);
-        console.log(i);
-        console.log(p);
         a = vec2.scaleAndAdd_ip(vec2.scale([],p[j+i+1],1), p[j+i], -1);
         tmp = 1/(knot[j][i+1] - knot[j][i]);
         ans.push([vec2.scale([],a,tmp), vec2.scaleAndAdd_ip(vec2.scale([],p[j+i],1),a,-knot[j][i]*tmp)]);
