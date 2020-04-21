@@ -361,6 +361,21 @@ function draw_catmull() {
     }
 };
 
+function draw_3dbezier(){
+    legacygl.color(0.2, 0.5, 1);
+    legacygl.begin(gl.LINE_STRIP);
+    num_p=4;
+    for (var i = 0; i < num_p; i++){
+      legacygl.vertex2([i,i,i]);
+    }
+    legacygl.end();
+    legacygl.begin(gl.POINTS);
+    for (var i = 0; i < num_p; i++){
+      legacygl.vertex2([i,i,i]);
+    }
+    legacygl.end();
+};
+
 function draw() {
   var hide_elements;
   var show_elements;
@@ -378,6 +393,13 @@ function draw() {
     document.getElementById("row_positions2").style.display = 'table-row';
     document.getElementById("row_rational").style.display = 'none';
     document.getElementById("row_divisionrate").style.display = 'none';
+  } else if (document.getElementById("input_3dbezier").checked) {
+    canvas = document.getElementById("canvas");
+    camera = get_camera(canvas.width);
+    camera.eye = [20, 20, 20];
+    draw_3dbezier();
+    hide_elements = document.getElementsByClassName("bezier");
+    show_elements = document.getElementsByClassName("catmull");
   }
   for (var i = 0; i < hide_elements.length; i++) {
     hide_elements[i].style.display = 'none';
