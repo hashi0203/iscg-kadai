@@ -405,7 +405,10 @@ function draw() {
     hide_elements = document.getElementsByClassName("catmull");
     document.getElementById("row_positions1").style.display = 'none';
     document.getElementById("row_positions2").style.display = 'none';
-    document.getElementsBy("row_positions2").style.display = 'none';
+    var tmp = document.getElementsByClassName("3d");
+    for (var i = 0; i < tmp.length; i++) {
+      tmp[i].style.display = 'none';
+    }
   } else if (document.getElementById("input_catmull").checked) {
     camera.eye = [0, 0, 7];
     draw_catmull();
@@ -415,6 +418,10 @@ function draw() {
     document.getElementById("row_positions2").style.display = 'table-row';
     document.getElementById("row_rational").style.display = 'none';
     document.getElementById("row_divisionrate").style.display = 'none';
+    var tmp = document.getElementsByClassName("3d");
+    for (var i = 0; i < tmp.length; i++) {
+      tmp[i].style.display = 'none';
+    }
   } else if (document.getElementById("input_3dbezier").checked) {
     camera.eye = [8, 8, 10];
     draw_3dbezier();
@@ -422,6 +429,10 @@ function draw() {
     hide_elements = document.getElementsByClassName("catmull");
     document.getElementById("row_positions1").style.display = 'none';
     document.getElementById("row_positions2").style.display = 'none';
+    var tmp = document.getElementsByClassName("2d");
+    for (var i = 0; i < tmp.length; i++) {
+      tmp[i].style.display = 'none';
+    }
   } else if (document.getElementById("input_3dcoons").checked) {
     camera.eye = [8, 8, 10];
     draw_3dcoons();
@@ -429,6 +440,10 @@ function draw() {
     hide_elements = document.getElementsByClassName("catmull");
     document.getElementById("row_positions1").style.display = 'none';
     document.getElementById("row_positions2").style.display = 'none';
+    var tmp = document.getElementsByClassName("2d");
+    for (var i = 0; i < tmp.length; i++) {
+      tmp[i].style.display = 'none';
+    }
   }
   for (var i = 0; i < hide_elements.length; i++) {
     hide_elements[i].style.display = 'none';
