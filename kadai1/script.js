@@ -405,6 +405,7 @@ function draw() {
     hide_elements = document.getElementsByClassName("catmull");
     document.getElementById("row_positions1").style.display = 'none';
     document.getElementById("row_positions2").style.display = 'none';
+    document.getElementsBy("row_positions2").style.display = 'none';
   } else if (document.getElementById("input_catmull").checked) {
     camera.eye = [0, 0, 7];
     draw_catmull();
@@ -417,6 +418,13 @@ function draw() {
   } else if (document.getElementById("input_3dbezier").checked) {
     camera.eye = [8, 8, 10];
     draw_3dbezier();
+    show_elements = document.getElementsByClassName("bezier");
+    hide_elements = document.getElementsByClassName("catmull");
+    document.getElementById("row_positions1").style.display = 'none';
+    document.getElementById("row_positions2").style.display = 'none';
+  } else if (document.getElementById("input_3dcoons").checked) {
+    camera.eye = [8, 8, 10];
+    draw_3dcoons();
     show_elements = document.getElementsByClassName("bezier");
     hide_elements = document.getElementsByClassName("catmull");
     document.getElementById("row_positions1").style.display = 'none';
