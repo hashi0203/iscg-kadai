@@ -402,8 +402,7 @@ function draw() {
     camera.eye = [0, 0, 7];
     draw_bezier();
     show_elements = document.getElementsByClassName("bezier");
-    hide_elements = document.getElementsByClassName("catmull");
-    hide_elements = hide_elements.concat(document.getElementsByClassName("3d"));
+    hide_elements = [document.getElementsByClassName("catmull"),hide_elements.concat(document.getElementsByClassName("3d"))];
     document.getElementsByClassName("row_rational").style.display = 'table-row';
     document.getElementById("row_divisionrate").style.display = 'table-row';
     document.getElementById("row_positions1").style.display = 'none';
@@ -411,8 +410,7 @@ function draw() {
   } else if (document.getElementById("input_catmull").checked) {
     camera.eye = [0, 0, 7];
     draw_catmull();
-    hide_elements = document.getElementsByClassName("bezier");
-    hide_elements = hide_elements.concat(document.getElementsByClassName("3d"));
+    hide_elements = [document.getElementsByClassName("bezier"), document.getElementsByClassName("3d")];
     show_elements = document.getElementsByClassName("catmull");
     document.getElementById("row_positions1").style.display = 'table-row';
     document.getElementById("row_positions2").style.display = 'table-row';
@@ -422,21 +420,21 @@ function draw() {
     camera.eye = [8, 8, 10];
     draw_3dbezier();
     show_elements = document.getElementsByClassName("bezier");
-    hide_elements = document.getElementsByClassName("catmull");
-    hide_elements = hide_elements.concat(document.getElementsByClassName("2d"));
+    hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("2d")];
     document.getElementById("row_positions1").style.display = 'none';
     document.getElementById("row_positions2").style.display = 'none';
   } else if (document.getElementById("input_3dcoons").checked) {
     camera.eye = [8, 8, 10];
     // draw_3dcoons();
     show_elements = document.getElementsByClassName("bezier");
-    hide_elements = document.getElementsByClassName("catmull");
-    hide_elements = hide_elements.concat(document.getElementsByClassName("2d"));
+    hide_elements = [document.getElementsByClassName("catmull"),hide_elements.concat(document.getElementsByClassName("2d"))];
     document.getElementById("row_positions1").style.display = 'none';
     document.getElementById("row_positions2").style.display = 'none';
   }
   for (var i = 0; i < hide_elements.length; i++) {
-    hide_elements[i].style.display = 'none';
+    for (var j = 0; j < hide_elements[i].length; j++) {
+      hide_elements[i][j].style.display = 'none';
+    }
   }
   for (var i = 0; i < show_elements.length; i++) {
     show_elements[i].style.display = 'table-row';
