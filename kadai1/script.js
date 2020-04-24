@@ -367,6 +367,12 @@ function draw_3dbezier(){
     // zx-grid
     legacygl.color(0.5, 0.5, 0.5);
     drawutil.zxgrid(50);
+  
+    num_p = 16;
+    for (var i = 0; i < num_p; i++) {
+      p[i] = [Number(document.getElementById("input_controlpoints_x"+i).value), Number(document.getElementById("input_controlpoints_y"+i).value),0];
+    }
+  
     // objects
     // for (var i = 0; i < objects.length; ++i) {
     //     modelview.push();
@@ -402,8 +408,7 @@ function draw() {
     camera.eye = [0, 0, 7];
     draw_bezier();
     show_elements = document.getElementsByClassName("bezier");
-    hide_elements = [document.getElementsByClassName("catmull"),hide_elements.concat(document.getElementsByClassName("3d"))];
-    document.getElementsByClassName("row_rational").style.display = 'table-row';
+    hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("3d")];
     document.getElementById("row_divisionrate").style.display = 'table-row';
     document.getElementById("row_positions1").style.display = 'none';
     document.getElementById("row_positions2").style.display = 'none';
@@ -419,17 +424,23 @@ function draw() {
   } else if (document.getElementById("input_3dbezier").checked) {
     camera.eye = [8, 8, 10];
     draw_3dbezier();
-    show_elements = document.getElementsByClassName("bezier");
+    // show_elements = document.getElementsByClassName("bezier");
     hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("2d")];
     document.getElementById("row_positions1").style.display = 'none';
     document.getElementById("row_positions2").style.display = 'none';
+    document.getElementById("row_3dpositions1").style.display = 'table-row';
+    document.getElementById("row_3dpositions2").style.display = 'table-row';
+    document.getElementById("row_3dpositions3").style.display = 'table-row';
+    document.getElementById("row_3dpositions4").style.display = 'table-row';
   } else if (document.getElementById("input_3dcoons").checked) {
     camera.eye = [8, 8, 10];
     // draw_3dcoons();
-    show_elements = document.getElementsByClassName("bezier");
-    hide_elements = [document.getElementsByClassName("catmull"),hide_elements.concat(document.getElementsByClassName("2d"))];
+    // show_elements = document.getElementsByClassName("bezier");
+    hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("2d")];
     document.getElementById("row_positions1").style.display = 'none';
     document.getElementById("row_positions2").style.display = 'none';
+    document.getElementById("row_rational").style.display = 'none';
+    document.getElementById("row_divisionrate").style.display = 'none';
   }
   for (var i = 0; i < hide_elements.length; i++) {
     for (var j = 0; j < hide_elements[i].length; j++) {
