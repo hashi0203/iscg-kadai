@@ -381,9 +381,6 @@ function draw_3dbezier(){
     //     drawutil.cube("line", 1);
     //     modelview.pop();
     // }
-    canvas = document.getElementById("canvas");
-    camera = get_camera(canvas.width);
-    camera.eye = [8, 8, 10];
     legacygl.begin(gl.LINE_STRIP);
       for (var i = 0; i<  3; i++) {
         legacygl.vertex3(p[i]);
@@ -399,13 +396,17 @@ function draw_3dbezier(){
 function draw() {
   var hide_elements;
   var show_elements;
+  canvas = document.getElementById("canvas");
+  camera = get_camera(canvas.width);
   if (document.getElementById("input_bezier").checked) {
+    camera.eye = [0, 0, 7];
     draw_bezier();
     show_elements = document.getElementsByClassName("bezier");
     hide_elements = document.getElementsByClassName("catmull");
     document.getElementById("row_positions1").style.display = 'none';
     document.getElementById("row_positions2").style.display = 'none';
   } else if (document.getElementById("input_catmull").checked) {
+    camera.eye = [0, 0, 7];
     draw_catmull();
     hide_elements = document.getElementsByClassName("bezier");
     show_elements = document.getElementsByClassName("catmull");
@@ -414,6 +415,7 @@ function draw() {
     document.getElementById("row_rational").style.display = 'none';
     document.getElementById("row_divisionrate").style.display = 'none';
   } else if (document.getElementById("input_3dbezier").checked) {
+    camera.eye = [8, 8, 10];
     draw_3dbezier();
     show_elements = document.getElementsByClassName("bezier");
     hide_elements = document.getElementsByClassName("catmull");
