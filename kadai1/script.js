@@ -326,7 +326,8 @@ function draw_catmull() {
     for (var j = 0; j < num_p - 3; j++) {
         for (var i = 0; i <= each_numsteps; ++i) {
           var t = (knot[j][2]-knot[j][1]) * i / each_numsteps + knot[j][1];
-          legacygl.vertex2([coefs[j][0][0]*t**3+coefs[j][1][0]*t**2+coefs[j][2][0]*t+coefs[j][3][0], coefs[j][0][1]*t**3+coefs[j][1][1]*t**2+coefs[j][2][1]*t+coefs[j][3][1]]);
+          // vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][0],t**3), vec2.scaleAndAdd_ip(vec2.scale([],coefs[j][1],t**2),vec2.scaleAndAdd_ip(vec2.scale([],coefs[j][2],t),coefs[j][3],1),1),1)
+          legacygl.vertex2(vec2.scaleAndAdd_ip(vec2.scale([],coefs[j][0],t**3), vec2.scaleAndAdd_ip(vec2.scale([],coefs[j][1],t**2),vec2.scaleAndAdd_ip(vec2.scale([],coefs[j][2],t),coefs[j][3],1),1),1));
         }
     }  
     legacygl.end();
@@ -359,7 +360,7 @@ function draw_catmull() {
 };
 
 function draw_3dbezier(){
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     // projection & camera position
     mat4.perspective(legacygl.uniforms.projection.value, Math.PI / 6, canvas.aspect_ratio(), 0.1, 1000);
     var modelview = legacygl.uniforms.modelview;
@@ -386,12 +387,12 @@ function draw_3dbezier(){
     camera.eye = [8, 8, 10];
     legacygl.begin(gl.LINE_STRIP);
       for (var i = 0; i<  3; i++) {
-        legacygl.vertex([i,i,i]);
+        legacygl.vertex(i,i,i);
       }  
     legacygl.end();
     legacygl.begin(gl.POINTS);
       for (var i = 0; i<  3; i++) {
-        legacygl.vertex([i,i,i]);
+        legacygl.vertex(i,i,i);
       } 
     legacygl.end();
 }
