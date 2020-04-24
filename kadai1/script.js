@@ -23,7 +23,7 @@ function eval_quadratic_bezier_normal(p, t, num_p, w) {
   var c;
   var tmp;
   var sum = 0;
-  var ans = [0,0];
+  var ans = [0,0,0];
   for (var i = 0; i < num_p; i+=2) {
     r = i/2;
     c = comb(num_p-1,r);
@@ -391,7 +391,7 @@ function draw_3dbezier(){
     legacygl.end();
     legacygl.begin(gl.POINTS);
       for (var i = 0; i<  3; i++) {
-        legacygl.vertex3(i,i,i);
+        legacygl.vertex3(p[i]);
       } 
     legacygl.end();
 }
