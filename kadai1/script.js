@@ -387,27 +387,29 @@ function draw_3dbezier(){
     //     drawutil.cube("line", 1);
     //     modelview.pop();
     // }
-    for (var i = 0; i <  4; i++) {
-        legacygl.color(0.2, 0.5, 0.8);
-        legacygl.begin(gl.LINE_STRIP);
-        for (var j = 0; j < 4; j++) {
-          legacygl.vertex3(p[4*i+j]);
-        }
-        legacygl.end();
-    }  
-    for (var i = 0; i <  4; i++) {
-        legacygl.color(0.7, 0, 0.4);
-        legacygl.begin(gl.LINE_STRIP);
-        for (var j = 0; j < 4; j++) {
-          legacygl.vertex3(p[4*j+i]);
-        }
-        legacygl.end();
-    }  
-    legacygl.begin(gl.POINTS);
-      for (var i = 0; i<  num_p; i++) {
-        legacygl.vertex3(p[i]);
-      } 
-    legacygl.end();
+    if (document.getElementById("input_show_controlpoints").checked) {
+      for (var i = 0; i <  4; i++) {
+          legacygl.color(0.2, 0.5, 0.8);
+          legacygl.begin(gl.LINE_STRIP);
+          for (var j = 0; j < 4; j++) {
+            legacygl.vertex3(p[4*i+j]);
+          }
+          legacygl.end();
+      }  
+      for (var i = 0; i <  4; i++) {
+          legacygl.color(0.7, 0, 0.4);
+          legacygl.begin(gl.LINE_STRIP);
+          for (var j = 0; j < 4; j++) {
+            legacygl.vertex3(p[4*j+i]);
+          }
+          legacygl.end();
+      }  
+      legacygl.begin(gl.POINTS);
+        for (var i = 0; i<  num_p; i++) {
+          legacygl.vertex3(p[i]);
+        } 
+      legacygl.end();
+    }
 }
 
 function draw() {
