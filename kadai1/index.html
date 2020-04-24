@@ -20,19 +20,20 @@
       <td>Curve Type:</td>
       <td><input type="radio" name="input_curvetype" id="input_bezier" onchange="draw();" checked>Bézier Curve
           <input type="radio" name="input_curvetype" id="input_catmull" onchange="draw();">Catmull-Rom Spline
-          <input type="radio" name="input_curvetype" id="input_3dbezier" onchange="draw();">3D Bézier Curve
+          <input type="radio" name="input_curvetype" id="input_3dbezier" onchange="draw();">3D Bézier Surface
+          <input type="radio" name="input_curvetype" id="input_3dcoons" onchange="draw();">3D Coons Patch
       </td>
     </tr>
-    <tr class="bezier">
+    <tr class="bezier 2d">
       <td>Sampling Method:</td>
       <td><input type="radio" name="input_b_evaltype" id="input_evalnormal" onchange="draw();" checked>Equal Division
           <input type="radio" name="input_b_evaltype" id="input_evalcasteljau" onchange="draw();">De Casteljau's algorithm</td>
     </tr>
-    <tr class="bezier">
+    <tr class="bezier 2d">
       <td>Number of Control Points (min: 3, max: 10):</td>
       <td colspan="2"><input type="number" id="input_b_numcontrolpoints" onchange="draw();" step="1" min="3" max="10" value="3"></td>
     </tr>
-    <tr id="row_rational">
+    <tr id="row_rational" class="2d">
       <td>Rational Bézier Curve:</td>
       <td colspan="2">
         <span id="label_rational0">w0: <input type="number" id="input_rational0" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
@@ -47,25 +48,45 @@
         <span id="label_rational9">w9: <input type="number" id="input_rational9" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
       </td>
     </tr>
-    <tr class="bezier">
+    <tr class="bezier 2d">
       <td>Curve Division:</td>
       <td colspan="2"><input type="checkbox" id="input_divide_curve" onchange="draw();" checked></td>
     </tr>
-    <tr id="row_divisionrate">
+    <tr id="row_divisionrate" class="2d">
       <td>Curve Division Rate:</td>
       <td colspan="2"><input type="number" id="input_ratedivision" onchange="draw();" step="0.1" min="0" max="1" value="0.2"></td>
     </tr>
-    <tr class="catmull">
+    <tr class="catmull 2d">
       <td>Sampling Method:</td>
       <td><input type="radio" name="input_c_evaltype" id="input_evaluniform" onchange="draw();" checked>Uniform
           <input type="radio" name="input_c_evaltype" id="input_evalchordal" onchange="draw();">Chordal
           <input type="radio" name="input_c_evaltype" id="input_evalcentripetal" onchange="draw();">Centripetal</td>
     </tr>
-    <tr class="catmull">
+    <tr class="catmull 2d">
       <td>Number of Control Points (min: 4, max: 10):</td>
       <td colspan="2"><input type="number" id="input_c_numcontrolpoints" onchange="draw();" step="1" min="4" max="10" value="4"></td>
     </tr>
-    <tr id="row_positions1">
+    <tr id="row_positions1" class="2d">
+      <td rowspan="2">Control Points' Position (x,y):</td>
+      <td colspan="2">
+        <span id="label_controlpoints0">w0: <input type="number" id="input_controlpoints_x0" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="-1" style="width:60px;"><input type="number" id="input_controlpoints_y0" onchange="draw();" step="0.1" min="-2" max="2" value="0.8" style="width:60px;"></span>
+        <span id="label_controlpoints1">w1: <input type="number" id="input_controlpoints_x1" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="1" style="width:60px;"><input type="number" id="input_controlpoints_y1" onchange="draw();" step="0.1" min="-2" max="2" value="1.1" style="width:60px;"></span>
+        <span id="label_controlpoints2">w2: <input type="number" id="input_controlpoints_x2" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="0.6" style="width:60px;"><input type="number" id="input_controlpoints_y2" onchange="draw();" step="0.1" min="-2" max="2" value="0.5" style="width:60px;"></span>
+        <span id="label_controlpoints3">w3: <input type="number" id="input_controlpoints_x3" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="1.7" style="width:60px;"><input type="number" id="input_controlpoints_y3" onchange="draw();" step="0.1" min="-2" max="2" value="-1.5" style="width:60px;"></span>
+        <span id="label_controlpoints4">w4: <input type="number" id="input_controlpoints_x4" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="-0.2" style="width:60px;"><input type="number" id="input_controlpoints_y4" onchange="draw();" step="0.1" min="-2" max="2" value="0.5" style="width:60px;"></span>
+      </td>  
+    </tr>
+    <tr id="row_positions2" class="2d">
+      <td colspan="2">
+        <span id="label_controlpoints5">w5: <input type="number" id="input_controlpoints_x5" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="-1.9" style="width:60px;"><input type="number" id="input_controlpoints_y5" onchange="draw();" step="0.1" min="-2" max="2" value="0.8" style="width:60px;"></span>
+        <span id="label_controlpoints6">w6: <input type="number" id="input_controlpoints_x6" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="0.9" style="width:60px;"><input type="number" id="input_controlpoints_y6" onchange="draw();" step="0.1" min="-2" max="2" value="1.1" style="width:60px;"></span>
+        <span id="label_controlpoints7">w7: <input type="number" id="input_controlpoints_x7" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="0.2" style="width:60px;"><input type="number" id="input_controlpoints_y7" onchange="draw();" step="0.1" min="-2" max="2" value="1" style="width:60px;"></span>
+        <span id="label_controlpoints8">w8: <input type="number" id="input_controlpoints_x8" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="-1.5" style="width:60px;"><input type="number" id="input_controlpoints_y8" onchange="draw();" step="0.1" min="-2" max="2" value="-0.9" style="width:60px;"></span>
+        <span id="label_controlpoints9">w9: <input type="number" id="input_controlpoints_x9" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="1.4" style="width:60px;"><input type="number" id="input_controlpoints_y9" onchange="draw();" step="0.1" min="-2" max="2" value="0.3" style="width:60px;"></span>  
+      </td>
+    </tr>
+    
+<!--     <tr id="row_positions1" class="2d">
       <td>Control Points' Position (x,y):</td>
       <td colspan="2">
         <span id="label_controlpoints0">w0: <input type="number" id="input_controlpoints_x0" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="-1" style="width:60px;"><input type="number" id="input_controlpoints_y0" onchange="draw();" step="0.1" min="-2" max="2" value="0.8" style="width:60px;"></span>
@@ -75,7 +96,7 @@
         <span id="label_controlpoints4">w4: <input type="number" id="input_controlpoints_x4" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="-0.2" style="width:60px;"><input type="number" id="input_controlpoints_y4" onchange="draw();" step="0.1" min="-2" max="2" value="0.5" style="width:60px;"></span>
       </td>  
     <tr>
-    <tr id="row_positions2">
+    <tr id="row_positions2" class="2d">
       <td></td>
       <td colspan="2">
         <span id="label_controlpoints5">w5: <input type="number" id="input_controlpoints_x5" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="-1.9" style="width:60px;"><input type="number" id="input_controlpoints_y5" onchange="draw();" step="0.1" min="-2" max="2" value="0.8" style="width:60px;"></span>
@@ -84,6 +105,7 @@
         <span id="label_controlpoints8">w8: <input type="number" id="input_controlpoints_x8" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="-1.5" style="width:60px;"><input type="number" id="input_controlpoints_y8" onchange="draw();" step="0.1" min="-2" max="2" value="-0.9" style="width:60px;"></span>
         <span id="label_controlpoints9">w9: <input type="number" id="input_controlpoints_x9" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="1.4" style="width:60px;"><input type="number" id="input_controlpoints_y9" onchange="draw();" step="0.1" min="-2" max="2" value="0.3" style="width:60px;"></span>  
       </td>
+    </tr> -->
     <tr>
       <td>Number of Steps (min: 2):</td>
       <td colspan="2"><input type="number" id="input_numsteps" onchange="draw();" step="1" min="2" value="20"></td>
