@@ -370,7 +370,7 @@ function draw_3dbezier(){
   
     num_p = 16;
     for (var i = 0; i < num_p; i++) {
-      p[i] = [Number(document.getElementById("input_controlpoints_x"+i).value), Number(document.getElementById("input_controlpoints_y"+i).value),0];
+      p[i] = [Number(document.getElementById("input_3dcontrolpoints_x"+i).value), Number(document.getElementById("input_3dcontrolpoints_y"+i).value), Number(document.getElementById("input_3dcontrolpoints_z"+i).value)];
     }
   
     // objects
@@ -388,20 +388,20 @@ function draw_3dbezier(){
     //     modelview.pop();
     // }
     legacygl.begin(gl.LINE_STRIP);
-      for (var i = 0; i<  3; i++) {
+      for (var i = 0; i<  num_p; i++) {
         legacygl.vertex3(p[i]);
       }  
     legacygl.end();
     legacygl.begin(gl.POINTS);
-      for (var i = 0; i<  3; i++) {
+      for (var i = 0; i<  num_p; i++) {
         legacygl.vertex3(p[i]);
       } 
     legacygl.end();
 }
 
 function draw() {
-  var hide_elements;
-  var show_elements;
+  var hide_elements = [];
+  var show_elements = [];
   canvas = document.getElementById("canvas");
   camera = get_camera(canvas.width);
   if (document.getElementById("input_bezier").checked) {
