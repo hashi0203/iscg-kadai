@@ -29,14 +29,14 @@ function eval_quadratic_bezier_normal(p, t, num_p, w) {
     c = comb(num_p-1,r);
     tmp = w[i]*c*t**r*(1-t)**(num_p-1-r);
     sum += tmp;
-    ans = vec2.scaleAndAdd_ip(ans,p[i],tmp);
+    ans = vec3.scaleAndAdd_ip(ans,p[i],tmp);
     if (i != num_p-1) {
       tmp = w[i+1]*c*t**(num_p-1-r)*(1-t)**r;
       sum += tmp
-      ans = vec2.scaleAndAdd_ip(ans,p[i+1],tmp);
+      ans = vec3.scaleAndAdd_ip(ans,p[i+1],tmp);
     }
   }
-  ans = vec2.scale([], ans, 1/sum);
+  ans = vec3.scale([], ans, 1/sum);
   return ans;
 };
   
@@ -53,7 +53,7 @@ function eval_quadratic_bezier_casteljau(p, t, num_p) {
   }
   for (var i = 0; i < num_p-1; i++) {
     for (var j = 0; j < idx-1; j++){
-      points[j] = vec2.scaleAndAdd_ip(vec2.scale([],points[j],1-t),points[j+1],t);
+      points[j] = vec3.scaleAndAdd_ip(vec3.scale([],points[j],1-t),points[j+1],t);
     }
     idx--;
   }
@@ -210,22 +210,22 @@ function get_coefs(p, num_p, knot) {
       var c;
       var tmp;
       for (var i = 0; i < 3; i++) {
-        a = vec2.scaleAndAdd_ip(vec2.scale([],p[j+i+1],1), p[j+i], -1);
+        a = vec3.scaleAndAdd_ip(vec3.scale([],p[j+i+1],1), p[j+i], -1);
         tmp = 1/(knot[j][i+1] - knot[j][i]);
-        ans.push([vec2.scale([],a,tmp), vec2.scaleAndAdd_ip(vec2.scale([],p[j+i],1),a,-knot[j][i]*tmp)]);
+        ans.push([vec3.scale([],a,tmp), vec3.scaleAndAdd_ip(vec3.scale([],p[j+i],1),a,-knot[j][i]*tmp)]);
       }
       for (var i = 0; i < 2; i++) {
-        a = vec2.scaleAndAdd_ip(vec2.scale([],ans[i+1][0],1), ans[i][0], -1);
-        b = vec2.scaleAndAdd_ip(vec2.scale([],ans[i+1][1],1), ans[i][1], -1);
+        a = vec3.scaleAndAdd_ip(vec3.scale([],ans[i+1][0],1), ans[i][0], -1);
+        b = vec3.scaleAndAdd_ip(vec3.scale([],ans[i+1][1],1), ans[i][1], -1);
         tmp = 1/(knot[j][i+2] - knot[j][i]);;
-        ans[i] = [vec2.scale([],a,tmp),vec2.scaleAndAdd_ip(vec2.scale([],ans[i][0],1),vec2.scaleAndAdd_ip(vec2.scale([],b,1),a, -knot[j][i]),tmp),vec2.scaleAndAdd_ip(vec2.scale([],ans[i][1],1),b, -knot[j][i]*tmp)];
+        ans[i] = [vec3.scale([],a,tmp),vec3.scaleAndAdd_ip(vec3.scale([],ans[i][0],1),vec3.scaleAndAdd_ip(vec3.scale([],b,1),a, -knot[j][i]),tmp),vec3.scaleAndAdd_ip(vec3.scale([],ans[i][1],1),b, -knot[j][i]*tmp)];
       }
       for (var i = 0; i < 1; i++) {
-        a = vec2.scaleAndAdd_ip(vec2.scale([],ans[i+1][0],1), ans[i][0], -1);
-        b = vec2.scaleAndAdd_ip(vec2.scale([],ans[i+1][1],1), ans[i][1], -1);
-        c = vec2.scaleAndAdd_ip(vec2.scale([],ans[i+1][2],1), ans[i][2], -1);
+        a = vec3.scaleAndAdd_ip(vec3.scale([],ans[i+1][0],1), ans[i][0], -1);
+        b = vec3.scaleAndAdd_ip(vec3.scale([],ans[i+1][1],1), ans[i][1], -1);
+        c = vec3.scaleAndAdd_ip(vec3.scale([],ans[i+1][2],1), ans[i][2], -1);
         tmp = 1/(knot[j][i+2] - knot[j][i+1]);
-        ret[j] = [vec2.scale([],a,tmp),vec2.scaleAndAdd_ip(vec2.scale([],ans[i][0],1),vec2.scaleAndAdd_ip(vec2.scale([],b,1),a, -knot[j][i+1]),tmp),vec2.scaleAndAdd_ip(vec2.scale([],ans[i][1],1),vec2.scaleAndAdd_ip(vec2.scale([],c,1),b, -knot[j][i+1]),tmp),vec2.scaleAndAdd_ip(vec2.scale([],ans[i][2],1),c,-knot[j][i+1]*tmp)];
+        ret[j] = [vec3.scale([],a,tmp),vec3.scaleAndAdd_ip(vec3.scale([],ans[i][0],1),vec3.scaleAndAdd_ip(vec3.scale([],b,1),a, -knot[j][i+1]),tmp),vec3.scaleAndAdd_ip(vec3.scale([],ans[i][1],1),vec3.scaleAndAdd_ip(vec3.scale([],c,1),b, -knot[j][i+1]),tmp),vec3.scaleAndAdd_ip(vec3.scale([],ans[i][2],1),c,-knot[j][i+1]*tmp)];
       }
   }
   return ret;
@@ -326,8 +326,7 @@ function draw_catmull() {
     for (var j = 0; j < num_p - 3; j++) {
         for (var i = 0; i <= each_numsteps; ++i) {
           var t = (knot[j][2]-knot[j][1]) * i / each_numsteps + knot[j][1];
-          // vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][0],t**3), vec2.scaleAndAdd_ip(vec2.scale([],coefs[j][1],t**2),vec2.scaleAndAdd_ip(vec2.scale([],coefs[j][2],t),coefs[j][3],1),1),1)
-          legacygl.vertex2(vec2.scaleAndAdd_ip(vec2.scale([],coefs[j][0],t**3), vec2.scaleAndAdd_ip(vec2.scale([],coefs[j][1],t**2),vec2.scaleAndAdd_ip(vec2.scale([],coefs[j][2],t),coefs[j][3],1),1),1));
+          legacygl.vertex2(vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][0],t**3), vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][1],t**2),vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][2],t),coefs[j][3],1),1),1));
         }
     }  
     legacygl.end();
@@ -337,7 +336,7 @@ function draw_catmull() {
         for (var j = 0; j < num_p - 3; j++) {
             for (var i = 0; i <= each_numsteps; ++i) {
               var t = (knot[j][2]-knot[j][1]) * i / each_numsteps + knot[j][1];
-              legacygl.vertex2([coefs[j][0][0]*t**3+coefs[j][1][0]*t**2+coefs[j][2][0]*t+coefs[j][3][0], coefs[j][0][1]*t**3+coefs[j][1][1]*t**2+coefs[j][2][1]*t+coefs[j][3][1]]);
+              legacygl.vertex2(vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][0],t**3), vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][1],t**2),vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][2],t),coefs[j][3],1),1),1));
             }
         } 
         legacygl.end();
@@ -463,9 +462,9 @@ function init() {
     drawutil = get_drawutil(gl, legacygl);
     camera = get_camera(canvas.width);
     camera.eye = [0, 0, 7];
-    p[0] = [-1.3, -0.9];
-    p[2] = [1.2, -0.3];
-    p[1] = [-0.4, 1.3];
+    p[0] = [-1.3, -0.9, 0];
+    p[2] = [1.2, -0.3, 0];
+    p[1] = [-0.4, 1.3, 0];
     // event handlers
     canvas.onmousedown = function(evt) {
         var mouse_win = this.get_mousepos(evt);
@@ -477,16 +476,19 @@ function init() {
         var points = p;
         var viewport = [0, 0, canvas.width, canvas.height];
         var dist_min = 10000000;
+      console.log(num_p);
         for (var i = 0; i < num_p; ++i) {
-            var object_win = glu.project([points[i][0], points[i][1], 0], 
+            var object_win = glu.project([points[i][0], points[i][1], points[i][2]], 
                                          legacygl.uniforms.modelview.value,
                                          legacygl.uniforms.projection.value,
                                          viewport);
             var dist = vec2.dist(mouse_win, object_win);
+            console.log(dist);
             if (dist < dist_min) {
                 dist_min = dist;
                 selected = points[i];
             }
+            console.log(points);
         }
     };
     canvas.onmousemove = function(evt) {
@@ -577,7 +579,7 @@ function init() {
     //                                      legacygl.uniforms.modelview.value,
     //                                      legacygl.uniforms.projection.value,
     //                                      viewport);
-    //         if (vec2.dist(mouse_win, object_win) < 20)
+    //         if (vec3.dist(mouse_win, object_win) < 20)
     //             candidates.push({ dist: vec3.dist(camera.eye, objects[i].position), index:i });
     //     }
     //     if (candidates.length > 0) {
