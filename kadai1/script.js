@@ -358,6 +358,44 @@ function draw_catmull() {
     }
 };
 
+function draw_3dbezier(){
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // projection & camera position
+    mat4.perspective(legacygl.uniforms.projection.value, Math.PI / 6, canvas.aspect_ratio(), 0.1, 1000);
+    var modelview = legacygl.uniforms.modelview;
+    camera.lookAt(modelview.value);
+    // zx-grid
+    legacygl.color(0.5, 0.5, 0.5);
+    drawutil.zxgrid(50);
+    // objects
+    // for (var i = 0; i < objects.length; ++i) {
+    //     modelview.push();
+    //     mat4.translate_ip(modelview.value, objects[i].position);
+    //     mat4.scale_ip(modelview.value, [objects[i].scale, objects[i].scale, objects[i].scale]);
+    //     if (i == selected_index)
+    //         legacygl.color(1, 0, 0);
+    //     else
+    //         legacygl.color(0, 0.7, 1);
+    //     drawutil.cube("fill", 1);
+    //     legacygl.color(0, 0, 0);
+    //     drawutil.cube("line", 1);
+    //     modelview.pop();
+    // }
+    canvas = document.getElementById("canvas");
+    camera = get_camera(canvas.width);
+    camera.eye = [8, 8, 10];
+    legacygl.begin(gl.LINE_STRIP);
+      for (var i = 0; i<  3; i++) {
+        legacygl.vertex([i,i,i]);
+      }  
+    legacygl.end();
+    legacygl.begin(gl.POINTS);
+      for (var i = 0; i<  3; i++) {
+        legacygl.vertex([i,i,i]);
+      } 
+    legacygl.end();
+}
+
 function draw() {
   var hide_elements;
   var show_elements;
@@ -375,6 +413,12 @@ function draw() {
     document.getElementById("row_positions2").style.display = 'table-row';
     document.getElementById("row_rational").style.display = 'none';
     document.getElementById("row_divisionrate").style.display = 'none';
+  } else if (document.getElementById("input_3dbezier").checked) {
+    draw_3dbezier();
+    show_elements = document.getElementsByClassName("bezier");
+    hide_elements = document.getElementsByClassName("catmull");
+    document.getElementById("row_positions1").style.display = 'none';
+    document.getElementById("row_positions2").style.display = 'none';
   }
   for (var i = 0; i < hide_elements.length; i++) {
     hide_elements[i].style.display = 'none';
@@ -384,7 +428,103 @@ function draw() {
   }
 };
 function init() {
-    // // OpenGL context
+    // OpenGL context
+    canvas = document.getElementById("canvas");
+    gl = canvas.getContext("experimental-webgl");
+    if (!gl)
+        alert("Could not initialise WebGL, sorry :-(");
+    var vertex_shader_src = "\
+        attribute vec3 a_vertex;\
+        attribute vec3 a_color;\
+        varying vec3 v_color;\
+        uniform mat4 u_modelview;\
+        uniform mat4 u_projection;\
+        void main(void) {\
+            gl_Position = u_projection * u_modelview * vec4(a_vertex, 1.0);\
+            v_color = a_color;\
+            gl_PointSize = 5.0;\
+        }\
+        ";
+    var fragment_shader_src = "\
+        precision mediump float;\
+        varying vec3 v_color;\
+        void main(void) {\
+            gl_FragColor = vec4(v_color, 1.0);\
+        }\
+        ";
+    legacygl = get_legacygl(gl, vertex_shader_src, fragment_shader_src);
+    legacygl.add_uniform("modelview", "Matrix4f");
+    legacygl.add_uniform("projection", "Matrix4f");
+    legacygl.add_vertex_attribute("color", 3);
+    legacygl.vertex2 = function(p) {
+        this.vertex(p[0], p[1], 0);
+    };
+    drawutil = get_drawutil(gl, legacygl);
+    camera = get_camera(canvas.width);
+    camera.eye = [0, 0, 7];
+    p[0] = [-1.3, -0.9];
+    p[2] = [1.2, -0.3];
+    p[1] = [-0.4, 1.3];
+    // event handlers
+    canvas.onmousedown = function(evt) {
+        var mouse_win = this.get_mousepos(evt);
+        if (evt.altKey) {
+            camera.start_moving(mouse_win, evt.shiftKey ? "zoom" : "pan");
+            return;
+        }
+        // pick nearest object
+        var points = p;
+        var viewport = [0, 0, canvas.width, canvas.height];
+        var dist_min = 10000000;
+        for (var i = 0; i < num_p; ++i) {
+            var object_win = glu.project([points[i][0], points[i][1], 0], 
+                                         legacygl.uniforms.modelview.value,
+                                         legacygl.uniforms.projection.value,
+                                         viewport);
+            var dist = vec2.dist(mouse_win, object_win);
+            if (dist < dist_min) {
+                dist_min = dist;
+                selected = points[i];
+            }
+        }
+    };
+    canvas.onmousemove = function(evt) {
+        var mouse_win = this.get_mousepos(evt);
+        if (camera.is_moving()) {
+            camera.move(mouse_win);
+            draw();
+            return;
+        }
+        if (selected != null) {
+            var viewport = [0, 0, canvas.width, canvas.height];
+            mouse_win.push(1);
+            var mouse_obj = glu.unproject(mouse_win, 
+                                          legacygl.uniforms.modelview.value,
+                                          legacygl.uniforms.projection.value,
+                                          viewport);
+            // just reuse the same code as the 3D case
+            var plane_origin = [0, 0, 0];
+            var plane_normal = [0, 0, 1];
+            var eye_to_mouse = vec3.sub([], mouse_obj, camera.eye);
+            var eye_to_origin = vec3.sub([], plane_origin, camera.eye);
+            var s1 = vec3.dot(eye_to_mouse, plane_normal);
+            var s2 = vec3.dot(eye_to_origin, plane_normal);
+            var eye_to_intersection = vec3.scale([], eye_to_mouse, s2 / s1);
+            vec3.add(selected, camera.eye, eye_to_intersection);
+            draw();
+        }
+    }
+    document.onmouseup = function (evt) {
+        if (camera.is_moving()) {
+            camera.finish_moving();
+            return;
+        }
+        selected = null;
+    };
+    // init OpenGL settings
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.clearColor(1, 1, 1, 1);
+  // OpenGL context
     // canvas = document.getElementById("canvas");
     // gl = canvas.getContext("experimental-webgl");
     // if (!gl)
@@ -412,37 +552,43 @@ function init() {
     // legacygl.add_uniform("modelview", "Matrix4f");
     // legacygl.add_uniform("projection", "Matrix4f");
     // legacygl.add_vertex_attribute("color", 3);
-    // legacygl.vertex2 = function(p) {
-    //     this.vertex(p[0], p[1], 0);
-    // };
     // drawutil = get_drawutil(gl, legacygl);
     // camera = get_camera(canvas.width);
-    // camera.eye = [0, 0, 7];
-    // p[0] = [-1.3, -0.9];
-    // p[2] = [1.2, -0.3];
-    // p[1] = [-0.4, 1.3];
+    // camera.eye = [20, 30, 30];
+    // objects = [
+    //     {position: [-2, 3, -4], scale: 2},
+    //     {position: [-3, 2, 5], scale: 4},
+    //     {position: [4, 3, -7], scale: 6}
+    // ];
     // // event handlers
     // canvas.onmousedown = function(evt) {
     //     var mouse_win = this.get_mousepos(evt);
     //     if (evt.altKey) {
-    //         camera.start_moving(mouse_win, evt.shiftKey ? "zoom" : "pan");
+    //         camera.start_moving(mouse_win, evt.shiftKey ? "zoom" : evt.ctrlKey ? "pan" : "rotate");
     //         return;
     //     }
     //     // pick nearest object
-    //     var points = p;
+    //     selected_index = -1;
+    //     var candidates = [];
     //     var viewport = [0, 0, canvas.width, canvas.height];
-    //     var dist_min = 10000000;
-    //     for (var i = 0; i < num_p; ++i) {
-    //         var object_win = glu.project([points[i][0], points[i][1], 0], 
+    //     for (var i = 0; i < objects.length; ++i) {
+    //         var object_win = glu.project(objects[i].position, 
     //                                      legacygl.uniforms.modelview.value,
     //                                      legacygl.uniforms.projection.value,
     //                                      viewport);
-    //         var dist = vec2.dist(mouse_win, object_win);
-    //         if (dist < dist_min) {
-    //             dist_min = dist;
-    //             selected = points[i];
-    //         }
+    //         if (vec2.dist(mouse_win, object_win) < 20)
+    //             candidates.push({ dist: vec3.dist(camera.eye, objects[i].position), index:i });
     //     }
+    //     if (candidates.length > 0) {
+    //         candidates.sort(function(a, b){return a.dist - b.dist});
+    //         selected_index = candidates[0].index;
+    //         plane_origin = objects[selected_index].position;
+    //         plane_normal = vec3.normalize_ip(camera.eye_to_center());
+    //         is_translating = true;
+    //     }
+    //     document.getElementById("input_scaling").value =
+    //         selected_index == -1 ? null : objects[selected_index].scale;
+    //     draw();
     // };
     // canvas.onmousemove = function(evt) {
     //     var mouse_win = this.get_mousepos(evt);
@@ -451,22 +597,19 @@ function init() {
     //         draw();
     //         return;
     //     }
-    //     if (selected != null) {
+    //     if (is_translating) {
     //         var viewport = [0, 0, canvas.width, canvas.height];
     //         mouse_win.push(1);
     //         var mouse_obj = glu.unproject(mouse_win, 
     //                                       legacygl.uniforms.modelview.value,
     //                                       legacygl.uniforms.projection.value,
     //                                       viewport);
-    //         // just reuse the same code as the 3D case
-    //         var plane_origin = [0, 0, 0];
-    //         var plane_normal = [0, 0, 1];
     //         var eye_to_mouse = vec3.sub([], mouse_obj, camera.eye);
     //         var eye_to_origin = vec3.sub([], plane_origin, camera.eye);
     //         var s1 = vec3.dot(eye_to_mouse, plane_normal);
     //         var s2 = vec3.dot(eye_to_origin, plane_normal);
     //         var eye_to_intersection = vec3.scale([], eye_to_mouse, s2 / s1);
-    //         vec3.add(selected, camera.eye, eye_to_intersection);
+    //         objects[selected_index].position = vec3.add([], camera.eye, eye_to_intersection);
     //         draw();
     //     }
     // }
@@ -475,121 +618,23 @@ function init() {
     //         camera.finish_moving();
     //         return;
     //     }
-    //     selected = null;
+    //     is_translating = false;
+    // };
+    // document.getElementById("input_scaling").onchange = function(evt) {
+    //     if (selected_index == -1)
+    //         return;
+    //     objects[selected_index].scale = evt.target.value;
+    //     draw();
+    // };
+    // document.getElementById("button_add").onclick = function(evt) {
+    //     objects.push({position: [0, 0, 0], scale: 1});
+    //     draw();
     // };
     // // init OpenGL settings
     // gl.viewport(0, 0, canvas.width, canvas.height);
+    // gl.enable(gl.DEPTH_TEST);
+    // gl.enable(gl.POLYGON_OFFSET_FILL);
+    // gl.polygonOffset(1, 1);
     // gl.clearColor(1, 1, 1, 1);
-  // OpenGL context
-    canvas = document.getElementById("canvas");
-    gl = canvas.getContext("experimental-webgl");
-    if (!gl)
-        alert("Could not initialise WebGL, sorry :-(");
-    var vertex_shader_src = "\
-        attribute vec3 a_vertex;\
-        attribute vec3 a_color;\
-        varying vec3 v_color;\
-        uniform mat4 u_modelview;\
-        uniform mat4 u_projection;\
-        void main(void) {\
-            gl_Position = u_projection * u_modelview * vec4(a_vertex, 1.0);\
-            v_color = a_color;\
-        }\
-        ";
-    var fragment_shader_src = "\
-        precision mediump float;\
-        varying vec3 v_color;\
-        void main(void) {\
-            gl_FragColor = vec4(v_color, 1.0);\
-        }\
-        ";
-    legacygl = get_legacygl(gl, vertex_shader_src, fragment_shader_src);
-    legacygl.add_uniform("modelview", "Matrix4f");
-    legacygl.add_uniform("projection", "Matrix4f");
-    legacygl.add_vertex_attribute("color", 3);
-    drawutil = get_drawutil(gl, legacygl);
-    camera = get_camera(canvas.width);
-    camera.eye = [20, 30, 30];
-    objects = [
-        {position: [-2, 3, -4], scale: 2},
-        {position: [-3, 2, 5], scale: 4},
-        {position: [4, 3, -7], scale: 6}
-    ];
-    // event handlers
-    canvas.onmousedown = function(evt) {
-        var mouse_win = this.get_mousepos(evt);
-        if (evt.altKey) {
-            camera.start_moving(mouse_win, evt.shiftKey ? "zoom" : evt.ctrlKey ? "pan" : "rotate");
-            return;
-        }
-        // pick nearest object
-        selected_index = -1;
-        var candidates = [];
-        var viewport = [0, 0, canvas.width, canvas.height];
-        for (var i = 0; i < objects.length; ++i) {
-            var object_win = glu.project(objects[i].position, 
-                                         legacygl.uniforms.modelview.value,
-                                         legacygl.uniforms.projection.value,
-                                         viewport);
-            if (vec2.dist(mouse_win, object_win) < 20)
-                candidates.push({ dist: vec3.dist(camera.eye, objects[i].position), index:i });
-        }
-        if (candidates.length > 0) {
-            candidates.sort(function(a, b){return a.dist - b.dist});
-            selected_index = candidates[0].index;
-            plane_origin = objects[selected_index].position;
-            plane_normal = vec3.normalize_ip(camera.eye_to_center());
-            is_translating = true;
-        }
-        document.getElementById("input_scaling").value =
-            selected_index == -1 ? null : objects[selected_index].scale;
-        draw();
-    };
-    canvas.onmousemove = function(evt) {
-        var mouse_win = this.get_mousepos(evt);
-        if (camera.is_moving()) {
-            camera.move(mouse_win);
-            draw();
-            return;
-        }
-        if (is_translating) {
-            var viewport = [0, 0, canvas.width, canvas.height];
-            mouse_win.push(1);
-            var mouse_obj = glu.unproject(mouse_win, 
-                                          legacygl.uniforms.modelview.value,
-                                          legacygl.uniforms.projection.value,
-                                          viewport);
-            var eye_to_mouse = vec3.sub([], mouse_obj, camera.eye);
-            var eye_to_origin = vec3.sub([], plane_origin, camera.eye);
-            var s1 = vec3.dot(eye_to_mouse, plane_normal);
-            var s2 = vec3.dot(eye_to_origin, plane_normal);
-            var eye_to_intersection = vec3.scale([], eye_to_mouse, s2 / s1);
-            objects[selected_index].position = vec3.add([], camera.eye, eye_to_intersection);
-            draw();
-        }
-    }
-    document.onmouseup = function (evt) {
-        if (camera.is_moving()) {
-            camera.finish_moving();
-            return;
-        }
-        is_translating = false;
-    };
-    document.getElementById("input_scaling").onchange = function(evt) {
-        if (selected_index == -1)
-            return;
-        objects[selected_index].scale = evt.target.value;
-        draw();
-    };
-    document.getElementById("button_add").onclick = function(evt) {
-        objects.push({position: [0, 0, 0], scale: 1});
-        draw();
-    };
-    // init OpenGL settings
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.enable(gl.DEPTH_TEST);
-    gl.enable(gl.POLYGON_OFFSET_FILL);
-    gl.polygonOffset(1, 1);
-    gl.clearColor(1, 1, 1, 1);
 };
 
