@@ -488,11 +488,11 @@ function draw_3dcoons(){
     for (var i = 0; i < 10; i++) {
       tmp[i] = 1;
     }
-    legacygl.begin(gl.LINE_STRIP);
     for (var j = 0; j < 4; j++) {
+      legacygl.begin(gl.LINE_STRIP);
       for (var i = 0; i <= numsteps; ++i) {
           var t = i / numsteps;
-          eval_quadratic_bezier([p[3*j],p[3*j+1],p[3*j+2],p[(3*j+3)%12]], t, 4, 0, tmp);
+          eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
       }
       legacygl.end();
       // draw sample points
@@ -500,30 +500,20 @@ function draw_3dcoons(){
           legacygl.begin(gl.POINTS);
           for (var i = 0; i <= numsteps; ++i) {
               var t = i / numsteps;
-              eval_quadratic_bezier(p, t, 4, 0, tmp);
+              eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
           }
           legacygl.end();
       }
     }
     if (document.getElementById("input_show_controlpoints").checked) {
-      for (var i = 0; i <  4; i++) {
-          legacygl.begin(gl.LINE_STRIP);
+      legacygl.begin(gl.LINE_STRIP);
+      for (var i = 0; i <= num_p; i++) {
           legacygl.color(0.2, 0.5, 0.8);
-          for (var j = 0; j < 4; j++) {
-            legacygl.vertex3(p[4*i+j]);
-          }
-          legacygl.end();
-      }  
-      for (var i = 0; i <  4; i++) {
-          legacygl.begin(gl.LINE_STRIP);
-          legacygl.color(0.7, 0, 0.4);
-          for (var j = 0; j < 4; j++) {
-            legacygl.vertex3(p[4*j+i]);
-          }
-          legacygl.end();
-      }  
+          legacygl.vertex3(p[i%12]);
+      }
+      legacygl.end();
       legacygl.begin(gl.POINTS);
-        for (var i = 0; i<  num_p; i++) {
+        for (var i = 0; i <  num_p; i++) {
           legacygl.vertex3(p[i]);
         } 
       legacygl.end();
