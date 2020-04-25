@@ -12,7 +12,7 @@
 <script src="https://legacygl-js.glitch.me/glu.js"></script>
 <script src="script.js"></script>
 </head>
-<body onload="init(); draw();">
+<body onload="init(); cameraview(); settings(); draw();">
   <h2><a target="_blank" href="http://research.nii.ac.jp/~takayama/teaching/utokyo-iscg-2020/assignments/iscg-2020-assignment-m1-spline.pdf"><script type="text/javascript">document.write(document.getElementById("title").innerHTML);</script></a></h2>
   <canvas id="canvas" width="640" height="480" style="border:1px solid #000000"></canvas>
   <table>
@@ -132,8 +132,9 @@
       <td colspan="2"><input type="checkbox" id="input_show_samplepoints" onchange="draw();" checked></td>
     </tr>
     <tr>
-      <td>Return to Default Viewpoint: </td>
+      <td>Return to Default: </td>
       <td><input type="button" onclick="init(); cameraview(); draw();" value="Default Viewpoint"></td>
+      <td><input type="button" onclick="init(); settings()); draw();" value="Default Points' Positions"></td>
     </tr>
     
   </table>
