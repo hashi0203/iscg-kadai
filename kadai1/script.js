@@ -398,8 +398,14 @@ function draw_3dbezier(){
     drawutil.zxgrid(50);
   
     num_p = 16;
+    // for (var i = 0; i < num_p; i++) {
+    //   p[i] = [Number(document.getElementById("input_3dcontrolpoints_x"+i).value), Number(document.getElementById("input_3dcontrolpoints_y"+i).value), Number(document.getElementById("input_3dcontrolpoints_z"+i).value)];
+    // }
+  
     for (var i = 0; i < num_p; i++) {
-      p[i] = [Number(document.getElementById("input_3dcontrolpoints_x"+i).value), Number(document.getElementById("input_3dcontrolpoints_y"+i).value), Number(document.getElementById("input_3dcontrolpoints_z"+i).value)];
+      document.getElementById("input_3dcontrolpoints_x"+i).value = p[i][0];
+      document.getElementById("input_3dcontrolpoints_y"+i).value = p[i][1];
+      document.getElementById("input_3dcontrolpoints_z"+i).value = p[i][2];
     }
   
     if (document.getElementById("input_show_controlpoints").checked) {
@@ -525,8 +531,13 @@ function draw_3dcoons(){
     drawutil.zxgrid(50);
   
     num_p = 12;
+    // for (var i = 0; i < num_p; i++) {
+    //   p[i] = [Number(document.getElementById("input_3dcontrolpoints_x"+i).value), Number(document.getElementById("input_3dcontrolpoints_y"+i).value), Number(document.getElementById("input_3dcontrolpoints_z"+i).value)];
+    // }
     for (var i = 0; i < num_p; i++) {
-      p[i] = [Number(document.getElementById("input_3dcontrolpoints_x"+i).value), Number(document.getElementById("input_3dcontrolpoints_y"+i).value), Number(document.getElementById("input_3dcontrolpoints_z"+i).value)];
+      document.getElementById("input_3dcontrolpoints_x"+i).value = p[i][0];
+      document.getElementById("input_3dcontrolpoints_y"+i).value = p[i][1];
+      document.getElementById("input_3dcontrolpoints_z"+i).value = p[i][2];
     }
   
     var numsteps = Number(document.getElementById("input_numsteps").value);
@@ -652,6 +663,12 @@ function init_data_2d() {
       p[i] = [Number(document.getElementById("input_controlpoints_x"+i).value), Number(document.getElementById("input_controlpoints_y"+i).value),0];
     }
 };
+
+function init_data_3d() {
+    for (var i = 0; i < num_p; i++) {
+      p[i] = [Number(document.getElementById("input_3dcontrolpoints_x"+i).value), Number(document.getElementById("input_3dcontrolpoints_y"+i).value), Number(document.getElementById("input_3dcontrolpoints_z"+i).value)];
+    }
+}
 
 function settings() {
   var hide_elements = [];
