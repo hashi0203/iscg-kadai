@@ -388,44 +388,6 @@ function draw_3dbezier(){
       p[i] = [Number(document.getElementById("input_3dcontrolpoints_x"+i).value), Number(document.getElementById("input_3dcontrolpoints_y"+i).value), Number(document.getElementById("input_3dcontrolpoints_z"+i).value)];
     }
   
-    var numsteps = Number(document.getElementById("input_numsteps").value);
-    if (numsteps < 2) {
-      numsteps = 2;
-      document.getElementById("input_numsteps").value = 2;
-    } else {
-      numsteps = Math.round(numsteps);
-      document.getElementById("input_numsteps").value = numsteps;
-    }
-  
-    legacygl.begin(legacygl.QUADS);
-    legacygl.color(0.6, 0, 0.8);
-    var step = 1/numsteps;
-    var points = Array((numsteps+1)**2);
-    for (var i = 0; i <= numsteps; i++) {
-        for (var j = 0; j <= numsteps; j++) {
-          points[(numsteps+1)*i+j] = eval_3dbezier(p, i*step, j*step);
-        }
-    }
-    for (var i = 0; i < numsteps; i++) {
-      for (var j = 0; j < numsteps; j++) {
-          legacygl.vertex3(points[(numsteps+1)*i+j]);
-          legacygl.vertex3(points[(numsteps+1)*i+j+1]);
-          legacygl.vertex3(points[(numsteps+1)*(i+1)+j+1]);
-          legacygl.vertex3(points[(numsteps+1)*(i+1)+j]);
-      }
-    }
-    legacygl.end();
-  
-    legacygl.begin(gl.LINE_STRIP);
-    legacygl.color(0.6, 0.8, 0.8);
-    for (var i = 0; i <= numsteps; i++) {
-      legacygl.vertex3(points[i]);
-    }
-    for (var i = 0; i <= numsteps; i++) {
-      legacygl.vertex3(points[(numsteps+1)*(i+1)]);
-    }
-    legacygl.end();
-  
     if (document.getElementById("input_show_controlpoints").checked) {
       for (var i = 0; i <  4; i++) {
           legacygl.begin(gl.LINE_STRIP);
@@ -449,6 +411,51 @@ function draw_3dbezier(){
         } 
       legacygl.end();
     }
+  
+    var numsteps = Number(document.getElementById("input_numsteps").value);
+    if (numsteps < 2) {
+      numsteps = 2;
+      document.getElementById("input_numsteps").value = 2;
+    } else {
+      numsteps = Math.round(numsteps);
+      document.getElementById("input_numsteps").value = numsteps;
+    }
+  
+    var step = 1/numsteps;
+    var points = Array((numsteps+1)**2);
+    for (var i = 0; i <= numsteps; i++) {
+        for (var j = 0; j <= numsteps; j++) {
+          points[(numsteps+1)*i+j] = eval_3dbezier(p, i*step, j*step);
+        }
+    }
+    
+    legacygl.begin(gl.LINE_STRIP);
+    legacygl.color(0, 0, 0);
+    for (var i = 0; i <= numsteps; i++) {
+      legacygl.vertex3(points[i]);
+    }
+    for (var i = 0; i <= numsteps; i++) {
+      legacygl.vertex3(points[(numsteps+1)*i+numsteps]);
+    }
+    for (var i = numsteps; i >= 0; i--) {
+      legacygl.vertex3(points[(numsteps+1)*numsteps+i]);
+    }
+    for (var i = numsteps; i >= 0; i--) {
+      legacygl.vertex3(points[(numsteps+1)*i]);
+    }
+    legacygl.end();
+  
+    legacygl.begin(legacygl.QUADS);
+    legacygl.color(0.6, 0, 0.8);
+    for (var i = 0; i < numsteps; i++) {
+      for (var j = 0; j < numsteps; j++) {
+          legacygl.vertex3(points[(numsteps+1)*i+j]);
+          legacygl.vertex3(points[(numsteps+1)*i+j+1]);
+          legacygl.vertex3(points[(numsteps+1)*(i+1)+j+1]);
+          legacygl.vertex3(points[(numsteps+1)*(i+1)+j]);
+      }
+    }
+    legacygl.end();
 };
 
 function perimeter(l,p,t) {
@@ -693,6 +700,7 @@ function init() {
             return;
         } else if (evt.ctrlKey) {
             camera.start_moving(mouse_win, "rotate");
+            return;
         }
         // pick nearest object
         var points = p;

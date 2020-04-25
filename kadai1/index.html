@@ -18,10 +18,10 @@
   <table>
     <tr>
       <td>Curve Type:</td>
-      <td><input type="radio" name="input_curvetype" id="input_bezier" onchange="cameraview(); settings(); draw();" checked>Bézier Curve
-          <input type="radio" name="input_curvetype" id="input_catmull" onchange="cameraview(); settings(); draw();">Catmull-Rom Spline
-          <input type="radio" name="input_curvetype" id="input_3dbezier" onchange="cameraview(); settings(); draw();">3D Bézier Surface
-          <input type="radio" name="input_curvetype" id="input_3dcoons" onchange="cameraview(); settings(); draw();">3D Coons Patch
+      <td><input type="radio" name="input_curvetype" id="input_bezier" onchange="init(); cameraview(); settings(); draw();" checked>Bézier Curve
+          <input type="radio" name="input_curvetype" id="input_catmull" onchange="init(); cameraview(); settings(); draw();">Catmull-Rom Spline
+          <input type="radio" name="input_curvetype" id="input_3dbezier" onchange="init(); cameraview(); settings(); draw();">3D Bézier Surface
+          <input type="radio" name="input_curvetype" id="input_3dcoons" onchange="init(); cameraview(); settings(); draw();">3D Coons Patch
       </td>
     </tr>
     <tr class="bezier 2d">
