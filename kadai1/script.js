@@ -469,21 +469,6 @@ function draw_3dcoons(){
     var step = 1/numsteps;
     var points = Array((numsteps+1)**2);
   
-  // eval_quadratic_bezier_normal
-    // for (var i = 0; i <= numsteps; i++) {
-    //     for (var j = 0; j <= numsteps; j++) {
-    //       points[(numsteps+1)*i+j] = eval_3dbezier(p, i*step, j*step);
-    //     }
-    // }
-    // for (var i = 0; i < numsteps; i++) {
-    //   for (var j = 0; j < numsteps; j++) {
-    //       legacygl.vertex3(points[(numsteps+1)*i+j]);
-    //       legacygl.vertex3(points[(numsteps+1)*i+j+1]);
-    //       legacygl.vertex3(points[(numsteps+1)*(i+1)+j+1]);
-    //       legacygl.vertex3(points[(numsteps+1)*(i+1)+j]);
-    //   }
-    // }
-    // legacygl.end();
     var tmp = Array(10);
     for (var i = 0; i < 10; i++) {
       tmp[i] = 1;
