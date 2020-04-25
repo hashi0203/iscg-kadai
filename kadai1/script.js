@@ -389,25 +389,32 @@ function draw_3dbezier(){
       p[i] = [Number(document.getElementById("input_3dcontrolpoints_x"+i).value), Number(document.getElementById("input_3dcontrolpoints_y"+i).value), Number(document.getElementById("input_3dcontrolpoints_z"+i).value)];
     }
   
-    // objects
-    // for (var i = 0; i < objects.length; ++i) {
-    //     modelview.push();
-    //     mat4.translate_ip(modelview.value, objects[i].position);
-    //     mat4.scale_ip(modelview.value, [objects[i].scale, objects[i].scale, objects[i].scale]);
-    //     if (i == selected_index)
-    //         legacygl.color(1, 0, 0);
-    //     else
-    //         legacygl.color(0, 0.7, 1);
-    //     drawutil.cube("fill", 1);
-    //     legacygl.color(0, 0, 0);
-    //     drawutil.cube("line", 1);
-    //     modelview.pop();
-    // }
+    var numsteps = Number(document.getElementById("input_numsteps").value);
+    if (numsteps < 2) {
+      numsteps = 2;
+      document.getElementById("input_numsteps").value = 2;
+    } else {
+      numsteps = Math.round(numsteps);
+      document.getElementById("input_numsteps").value = numsteps;
+    }
+  
     legacygl.begin(legacygl.QUADS);
-    legacygl.vertex3(p[0]);
-    legacygl.vertex3(p[1]);
-    legacygl.vertex3(p[5]);
-    legacygl.vertex3(p[4]);
+    for (var i = 0; i < numsteps; i++) {
+      for (var j = 0; j < numsteps; j++) {
+          legacygl.vertex3(eval_3dbezier(p, i*numsteps, j*numsteps));
+          legacygl.vertex3(eval_3dbezier(p, i*numsteps, (j+1)*numsteps));
+          legacygl.vertex3(eval_3dbezier(p, (i+1)*numsteps, (j+1)*numsteps));
+          legacygl.vertex3(eval_3dbezier(p, (i+1)*numsteps, j*numsteps));
+          // legacygl.vertex3(p[4*i+j]);
+          // legacygl.vertex3(p[4*i+j+1]);
+          // legacygl.vertex3(p[4*(i+1)+j+1]);
+          // legacygl.vertex3(p[4*(i+1)+j]);
+      }
+    }
+    // legacygl.vertex3(p[0]);
+    // legacygl.vertex3(p[1]);
+    // legacygl.vertex3(p[5]);
+    // legacygl.vertex3(p[4]);
     legacygl.end();
     if (document.getElementById("input_show_controlpoints").checked) {
       for (var i = 0; i <  4; i++) {
