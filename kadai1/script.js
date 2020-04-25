@@ -515,8 +515,7 @@ function draw_3dcoons(){
     }
     for (var i = 0; i < 4; i++) {
       for (var j = 0; j <= numsteps; j++) {
-          var t = j / numsteps;
-          peri[i][j] = perimeter(i,p,t);
+          peri[i][j] = perimeter(i,p,j*step);
       }
     }
   
@@ -557,39 +556,34 @@ function draw_3dcoons(){
   
     
     var points = Array((numsteps+1)**2);
+    var s;
+    var t;
+    var lc;
+    var ld;
+    var b;
     for (var i = 0; i <= numsteps; i++) {
       for (var j = 0; j <= numsteps; j++) {
-        points[(numsteps+1)*i+j] = peri[0][i]
-          points[(numsteps+1)*i+j] = eval_3dbezier(p, i*step, j*step);
+        s = i*step;
+        t = j*step;
+        lc = (1-t)*peri[0][i]+t*peri[2][i];
+        ld = (1-s)*peri[3][j]+s*peri[1][j];
+        b = peri[0][0]*(1-s)*(1-t)+peri[0][numsteps]*s*(1-t)+peri[2][0]*(1-s)*t+peri[2][numsteps]*s*t;
+        points[(numsteps+1)*i+j] = lc+ld-b;
+          // points[(numsteps+1)*i+j] = eval_3dbezier(p, i*step, j*step);
       }
     }
   
     legacygl.begin(legacygl.QUADS);
     legacygl.color(0.6, 0, 0.8);
-    
-  
-    // var tmp = Array(10);
-    // for (var i = 0; i < 10; i++) {
-    //   tmp[i] = 1;
-    // }
-    
-//     for (var j = 0; j < 4; j++) {
-//       legacygl.begin(gl.LINE_STRIP);
-//       for (var i = 0; i <= numsteps; ++i) {
-//           var t = i / numsteps;
-//           eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
-//       }
-//       legacygl.end();
-//       // draw sample points
-//       if (document.getElementById("input_show_samplepoints").checked) {
-//           legacygl.begin(gl.POINTS);
-//           for (var i = 0; i <= numsteps; ++i) {
-//               var t = i / numsteps;
-//               eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
-//           }
-//           legacygl.end();
-//       }
-//     }
+    for (var i = 0; i < numsteps; i++) {
+      for (var j = 0; j < numsteps; j++) {
+          legacygl.vertex3(points[(numsteps+1)*i+j]);
+          legacygl.vertex3(points[(numsteps+1)*i+j+1]);
+          legacygl.vertex3(points[(numsteps+1)*(i+1)+j+1]);
+          legacygl.vertex3(points[(numsteps+1)*(i+1)+j]);
+      }
+    }
+    legacygl.end();
   
   
   
