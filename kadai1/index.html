@@ -130,6 +130,10 @@
       <td>Show Sample Points:</td>
       <td colspan="2"><input type="checkbox" id="input_show_samplepoints" onchange="draw();" checked></td>
     </tr>
+    <tr>
+      <td>Return to Default Viewpoint: </td>
+      <td><input type="button" onclick="init(); cameraview(); draw();" value="Default Viewpoint"></td>
+    </tr>
     
   </table>
   <h3>Usage:</h3>
@@ -137,6 +141,7 @@
     <li>Drag: Move Control Points</li>
     <li>Alt+Drag: Camera Pan</li>
     <li>Alt+Shift+drag: Camera Zoom</li>
+    <li>Ctrl+drag: Camera Rotate</li>
   </ul>
   
   <input type="button" onclick="location.href='../'" value="課題一覧へ">
