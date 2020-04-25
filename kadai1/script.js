@@ -3,7 +3,7 @@ var canvas;
 var legacygl;
 var drawutil;
 var camera;
-var p = Array(10);
+var p = Array(16);
 var num_p = 3;
 var w = Array(10);
 var selected = null;
@@ -582,14 +582,21 @@ function settings() {
   var show_elements = [];
   if (document.getElementById("input_bezier").checked) {
     p[0] = [-1.3, -0.9, 0];
-    p[2] = [1.2, -0.3, 0];
     p[1] = [-0.4, 1.3, 0];
+    p[2] = [1.2, -0.3, 0];
+    for (var i = 3; i < 10; i++) {
+      p[i] = [1.2+0.1*(i-2),0.5+(-1)**(i-1)*(0.8-0.1*(i-2)),0];
+    }
     show_elements = document.getElementsByClassName("bezier");
     hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("3d")];
     document.getElementById("row_divisionrate").style.display = 'table-row';
     document.getElementById("row_positions1").style.display = 'none';
     document.getElementById("row_positions2").style.display = 'none';
   } else if (document.getElementById("input_catmull").checked) {
+    p = [[-1, 0.8, 0], [1, 1.1, 0], [0.6, 0.5, 0], [1.7, -1.5, 0], [-0.2, 0.5, 0], [-1.9, 0.8, 0], [0.9, 1.1, 0], [0.2, 1, 0], [-1.5, -0.9, 0], [1.4, 0.3, 0]];
+    for (var i = 0; i < 10; i++) {
+      document.getElementById("input_controlpoints_x"+i).value = p[]
+    }
     hide_elements = [document.getElementsByClassName("bezier"), document.getElementsByClassName("3d")];
     show_elements = document.getElementsByClassName("catmull");
     document.getElementById("row_positions1").style.display = 'table-row';
