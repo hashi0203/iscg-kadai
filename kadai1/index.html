@@ -33,29 +33,6 @@
       <td>Number of Control Points (min: 3, max: 10):</td>
       <td colspan="2"><input type="number" id="input_b_numcontrolpoints" onchange="draw();" step="1" min="3" max="10" value="3"></td>
     </tr>
-    <tr id="row_rational" class="2d">
-      <td>Rational Bézier Curve:</td>
-      <td colspan="2">
-        <span id="label_rational0">w0: <input type="number" id="input_rational0" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
-        <span id="label_rational1">w1: <input type="number" id="input_rational1" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
-        <span id="label_rational2">w2: <input type="number" id="input_rational2" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
-        <span id="label_rational3">w3: <input type="number" id="input_rational3" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
-        <span id="label_rational4">w4: <input type="number" id="input_rational4" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
-        <span id="label_rational5">w5: <input type="number" id="input_rational5" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
-        <span id="label_rational6">w6: <input type="number" id="input_rational6" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
-        <span id="label_rational7">w7: <input type="number" id="input_rational7" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
-        <span id="label_rational8">w8: <input type="number" id="input_rational8" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
-        <span id="label_rational9">w9: <input type="number" id="input_rational9" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
-      </td>
-    </tr>
-    <tr class="bezier 2d">
-      <td>Curve Division:</td>
-      <td colspan="2"><input type="checkbox" id="input_divide_curve" onchange="draw();" checked></td>
-    </tr>
-    <tr id="row_divisionrate" class="2d">
-      <td>Curve Division Rate:</td>
-      <td colspan="2"><input type="number" id="input_ratedivision" onchange="draw();" step="0.1" min="0" max="1" value="0.2"></td>
-    </tr>
     <tr class="catmull 2d">
       <td>Sampling Method:</td>
       <td><input type="radio" name="input_c_evaltype" id="input_evaluniform" onchange="draw();" checked>Uniform
@@ -84,6 +61,29 @@
         <span id="label_controlpoints8">w8: <input type="number" id="input_controlpoints_x8" onchange="init_data_2d(); draw();" step="0.1" min="-2.5" max="2.5" value="-1.5" style="width:60px;"><input type="number" id="input_controlpoints_y8" onchange="init_data_2d(); draw();" step="0.1" min="-2" max="2" value="-0.9" style="width:60px;"></span>
         <span id="label_controlpoints9">w9: <input type="number" id="input_controlpoints_x9" onchange="init_data_2d(); draw();" step="0.1" min="-2.5" max="2.5" value="1.4" style="width:60px;"><input type="number" id="input_controlpoints_y9" onchange="init_data_2d(); draw();" step="0.1" min="-2" max="2" value="0.3" style="width:60px;"></span>  
       </td>
+    </tr>
+    <tr id="row_rational" class="2d">
+      <td>Rational Bézier Curve:</td>
+      <td colspan="2">
+        <span id="label_rational0">w0: <input type="number" id="input_rational0" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational1">w1: <input type="number" id="input_rational1" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational2">w2: <input type="number" id="input_rational2" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational3">w3: <input type="number" id="input_rational3" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational4">w4: <input type="number" id="input_rational4" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational5">w5: <input type="number" id="input_rational5" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational6">w6: <input type="number" id="input_rational6" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational7">w7: <input type="number" id="input_rational7" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational8">w8: <input type="number" id="input_rational8" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational9">w9: <input type="number" id="input_rational9" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+      </td>
+    </tr>
+    <tr class="bezier 2d">
+      <td>Curve Division:</td>
+      <td colspan="2"><input type="checkbox" id="input_divide_curve" onchange="draw();" checked></td>
+    </tr>
+    <tr id="row_divisionrate" class="2d">
+      <td>Curve Division Rate:</td>
+      <td colspan="2"><input type="number" id="input_ratedivision" onchange="draw();" step="0.1" min="0" max="1" value="0.2"></td>
     </tr>
     
     <tr id="row_3dpositions1" class="3d">

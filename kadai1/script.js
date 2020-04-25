@@ -86,7 +86,7 @@ function draw_bezier() {
     legacygl.color(0.5, 0.5, 0.5);
     drawutil.xygrid(100);
   
-    var num_p = Number(document.getElementById("input_b_numcontrolpoints").value);
+    num_p = Number(document.getElementById("input_b_numcontrolpoints").value);
     if (num_p < 3) {
       num_p = 3;
       document.getElementById("input_b_numcontrolpoints").value = 3;
@@ -253,7 +253,7 @@ function draw_catmull() {
     legacygl.color(0.5, 0.5, 0.5);
     drawutil.xygrid(100);
   
-    var num_p = Number(document.getElementById("input_c_numcontrolpoints").value);
+    num_p = Number(document.getElementById("input_c_numcontrolpoints").value);
     if (num_p < 4) {
       num_p = 4;
       document.getElementById("input_c_numcontrolpoints").value = 4;
@@ -648,12 +648,6 @@ function draw() {
 };
 
 function init_data_2d() {
-    var num_p ;
-    if (document.getElementById("input_bezier").checked) {
-      num_p = Number(document.getElementById("input_b_numcontrolpoints").value);
-    } else {
-      num_p = Number(document.getElementById("input_c_numcontrolpoints").value);
-    }
     for (var i = 0; i < num_p; i++) {
       p[i] = [Number(document.getElementById("input_controlpoints_x"+i).value), Number(document.getElementById("input_controlpoints_y"+i).value),0];
     }
