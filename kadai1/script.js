@@ -367,7 +367,7 @@ function eval_3dbezier(p, s, t) {
     for (var j = 0; j < 4; j++){
       c1 = comb(4,i);
       c2 = comb(4,j)
-      tmp = (c1*s**i*(1-s)**(3-i)*(c2*t**j*(1-t)**(3-j));
+      tmp = (c1*s**i*(1-s)**(3-i)*(c2*t**j*(1-t)**(3-j)));
       ans = vec3.scaleAndAdd_ip(ans,p[4*i+j],tmp);
     }
   }
@@ -403,7 +403,7 @@ function draw_3dbezier(){
     //     drawutil.cube("line", 1);
     //     modelview.pop();
     // }
-    legacygl.begin(gl.QUADS);
+    legacygl.begin(legacygl.QUADS);
     legacygl.vertex3(p[0]);
     legacygl.vertex3(p[1]);
     legacygl.vertex3(p[5]);
@@ -463,6 +463,7 @@ function draw() {
     hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("2d")];
     document.getElementById("row_positions1").style.display = 'none';
     document.getElementById("row_positions2").style.display = 'none';
+    document.getElementById("rowspanctl").setAttribute("rowSpan",4);
     document.getElementById("row_3dpositions1").style.display = 'table-row';
     document.getElementById("row_3dpositions2").style.display = 'table-row';
     document.getElementById("row_3dpositions3").style.display = 'table-row';
@@ -476,6 +477,11 @@ function draw() {
     document.getElementById("row_positions2").style.display = 'none';
     document.getElementById("row_rational").style.display = 'none';
     document.getElementById("row_divisionrate").style.display = 'none';
+    document.getElementById("rowspanctl").setAttribute("rowSpan",3);
+    document.getElementById("row_3dpositions1").style.display = 'table-row';
+    document.getElementById("row_3dpositions2").style.display = 'table-row';
+    document.getElementById("row_3dpositions3").style.display = 'table-row';
+    document.getElementById("row_3dpositions4").style.display = 'none';
   }
   for (var i = 0; i < hide_elements.length; i++) {
     for (var j = 0; j < hide_elements[i].length; j++) {
