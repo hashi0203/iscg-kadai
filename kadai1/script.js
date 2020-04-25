@@ -387,6 +387,7 @@ function draw_3dbezier(){
     //     drawutil.cube("line", 1);
     //     modelview.pop();
     // }
+    legacygl.begin(gl.) 
     if (document.getElementById("input_show_controlpoints").checked) {
       for (var i = 0; i <  4; i++) {
           legacygl.color(0.2, 0.5, 0.8);
