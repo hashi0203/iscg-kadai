@@ -525,17 +525,71 @@ function draw_3dcoons(){
 }
 
 function draw() {
+  // var hide_elements = [];
+  // var show_elements = [];
+  if (document.getElementById("input_bezier").checked) {
+    draw_bezier();
+    // show_elements = document.getElementsByClassName("bezier");
+    // hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("3d")];
+    // document.getElementById("row_divisionrate").style.display = 'table-row';
+    // document.getElementById("row_positions1").style.display = 'none';
+    // document.getElementById("row_positions2").style.display = 'none';
+  } else if (document.getElementById("input_catmull").checked) {
+    draw_catmull();
+    // hide_elements = [document.getElementsByClassName("bezier"), document.getElementsByClassName("3d")];
+    // show_elements = document.getElementsByClassName("catmull");
+    // document.getElementById("row_positions1").style.display = 'table-row';
+    // document.getElementById("row_positions2").style.display = 'table-row';
+    // document.getElementById("row_rational").style.display = 'none';
+    // document.getElementById("row_divisionrate").style.display = 'none';
+  } else if (document.getElementById("input_3dbezier").checked) {
+    draw_3dbezier();
+    // show_elements = document.getElementsByClassName("bezier");
+    // hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("2d")];
+    // document.getElementById("row_positions1").style.display = 'none';
+    // document.getElementById("row_positions2").style.display = 'none';
+    // document.getElementById("rowspanctl").setAttribute("rowSpan",4);
+    // document.getElementById("row_3dpositions1").style.display = 'table-row';
+    // document.getElementById("row_3dpositions2").style.display = 'table-row';
+    // document.getElementById("row_3dpositions3").style.display = 'table-row';
+    // document.getElementById("row_3dpositions4").style.display = 'table-row';
+  } else if (document.getElementById("input_3dcoons").checked) {
+    // draw_3dcoons();
+    // show_elements = document.getElementsByClassName("bezier");
+    // hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("2d")];
+    // document.getElementById("row_positions1").style.display = 'none';
+    // document.getElementById("row_positions2").style.display = 'none';
+    // document.getElementById("row_rational").style.display = 'none';
+    // document.getElementById("row_divisionrate").style.display = 'none';
+    // document.getElementById("rowspanctl").setAttribute("rowSpan",3);
+    // document.getElementById("row_3dpositions1").style.display = 'table-row';
+    // document.getElementById("row_3dpositions2").style.display = 'table-row';
+    // document.getElementById("row_3dpositions3").style.display = 'table-row';
+    // document.getElementById("row_3dpositions4").style.display = 'none';
+  }
+  // for (var i = 0; i < hide_elements.length; i++) {
+  //   for (var j = 0; j < hide_elements[i].length; j++) {
+  //     hide_elements[i][j].style.display = 'none';
+  //   }
+  // }
+  // for (var i = 0; i < show_elements.length; i++) {
+  //   show_elements[i].style.display = 'table-row';
+  // }
+};
+
+function settings() {
   var hide_elements = [];
   var show_elements = [];
   if (document.getElementById("input_bezier").checked) {
-    draw_bezier();
+    p[0] = [-1.3, -0.9, 0];
+    p[2] = [1.2, -0.3, 0];
+    p[1] = [-0.4, 1.3, 0];
     show_elements = document.getElementsByClassName("bezier");
     hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("3d")];
     document.getElementById("row_divisionrate").style.display = 'table-row';
     document.getElementById("row_positions1").style.display = 'none';
     document.getElementById("row_positions2").style.display = 'none';
   } else if (document.getElementById("input_catmull").checked) {
-    draw_catmull();
     hide_elements = [document.getElementsByClassName("bezier"), document.getElementsByClassName("3d")];
     show_elements = document.getElementsByClassName("catmull");
     document.getElementById("row_positions1").style.display = 'table-row';
@@ -543,7 +597,6 @@ function draw() {
     document.getElementById("row_rational").style.display = 'none';
     document.getElementById("row_divisionrate").style.display = 'none';
   } else if (document.getElementById("input_3dbezier").checked) {
-    draw_3dbezier();
     // show_elements = document.getElementsByClassName("bezier");
     hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("2d")];
     document.getElementById("row_positions1").style.display = 'none';
@@ -554,7 +607,6 @@ function draw() {
     document.getElementById("row_3dpositions3").style.display = 'table-row';
     document.getElementById("row_3dpositions4").style.display = 'table-row';
   } else if (document.getElementById("input_3dcoons").checked) {
-    // draw_3dcoons();
     // show_elements = document.getElementsByClassName("bezier");
     hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("2d")];
     document.getElementById("row_positions1").style.display = 'none';
@@ -575,7 +627,7 @@ function draw() {
   for (var i = 0; i < show_elements.length; i++) {
     show_elements[i].style.display = 'table-row';
   }
-};
+}
 
 function cameraview() {
   if (document.getElementById("input_bezier").checked) {
@@ -588,6 +640,7 @@ function cameraview() {
     camera.eye = [8, 8, 10];
   }
 };
+
 function init() {
     // OpenGL context
     canvas = document.getElementById("canvas");
