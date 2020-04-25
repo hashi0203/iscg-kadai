@@ -468,20 +468,43 @@ function draw_3dcoons(){
     legacygl.color(0.6, 0, 0.8);
     var step = 1/numsteps;
     var points = Array((numsteps+1)**2);
-    for (var i = 0; i <= numsteps; i++) {
-        for (var j = 0; j <= numsteps; j++) {
-          points[(numsteps+1)*i+j] = eval_3dbezier(p, i*step, j*step);
-        }
+  
+  // eval_quadratic_bezier_normal
+    // for (var i = 0; i <= numsteps; i++) {
+    //     for (var j = 0; j <= numsteps; j++) {
+    //       points[(numsteps+1)*i+j] = eval_3dbezier(p, i*step, j*step);
+    //     }
+    // }
+    // for (var i = 0; i < numsteps; i++) {
+    //   for (var j = 0; j < numsteps; j++) {
+    //       legacygl.vertex3(points[(numsteps+1)*i+j]);
+    //       legacygl.vertex3(points[(numsteps+1)*i+j+1]);
+    //       legacygl.vertex3(points[(numsteps+1)*(i+1)+j+1]);
+    //       legacygl.vertex3(points[(numsteps+1)*(i+1)+j]);
+    //   }
+    // }
+    // legacygl.end();
+    var tmp = Array(10);
+    for (var i = 0; i < 10; i++) {
+      tmp[i] = 1;
     }
-    for (var i = 0; i < numsteps; i++) {
-      for (var j = 0; j < numsteps; j++) {
-          legacygl.vertex3(points[(numsteps+1)*i+j]);
-          legacygl.vertex3(points[(numsteps+1)*i+j+1]);
-          legacygl.vertex3(points[(numsteps+1)*(i+1)+j+1]);
-          legacygl.vertex3(points[(numsteps+1)*(i+1)+j]);
+    legacygl.begin(gl.LINE_STRIP);
+    for (var j = 0; j < 4; j++) {
+      for (var i = 0; i <= numsteps; ++i) {
+          var t = i / numsteps;
+          eval_quadratic_bezier([p[3*j],p[3*j+1],p[3*j+2],p[(3*j+3)%12]], t, 4, 0, tmp);
+      }
+      legacygl.end();
+      // draw sample points
+      if (document.getElementById("input_show_samplepoints").checked) {
+          legacygl.begin(gl.POINTS);
+          for (var i = 0; i <= numsteps; ++i) {
+              var t = i / numsteps;
+              eval_quadratic_bezier(p, t, 4, 0, tmp);
+          }
+          legacygl.end();
       }
     }
-    legacygl.end();
     if (document.getElementById("input_show_controlpoints").checked) {
       for (var i = 0; i <  4; i++) {
           legacygl.begin(gl.LINE_STRIP);
@@ -513,7 +536,7 @@ function draw() {
   } else if (document.getElementById("input_3dbezier").checked) {
     draw_3dbezier();
   } else if (document.getElementById("input_3dcoons").checked) {
-    // draw_3dcoons();
+    draw_3dcoons();
   } else {
     draw_bezier();
   }
