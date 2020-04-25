@@ -451,10 +451,10 @@ function draw_3dbezier(){
 function draw() {
   var hide_elements = [];
   var show_elements = [];
-  canvas = document.getElementById("canvas");
-  camera = get_camera(canvas.width);
+  // canvas = document.getElementById("canvas");
+  // camera = get_camera(canvas.width);
   if (document.getElementById("input_bezier").checked) {
-    camera.eye = [0, 0, 7];
+    // camera.eye = [0, 0, 7];
     draw_bezier();
     show_elements = document.getElementsByClassName("bezier");
     hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("3d")];
@@ -558,7 +558,12 @@ function init() {
             console.log(camera.eye);
             vec3.add_ip(camera.eye,    d);
             console.log(camera.eye);
+            console.log(camera.center);
             vec3.add_ip(camera.center, d);
+            console.log(camera.center);
+            console.log(camera.prevpos);
+            vec2.copy(camera.prevpos, mouse_win);
+            console.log(camera.prevpos);
             // camera.start_moving(mouse_win, evt.shiftKey ? "zoom" : "pan");
             return;
         }
