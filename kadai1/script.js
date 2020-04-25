@@ -466,6 +466,21 @@ function draw_3dbezier(){
         } 
         legacygl.end();
     }
+    
+    for (var i = 0; i < numsteps; i++) {
+      legacygl.begin(gl.LINE_STRIP);
+      legacygl.color(0.4, 0.4, 0.5);
+      for (var j = 0; j <= numsteps; j++) {
+        legacygl.vertex3(points[(numsteps+1)*i+j])
+      }
+      legacygl.end();
+      legacygl.begin(gl.LINE_STRIP);
+      legacygl.color(0.4, 0.4, 0.5);
+      for (var j = 0; j <= numsteps; j++) {
+        legacygl.vertex3(points[(numsteps+1)*j+i])
+      }
+      legacygl.end();
+    }
 };
 
 function perimeter(l,p,t) {
@@ -588,6 +603,21 @@ function draw_3dcoons(){
             }
         } 
         legacygl.end();
+    }
+  
+    for (var i = 0; i < numsteps; i++) {
+      legacygl.begin(gl.LINE_STRIP);
+      legacygl.color(0.4, 0.4, 0.5);
+      for (var j = 0; j <= numsteps; j++) {
+        legacygl.vertex3(points[(numsteps+1)*i+j])
+      }
+      legacygl.end();
+      legacygl.begin(gl.LINE_STRIP);
+      legacygl.color(0.4, 0.4, 0.5);
+      for (var j = 0; j <= numsteps; j++) {
+        legacygl.vertex3(points[(numsteps+1)*j+i])
+      }
+      legacygl.end();
     }
 }
 
