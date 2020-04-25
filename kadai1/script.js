@@ -411,21 +411,17 @@ function draw_3dbezier(){
     var points = Array((numsteps+1)**2);
     for (var i = 0; i <= numsteps; i++) {
         for (var j = 0; j <= numsteps; j++) {
-            p[(numsteps+1)*i+j] = eval_3dbezier(p, i*step, j*step);
+          points[(numsteps+1)*i+j] = eval_3dbezier(p, i*step, j*step);
         }
     }
     for (var i = 0; i < numsteps; i++) {
       for (var j = 0; j < numsteps; j++) {
-          legacygl.vertex3(eval_3dbezier(p, i*step, j*step));
-          legacygl.vertex3(eval_3dbezier(p, i*step, (j+1)*step));
-          legacygl.vertex3(eval_3dbezier(p, (i+1)*step, (j+1)*step));
-          legacygl.vertex3(eval_3dbezier(p, (i+1)*step, j*step));
+          legacygl.vertex3(points[(numsteps+1)*i+j]);
+          legacygl.vertex3(points[(numsteps+1)*i+j+1]);
+          legacygl.vertex3(points[(numsteps+1)*(i+1)+j+1]);
+          legacygl.vertex3(points[(numsteps+1)*(i+1)+j]);
       }
     }
-    // legacygl.vertex3(p[0]);
-    // legacygl.vertex3(p[1]);
-    // legacygl.vertex3(p[5]);
-    // legacygl.vertex3(p[4]);
     legacygl.end();
     if (document.getElementById("input_show_controlpoints").checked) {
       for (var i = 0; i <  4; i++) {
@@ -552,7 +548,18 @@ function init() {
     canvas.onmousedown = function(evt) {
         var mouse_win = this.get_mousepos(evt);
         if (evt.altKey) {
-            camera.start_moving(mouse_win, evt.shiftKey ? "zoom" : "pan");
+            var diff = vec2.scale_ip(vec2.sub([], mouse_win, camera.prevpos), 1 / canvas.width);
+            console.log(diff);
+            var s = vec2.scale([], diff, vec3.len(camera.center_to_eye()));
+            var d0 = vec3.scale([], camera.right(), -s[0]);
+            var d1 = vec3.scale([], camera.up,      -s[1]);
+            var d = vec3.add([], d0, d1);
+            console.log(d);
+            console.log(camera.eye);
+            vec3.add_ip(camera.eye,    d);
+            console.log(camera.eye);
+            vec3.add_ip(camera.center, d);
+            // camera.start_moving(mouse_win, evt.shiftKey ? "zoom" : "pan");
             return;
         }
         // pick nearest object
