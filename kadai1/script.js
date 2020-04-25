@@ -440,6 +440,18 @@ function draw_3dbezier(){
     }
 };
 
+function perimeter(l,p,t) {
+  if (l == "c0"){
+    return eval_quadratic_bezier([p[0],p[3],p[1],p[2]], t, 4, 0, tmp);
+  } else if (l == "d0"){
+    return eval_quadratic_bezier([p[3],p[6],p[4],p[5]], t, 4, 0, tmp);
+  } else if (l == "c1"){
+    return eval_quadratic_bezier([p[9],p[6],p[8],p[7]], t, 4, 0, tmp);
+  } else if (l == "d1"){
+    return eval_quadratic_bezier([p[0],p[9],p[11],p[10]], t, 4, 0, tmp);
+  }
+};
+
 function draw_3dcoons(){
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     // projection & camera position
@@ -473,11 +485,33 @@ function draw_3dcoons(){
     for (var i = 0; i < 10; i++) {
       tmp[i] = 1;
     }
+    
+//     for (var j = 0; j < 4; j++) {
+//       legacygl.begin(gl.LINE_STRIP);
+//       for (var i = 0; i <= numsteps; ++i) {
+//           var t = i / numsteps;
+//           eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
+//       }
+//       legacygl.end();
+//       // draw sample points
+//       if (document.getElementById("input_show_samplepoints").checked) {
+//           legacygl.begin(gl.POINTS);
+//           for (var i = 0; i <= numsteps; ++i) {
+//               var t = i / numsteps;
+//               eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
+//           }
+//           legacygl.end();
+//       }
+//     }
+  
+  
+  
     for (var j = 0; j < 4; j++) {
       legacygl.begin(gl.LINE_STRIP);
       for (var i = 0; i <= numsteps; ++i) {
           var t = i / numsteps;
-          eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
+          // eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
+          perimeter("c"+j,p,t);
       }
       legacygl.end();
       // draw sample points
@@ -485,7 +519,8 @@ function draw_3dcoons(){
           legacygl.begin(gl.POINTS);
           for (var i = 0; i <= numsteps; ++i) {
               var t = i / numsteps;
-              eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
+              perimeter("c"+j,p,t);
+              // eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
           }
           legacygl.end();
       }
