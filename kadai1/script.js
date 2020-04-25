@@ -3,7 +3,7 @@ var canvas;
 var legacygl;
 var drawutil;
 var camera;
-var p = Array(10);
+var p = Array(16);
 var num_p = 3;
 var w = Array(10);
 var selected = null;
@@ -23,20 +23,20 @@ function eval_quadratic_bezier_normal(p, t, num_p, w) {
   var c;
   var tmp;
   var sum = 0;
-  var ans = [0,0];
+  var ans = [0,0,0];
   for (var i = 0; i < num_p; i+=2) {
     r = i/2;
     c = comb(num_p-1,r);
     tmp = w[i]*c*t**r*(1-t)**(num_p-1-r);
     sum += tmp;
-    ans = vec2.scaleAndAdd_ip(ans,p[i],tmp);
+    ans = vec3.scaleAndAdd_ip(ans,p[i],tmp);
     if (i != num_p-1) {
       tmp = w[i+1]*c*t**(num_p-1-r)*(1-t)**r;
       sum += tmp
-      ans = vec2.scaleAndAdd_ip(ans,p[i+1],tmp);
+      ans = vec3.scaleAndAdd_ip(ans,p[i+1],tmp);
     }
   }
-  ans = vec2.scale([], ans, 1/sum);
+  ans = vec3.scale([], ans, 1/sum);
   return ans;
 };
   
@@ -53,7 +53,7 @@ function eval_quadratic_bezier_casteljau(p, t, num_p) {
   }
   for (var i = 0; i < num_p-1; i++) {
     for (var j = 0; j < idx-1; j++){
-      points[j] = vec2.scaleAndAdd_ip(vec2.scale([],points[j],1-t),points[j+1],t);
+      points[j] = vec3.scaleAndAdd_ip(vec3.scale([],points[j],1-t),points[j+1],t);
     }
     idx--;
   }
@@ -62,9 +62,9 @@ function eval_quadratic_bezier_casteljau(p, t, num_p) {
   
 function eval_quadratic_bezier(p, t, num_p, flag, w) {
   if (flag == 0) {
-    legacygl.vertex2(eval_quadratic_bezier_normal(p, t, num_p, w));
+    legacygl.vertex3(eval_quadratic_bezier_normal(p, t, num_p, w));
   } else if (flag == 1) {
-    legacygl.vertex2(eval_quadratic_bezier_casteljau(p, t, num_p));
+    legacygl.vertex3(eval_quadratic_bezier_casteljau(p, t, num_p));
   }
 };
 
@@ -80,22 +80,17 @@ function draw_bezier() {
     legacygl.color(0.5, 0.5, 0.5);
     drawutil.xygrid(100);
   
-    var tmp_num_p = Number(document.getElementById("input_b_numcontrolpoints").value);
-    if (tmp_num_p < 3) {
-      tmp_num_p = 3;
+    var num_p = Number(document.getElementById("input_b_numcontrolpoints").value);
+    if (num_p < 3) {
+      num_p = 3;
       document.getElementById("input_b_numcontrolpoints").value = 3;
-    } else if (tmp_num_p > 10) {
-      tmp_num_p = 10;
+    } else if (num_p > 10) {
+      num_p = 10;
       document.getElementById("input_b_numcontrolpoints").value = 10;
     } else {
-      tmp_num_p = Math.round(tmp_num_p);
-      document.getElementById("input_b_numcontrolpoints").value = tmp_num_p;
+      num_p = Math.round(num_p);
+      document.getElementById("input_b_numcontrolpoints").value = num_p;
     }
-    while (num_p < tmp_num_p) {
-      p[num_p] = [1.2+0.1*(num_p-2),0.5+(-1)**(num_p-1)*(0.8-0.1*(num_p-2))];
-      num_p++;
-    }
-    num_p = tmp_num_p;
     
     for (var i = 0; i < num_p; i++) {
       document.getElementById("label_rational"+i).style.display = 'inline-block';
@@ -161,7 +156,7 @@ function draw_bezier() {
         }
         legacygl.color(0.5, 0.2, 0.2);
         legacygl.begin(gl.LINE_STRIP);
-        for (var t = 1/numsteps; t < divrate; t+= 1/numsteps) {
+        for (var t = 0; t < divrate; t+= 1/numsteps) {
             eval_quadratic_bezier(p, t, num_p, flag, w);
         }
         eval_quadratic_bezier(p, divrate, num_p, flag, w);
@@ -169,7 +164,7 @@ function draw_bezier() {
         // draw sample points
         if (document.getElementById("input_show_samplepoints").checked) {
             legacygl.begin(gl.POINTS);
-            for (var t = 1/numsteps; t < divrate; t+= 1/numsteps) {
+            for (var t = 0; t < divrate; t+= 1/numsteps) {
                 eval_quadratic_bezier(p, t, num_p, flag, w);
             }
             eval_quadratic_bezier(p, divrate, num_p, flag, w);
@@ -184,18 +179,18 @@ function draw_bezier() {
         legacygl.color(0.2, 0.5, 1);
         legacygl.begin(gl.LINE_STRIP);
         for (var i = 0; i < num_p; i+=2){
-          legacygl.vertex2(p[i]);
+          legacygl.vertex3(p[i]);
         }
         for (var i = num_p-num_p%2-1; i > 0; i-=2){
-          legacygl.vertex2(p[i]);
+          legacygl.vertex3(p[i]);
         }
         legacygl.end();
         legacygl.begin(gl.POINTS);
         for (var i = 0; i < num_p; i+=2){
-          legacygl.vertex2(p[i]);
+          legacygl.vertex3(p[i]);
         }
         for (var i = num_p-num_p%2-1; i > 0; i-=2){
-          legacygl.vertex2(p[i]);
+          legacygl.vertex3(p[i]);
         }
         legacygl.end();
     }
@@ -210,25 +205,22 @@ function get_coefs(p, num_p, knot) {
       var c;
       var tmp;
       for (var i = 0; i < 3; i++) {
-        console.log(j);
-        console.log(i);
-        console.log(p);
-        a = vec2.scaleAndAdd_ip(vec2.scale([],p[j+i+1],1), p[j+i], -1);
+        a = vec3.scaleAndAdd_ip(vec3.scale([],p[j+i+1],1), p[j+i], -1);
         tmp = 1/(knot[j][i+1] - knot[j][i]);
-        ans.push([vec2.scale([],a,tmp), vec2.scaleAndAdd_ip(vec2.scale([],p[j+i],1),a,-knot[j][i]*tmp)]);
+        ans.push([vec3.scale([],a,tmp), vec3.scaleAndAdd_ip(vec3.scale([],p[j+i],1),a,-knot[j][i]*tmp)]);
       }
       for (var i = 0; i < 2; i++) {
-        a = vec2.scaleAndAdd_ip(vec2.scale([],ans[i+1][0],1), ans[i][0], -1);
-        b = vec2.scaleAndAdd_ip(vec2.scale([],ans[i+1][1],1), ans[i][1], -1);
+        a = vec3.scaleAndAdd_ip(vec3.scale([],ans[i+1][0],1), ans[i][0], -1);
+        b = vec3.scaleAndAdd_ip(vec3.scale([],ans[i+1][1],1), ans[i][1], -1);
         tmp = 1/(knot[j][i+2] - knot[j][i]);;
-        ans[i] = [vec2.scale([],a,tmp),vec2.scaleAndAdd_ip(vec2.scale([],ans[i][0],1),vec2.scaleAndAdd_ip(vec2.scale([],b,1),a, -knot[j][i]),tmp),vec2.scaleAndAdd_ip(vec2.scale([],ans[i][1],1),b, -knot[j][i]*tmp)];
+        ans[i] = [vec3.scale([],a,tmp),vec3.scaleAndAdd_ip(vec3.scale([],ans[i][0],1),vec3.scaleAndAdd_ip(vec3.scale([],b,1),a, -knot[j][i]),tmp),vec3.scaleAndAdd_ip(vec3.scale([],ans[i][1],1),b, -knot[j][i]*tmp)];
       }
       for (var i = 0; i < 1; i++) {
-        a = vec2.scaleAndAdd_ip(vec2.scale([],ans[i+1][0],1), ans[i][0], -1);
-        b = vec2.scaleAndAdd_ip(vec2.scale([],ans[i+1][1],1), ans[i][1], -1);
-        c = vec2.scaleAndAdd_ip(vec2.scale([],ans[i+1][2],1), ans[i][2], -1);
+        a = vec3.scaleAndAdd_ip(vec3.scale([],ans[i+1][0],1), ans[i][0], -1);
+        b = vec3.scaleAndAdd_ip(vec3.scale([],ans[i+1][1],1), ans[i][1], -1);
+        c = vec3.scaleAndAdd_ip(vec3.scale([],ans[i+1][2],1), ans[i][2], -1);
         tmp = 1/(knot[j][i+2] - knot[j][i+1]);
-        ret[j] = [vec2.scale([],a,tmp),vec2.scaleAndAdd_ip(vec2.scale([],ans[i][0],1),vec2.scaleAndAdd_ip(vec2.scale([],b,1),a, -knot[j][i+1]),tmp),vec2.scaleAndAdd_ip(vec2.scale([],ans[i][1],1),vec2.scaleAndAdd_ip(vec2.scale([],c,1),b, -knot[j][i+1]),tmp),vec2.scaleAndAdd_ip(vec2.scale([],ans[i][2],1),c,-knot[j][i+1]*tmp)];
+        ret[j] = [vec3.scale([],a,tmp),vec3.scaleAndAdd_ip(vec3.scale([],ans[i][0],1),vec3.scaleAndAdd_ip(vec3.scale([],b,1),a, -knot[j][i+1]),tmp),vec3.scaleAndAdd_ip(vec3.scale([],ans[i][1],1),vec3.scaleAndAdd_ip(vec3.scale([],c,1),b, -knot[j][i+1]),tmp),vec3.scaleAndAdd_ip(vec3.scale([],ans[i][2],1),c,-knot[j][i+1]*tmp)];
       }
   }
   return ret;
@@ -246,22 +238,26 @@ function draw_catmull() {
     legacygl.color(0.5, 0.5, 0.5);
     drawutil.xygrid(100);
   
-    var tmp_num_p = Number(document.getElementById("input_c_numcontrolpoints").value);
-    if (tmp_num_p < 3) {
-      tmp_num_p = 3;
+    var num_p = Number(document.getElementById("input_c_numcontrolpoints").value);
+    if (num_p < 3) {
+      num_p = 3;
       document.getElementById("input_c_numcontrolpoints").value = 3;
-    } else if (tmp_num_p > 10) {
-      tmp_num_p = 10;
+    } else if (num_p > 10) {
+      num_p = 10;
       document.getElementById("input_c_numcontrolpoints").value = 10;
     } else {
-      tmp_num_p = Math.round(tmp_num_p);
-      document.getElementById("input_c_numcontrolpoints").value = tmp_num_p;
+      num_p = Math.round(num_p);
+      document.getElementById("input_c_numcontrolpoints").value = num_p;
     }
-    num_p = tmp_num_p;
+    // num_p = tmp_num_p;
+    var tmp_p = Array(10);
     for (var i = 0; i < num_p; i++) {
-      p[i] = [Number(document.getElementById("input_controlpoints_x"+i).value), Number(document.getElementById("input_controlpoints_y"+i).value)];
+      tmp_p[i] = [Number(document.getElementById("input_controlpoints_x"+i).value), Number(document.getElementById("input_controlpoints_y"+i).value),0];
     }
-    p.sort((a, b) => a[0] - b[0]);
+    tmp_p.sort((a, b) => a[0] - b[0]);
+    for (var i = 0; i < num_p; i++){
+        p[i] = tmp_p[i];
+    }
     for (var i = 0; i < num_p-1; i++) {
       if (p[i][0] == p[i+1][0]) {
         p[i+1][0] += 0.1;
@@ -329,7 +325,7 @@ function draw_catmull() {
     for (var j = 0; j < num_p - 3; j++) {
         for (var i = 0; i <= each_numsteps; ++i) {
           var t = (knot[j][2]-knot[j][1]) * i / each_numsteps + knot[j][1];
-          legacygl.vertex2([coefs[j][0][0]*t**3+coefs[j][1][0]*t**2+coefs[j][2][0]*t+coefs[j][3][0], coefs[j][0][1]*t**3+coefs[j][1][1]*t**2+coefs[j][2][1]*t+coefs[j][3][1]]);
+          legacygl.vertex3(vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][0],t**3), vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][1],t**2),vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][2],t),coefs[j][3],1),1),1));
         }
     }  
     legacygl.end();
@@ -339,7 +335,7 @@ function draw_catmull() {
         for (var j = 0; j < num_p - 3; j++) {
             for (var i = 0; i <= each_numsteps; ++i) {
               var t = (knot[j][2]-knot[j][1]) * i / each_numsteps + knot[j][1];
-              legacygl.vertex2([coefs[j][0][0]*t**3+coefs[j][1][0]*t**2+coefs[j][2][0]*t+coefs[j][3][0], coefs[j][0][1]*t**3+coefs[j][1][1]*t**2+coefs[j][2][1]*t+coefs[j][3][1]]);
+              legacygl.vertex3(vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][0],t**3), vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][1],t**2),vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][2],t),coefs[j][3],1),1),1));
             }
         } 
         legacygl.end();
@@ -350,42 +346,377 @@ function draw_catmull() {
         legacygl.color(0.2, 0.5, 1);
         legacygl.begin(gl.LINE_STRIP);
         for (var i = 0; i < num_p; i++){
-          legacygl.vertex2(p[i]);
+          legacygl.vertex3(p[i]);
         }
         legacygl.end();
         legacygl.begin(gl.POINTS);
         for (var i = 0; i < num_p; i++){
-          legacygl.vertex2(p[i]);
+          legacygl.vertex3(p[i]);
         }
         legacygl.end();
     }
 };
 
+function eval_3dbezier(p, s, t) {
+  var c1;
+  var c2;
+  var tmp;
+  var ans = [0,0,0];
+  for (var i = 0; i < 4; i++) {
+    for (var j = 0; j < 4; j++){
+      c1 = comb(3,i);
+      c2 = comb(3,j);
+      tmp = (c1*s**i*(1-s)**(3-i)*(c2*t**j*(1-t)**(3-j)));
+      ans = vec3.scaleAndAdd_ip(ans,p[4*i+j],tmp);
+    }
+  }
+  return ans;
+};
+
+function draw_3dbezier(){
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // projection & camera position
+    mat4.perspective(legacygl.uniforms.projection.value, Math.PI / 6, canvas.aspect_ratio(), 0.1, 1000);
+    var modelview = legacygl.uniforms.modelview;
+    camera.lookAt(modelview.value);
+    // zx-grid
+    legacygl.color(0.5, 0.5, 0.5);
+    drawutil.zxgrid(50);
+  
+    num_p = 16;
+    for (var i = 0; i < num_p; i++) {
+      p[i] = [Number(document.getElementById("input_3dcontrolpoints_x"+i).value), Number(document.getElementById("input_3dcontrolpoints_y"+i).value), Number(document.getElementById("input_3dcontrolpoints_z"+i).value)];
+    }
+  
+    if (document.getElementById("input_show_controlpoints").checked) {
+      for (var i = 0; i <  4; i++) {
+          legacygl.begin(gl.LINE_STRIP);
+          legacygl.color(0.2, 0.5, 0.8);
+          for (var j = 0; j < 4; j++) {
+            legacygl.vertex3(p[4*i+j]);
+          }
+          legacygl.end();
+      }  
+      for (var i = 0; i <  4; i++) {
+          legacygl.begin(gl.LINE_STRIP);
+          legacygl.color(0.7, 0, 0.4);
+          for (var j = 0; j < 4; j++) {
+            legacygl.vertex3(p[4*j+i]);
+          }
+          legacygl.end();
+      }  
+      legacygl.begin(gl.POINTS);
+        for (var i = 0; i<  num_p; i++) {
+          legacygl.vertex3(p[i]);
+        } 
+      legacygl.end();
+    }
+  
+    var numsteps = Number(document.getElementById("input_numsteps").value);
+    if (numsteps < 2) {
+      numsteps = 2;
+      document.getElementById("input_numsteps").value = 2;
+    } else {
+      numsteps = Math.round(numsteps);
+      document.getElementById("input_numsteps").value = numsteps;
+    }
+  
+    var step = 1/numsteps;
+    var points = Array((numsteps+1)**2);
+    for (var i = 0; i <= numsteps; i++) {
+        for (var j = 0; j <= numsteps; j++) {
+          points[(numsteps+1)*i+j] = eval_3dbezier(p, i*step, j*step);
+        }
+    }
+    
+    legacygl.begin(gl.LINE_STRIP);
+    legacygl.color(0, 0, 0);
+    for (var i = 0; i <= numsteps; i++) {
+      legacygl.vertex3(points[i]);
+    }
+    for (var i = 0; i <= numsteps; i++) {
+      legacygl.vertex3(points[(numsteps+1)*i+numsteps]);
+    }
+    for (var i = numsteps; i >= 0; i--) {
+      legacygl.vertex3(points[(numsteps+1)*numsteps+i]);
+    }
+    for (var i = numsteps; i >= 0; i--) {
+      legacygl.vertex3(points[(numsteps+1)*i]);
+    }
+    legacygl.end();
+  
+    legacygl.begin(legacygl.QUADS);
+    legacygl.color(0.6, 0, 0.8);
+    for (var i = 0; i < numsteps; i++) {
+      for (var j = 0; j < numsteps; j++) {
+          legacygl.vertex3(points[(numsteps+1)*i+j]);
+          legacygl.vertex3(points[(numsteps+1)*i+j+1]);
+          legacygl.vertex3(points[(numsteps+1)*(i+1)+j+1]);
+          legacygl.vertex3(points[(numsteps+1)*(i+1)+j]);
+      }
+    }
+    legacygl.end();
+    if (document.getElementById("input_show_samplepoints").checked) {
+        legacygl.begin(gl.POINTS);
+        legacygl.color(0.4, 0.4, 0.5);
+        for (var i = 0; i <= numsteps; i++) {
+            for (var j = 0; j <= numsteps; j++) {
+              legacygl.vertex3(points[(numsteps+1)*i+j]);
+            }
+        } 
+        legacygl.end();
+    }
+    
+    for (var i = 0; i < numsteps; i++) {
+      legacygl.begin(gl.LINE_STRIP);
+      legacygl.color(0.4, 0.4, 0.5);
+      for (var j = 0; j <= numsteps; j++) {
+        legacygl.vertex3(points[(numsteps+1)*i+j])
+      }
+      legacygl.end();
+      legacygl.begin(gl.LINE_STRIP);
+      legacygl.color(0.4, 0.4, 0.5);
+      for (var j = 0; j <= numsteps; j++) {
+        legacygl.vertex3(points[(numsteps+1)*j+i])
+      }
+      legacygl.end();
+    }
+};
+
+function perimeter(l,p,t) {
+  var tmp = Array(10);
+  for (var i = 0; i < 10; i++) {
+    tmp[i] = 1;
+  }
+  if (l == 0){ // c0
+    return eval_quadratic_bezier_normal([p[0],p[3],p[1],p[2]], t, 4, tmp);
+  } else if (l == 1){ // d1
+    return eval_quadratic_bezier_normal([p[3],p[6],p[4],p[5]], t, 4, tmp);
+  } else if (l == 2){ // c1
+    return eval_quadratic_bezier_normal([p[9],p[6],p[8],p[7]], t, 4, tmp);
+  } else if (l == 3){ // d0
+    return eval_quadratic_bezier_normal([p[0],p[9],p[11],p[10]], t, 4, tmp);
+  }
+};
+
+function draw_3dcoons(){
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // projection & camera position
+    mat4.perspective(legacygl.uniforms.projection.value, Math.PI / 6, canvas.aspect_ratio(), 0.1, 1000);
+    var modelview = legacygl.uniforms.modelview;
+    camera.lookAt(modelview.value);
+    // zx-grid
+    legacygl.color(0.5, 0.5, 0.5);
+    drawutil.zxgrid(50);
+  
+    num_p = 12;
+    for (var i = 0; i < num_p; i++) {
+      p[i] = [Number(document.getElementById("input_3dcontrolpoints_x"+i).value), Number(document.getElementById("input_3dcontrolpoints_y"+i).value), Number(document.getElementById("input_3dcontrolpoints_z"+i).value)];
+    }
+  
+    var numsteps = Number(document.getElementById("input_numsteps").value);
+    if (numsteps < 2) {
+      numsteps = 2;
+      document.getElementById("input_numsteps").value = 2;
+    } else {
+      numsteps = Math.round(numsteps);
+      document.getElementById("input_numsteps").value = numsteps;
+    }
+    
+    var step = 1/numsteps;
+    var peri = Array(4);
+    for (var i = 0; i < 4; i++) {
+        peri[i] = Array(numsteps+1);
+    }
+    for (var i = 0; i < 4; i++) {
+      for (var j = 0; j <= numsteps; j++) {
+          peri[i][j] = perimeter(i,p,j*step);
+      }
+    }
+  
+    for (var i = 0; i < 4; i++) {
+      legacygl.begin(gl.LINE_STRIP);
+      legacygl.color(0,0,0);
+      for (var j = 0; j <= numsteps; j++) {
+          var t = i / numsteps;
+          // eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
+          // perimeter(j,p,t);
+          legacygl.vertex3(peri[i][j]);
+      }
+      legacygl.end();
+    }
+  
+    if (document.getElementById("input_show_controlpoints").checked) {
+      legacygl.begin(gl.LINE_STRIP);
+      for (var i = 0; i <= num_p; i++) {
+          if (i <= num_p/4 || (i > num_p/2 && i <= 3*num_p/4)) {
+            legacygl.color(0.2, 0.5, 0.8)
+          }else{
+            legacygl.color(0.7, 0, 0.4);
+          }
+          legacygl.vertex3(p[i%12]);
+      }
+      legacygl.end();
+      legacygl.begin(gl.POINTS);
+        for (var i = 0; i <  num_p; i++) {
+          legacygl.vertex3(p[i]);
+        } 
+      legacygl.end();
+    }
+  
+    
+    var points = Array((numsteps+1)**2);
+    var s;
+    var t;
+    var lc;
+    var ld;
+    var b;
+    for (var i = 0; i <= numsteps; i++) {
+      for (var j = 0; j <= numsteps; j++) {
+        s = i*step;
+        t = j*step;
+        lc = vec3.scaleAndAdd_ip(vec3.scale([],peri[0][i],(1-t)),peri[2][i],t);
+        ld = vec3.scaleAndAdd_ip(vec3.scale([],peri[3][j],(1-s)),peri[1][j],s);
+        b = vec3.scaleAndAdd_ip(vec3.scale([],peri[0][0],(1-s)*(1-t)),vec3.scaleAndAdd_ip(vec3.scale([],peri[0][numsteps],s*(1-t)), vec3.scaleAndAdd_ip(vec3.scale([],peri[2][0],(1-s)*t),peri[2][numsteps],s*t),1),1);
+        points[(numsteps+1)*i+j] = vec3.scaleAndAdd_ip(vec3.scale([],lc,1), vec3.scaleAndAdd_ip(vec3.scale([],ld,1),b,-1),1);
+      }
+    }
+  
+    legacygl.begin(legacygl.QUADS);
+    legacygl.color(0.6, 0, 0.8);
+    for (var i = 0; i < numsteps; i++) {
+      for (var j = 0; j < numsteps; j++) {
+          legacygl.vertex3(points[(numsteps+1)*i+j]);
+          legacygl.vertex3(points[(numsteps+1)*i+j+1]);
+          legacygl.vertex3(points[(numsteps+1)*(i+1)+j+1]);
+          legacygl.vertex3(points[(numsteps+1)*(i+1)+j]);
+      }
+    }
+    legacygl.end();
+  
+    if (document.getElementById("input_show_samplepoints").checked) {
+        legacygl.begin(gl.POINTS);
+        legacygl.color(0.4, 0.4, 0.5);
+        for (var i = 0; i <= numsteps; i++) {
+            for (var j = 0; j <= numsteps; j++) {
+              legacygl.vertex3(points[(numsteps+1)*i+j]);
+            }
+        } 
+        legacygl.end();
+    }
+  
+    for (var i = 0; i < numsteps; i++) {
+      legacygl.begin(gl.LINE_STRIP);
+      legacygl.color(0.4, 0.4, 0.5);
+      for (var j = 0; j <= numsteps; j++) {
+        legacygl.vertex3(points[(numsteps+1)*i+j])
+      }
+      legacygl.end();
+      legacygl.begin(gl.LINE_STRIP);
+      legacygl.color(0.4, 0.4, 0.5);
+      for (var j = 0; j <= numsteps; j++) {
+        legacygl.vertex3(points[(numsteps+1)*j+i])
+      }
+      legacygl.end();
+    }
+}
+
 function draw() {
-  var hide_elements;
-  var show_elements;
-  if (document.getElementById("input_bezier").checked) {
-    draw_bezier();
-    show_elements = document.getElementsByClassName("bezier");
-    hide_elements = document.getElementsByClassName("catmull");
-    document.getElementById("row_positions1").style.display = 'none';
-    document.getElementById("row_positions2").style.display = 'none';
-  } else if (document.getElementById("input_catmull").checked) {
+  if (document.getElementById("input_catmull").checked) {
     draw_catmull();
-    hide_elements = document.getElementsByClassName("bezier");
+  } else if (document.getElementById("input_3dbezier").checked) {
+    draw_3dbezier();
+  } else if (document.getElementById("input_3dcoons").checked) {
+    draw_3dcoons();
+  } else {
+    draw_bezier();
+  }
+};
+
+function settings() {
+  var hide_elements = [];
+  var show_elements = [];
+  if (document.getElementById("input_catmull").checked) {
+    p = [[-1, 0.8, 0], [1, 1.1, 0], [0.6, 0.5, 0], [1.7, -1.5, 0], [-0.2, 0.5, 0], [-1.9, 0.8, 0], [0.9, 1.1, 0], [0.2, 1, 0], [-1.5, -0.9, 0], [1.4, 0.3, 0]];
+    for (var i = 0; i < 10; i++) {
+      document.getElementById("input_controlpoints_x"+i).value = p[i][0];
+      document.getElementById("input_controlpoints_y"+i).value = p[i][1];
+    }
+    document.getElementById("input_c_numcontrolpoints").value = 4;
+    hide_elements = [document.getElementsByClassName("bezier"), document.getElementsByClassName("3d")];
     show_elements = document.getElementsByClassName("catmull");
     document.getElementById("row_positions1").style.display = 'table-row';
     document.getElementById("row_positions2").style.display = 'table-row';
     document.getElementById("row_rational").style.display = 'none';
     document.getElementById("row_divisionrate").style.display = 'none';
+  } else if (document.getElementById("input_3dbezier").checked) {
+    p = [[-2, 1, -2], [-3, 0, -1], [-2, 2, 0], [-3, 1, 1], [-1, 0, -2], [-2, 3, -1], [0, 1, 0], [-1, 0, 1], [0, 2, -2], [1, 1, -1], [1, 0, 0], [0, -1, 1], [1, 0, -2], [3, 1, -1], [2, 2, 0], [3, 1, 1]];
+    for (var i = 0; i < 16; i++) {
+      document.getElementById("input_3dcontrolpoints_x"+i).value = p[i][0];
+      document.getElementById("input_3dcontrolpoints_y"+i).value = p[i][1];
+      document.getElementById("input_3dcontrolpoints_z"+i).value = p[i][2];
+    }
+    hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("2d")];
+    document.getElementById("row_positions1").style.display = 'none';
+    document.getElementById("row_positions2").style.display = 'none';
+    document.getElementById("rowspanctl").setAttribute("rowSpan",4);
+    document.getElementById("row_3dpositions1").style.display = 'table-row';
+    document.getElementById("row_3dpositions2").style.display = 'table-row';
+    document.getElementById("row_3dpositions3").style.display = 'table-row';
+    document.getElementById("row_3dpositions4").style.display = 'table-row';
+  } else if (document.getElementById("input_3dcoons").checked) {
+    p = [[-2, 1, -2], [-3, 0, -1], [-2, 2, 0], [-3, 1, 1], [-1, 0, 1], [0, -1, 1], [3, 1, 1], [2, 2, 0], [3, 1, -1], [1, 0, -2], [0, 2, -2], [-1, 0, -2]];
+    for (var i = 0; i < 12; i++) {
+      document.getElementById("input_3dcontrolpoints_x"+i).value = p[i][0];
+      document.getElementById("input_3dcontrolpoints_y"+i).value = p[i][1];
+      document.getElementById("input_3dcontrolpoints_z"+i).value = p[i][2];
+    }
+    hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("2d")];
+    document.getElementById("row_positions1").style.display = 'none';
+    document.getElementById("row_positions2").style.display = 'none';
+    document.getElementById("row_rational").style.display = 'none';
+    document.getElementById("row_divisionrate").style.display = 'none';
+    document.getElementById("rowspanctl").setAttribute("rowSpan",3);
+    document.getElementById("row_3dpositions1").style.display = 'table-row';
+    document.getElementById("row_3dpositions2").style.display = 'table-row';
+    document.getElementById("row_3dpositions3").style.display = 'table-row';
+    document.getElementById("row_3dpositions4").style.display = 'none';
+  } else {
+    p[0] = [-1.3, -0.9, 0];
+    p[1] = [-0.4, 1.3, 0];
+    p[2] = [1.2, -0.3, 0];
+    for (var i = 3; i < 10; i++) {
+      p[i] = [1.2+0.1*(i-2),0.5+(-1)**(i-1)*(0.8-0.1*(i-2)),0];
+    }
+    document.getElementById("input_b_numcontrolpoints").value = 3;
+    show_elements = document.getElementsByClassName("bezier");
+    hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("3d")];
+    document.getElementById("row_divisionrate").style.display = 'table-row';
+    document.getElementById("row_positions1").style.display = 'none';
+    document.getElementById("row_positions2").style.display = 'none';
   }
   for (var i = 0; i < hide_elements.length; i++) {
-    hide_elements[i].style.display = 'none';
+    for (var j = 0; j < hide_elements[i].length; j++) {
+      hide_elements[i][j].style.display = 'none';
+    }
   }
   for (var i = 0; i < show_elements.length; i++) {
     show_elements[i].style.display = 'table-row';
   }
+}
+
+function cameraview() {
+  if (document.getElementById("input_catmull").checked) {
+    camera.eye = [0, 0, 7];
+  } else if (document.getElementById("input_3dbezier").checked) {
+    camera.eye = [8, 8, 10];
+  } else if (document.getElementById("input_3dcoons").checked) {
+    camera.eye = [8, 8, 10];
+  } else {
+    camera.eye = [0, 0, 7];
+  }
 };
+
 function init() {
     // OpenGL context
     canvas = document.getElementById("canvas");
@@ -415,20 +746,19 @@ function init() {
     legacygl.add_uniform("modelview", "Matrix4f");
     legacygl.add_uniform("projection", "Matrix4f");
     legacygl.add_vertex_attribute("color", 3);
-    legacygl.vertex2 = function(p) {
-        this.vertex(p[0], p[1], 0);
+    legacygl.vertex3 = function(p) {
+        this.vertex(p[0], p[1], p[2]);
     };
     drawutil = get_drawutil(gl, legacygl);
     camera = get_camera(canvas.width);
-    camera.eye = [0, 0, 7];
-    p[0] = [-1.3, -0.9];
-    p[2] = [1.2, -0.3];
-    p[1] = [-0.4, 1.3];
     // event handlers
     canvas.onmousedown = function(evt) {
         var mouse_win = this.get_mousepos(evt);
         if (evt.altKey) {
             camera.start_moving(mouse_win, evt.shiftKey ? "zoom" : "pan");
+            return;
+        } else if (evt.ctrlKey) {
+            camera.start_moving(mouse_win, "rotate");
             return;
         }
         // pick nearest object
@@ -436,7 +766,7 @@ function init() {
         var viewport = [0, 0, canvas.width, canvas.height];
         var dist_min = 10000000;
         for (var i = 0; i < num_p; ++i) {
-            var object_win = glu.project([points[i][0], points[i][1], 0], 
+            var object_win = glu.project(points[i], 
                                          legacygl.uniforms.modelview.value,
                                          legacygl.uniforms.projection.value,
                                          viewport);

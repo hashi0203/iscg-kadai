@@ -10,61 +10,64 @@
 <script src="https://legacygl-js.glitch.me/camera.js"></script>
 <script src="https://legacygl-js.glitch.me/util.js"></script>
 <script src="https://legacygl-js.glitch.me/glu.js"></script>
-<script src="kadai1/script.js"></script>
+<script src="script.js"></script>
 </head>
-<body onload="init(); draw();">
+<body onload="init(); cameraview(); settings(); draw();">
   <h2><a target="_blank" href="http://research.nii.ac.jp/~takayama/teaching/utokyo-iscg-2020/assignments/iscg-2020-assignment-m1-spline.pdf"><script type="text/javascript">document.write(document.getElementById("title").innerHTML);</script></a></h2>
   <canvas id="canvas" width="640" height="480" style="border:1px solid #000000"></canvas>
   <table>
     <tr>
       <td>Curve Type:</td>
-      <td><input type="radio" name="input_curvetype" id="input_bezier" onchange="draw();" checked>Bézier Curve
-          <input type="radio" name="input_curvetype" id="input_catmull" onchange="draw();">Catmull-Rom Spline</td>
+      <td><input type="radio" name="input_curvetype" id="input_bezier" onchange="init(); cameraview(); settings(); draw();" checked>Bézier Curve
+          <input type="radio" name="input_curvetype" id="input_catmull" onchange="init(); cameraview(); settings(); draw();">Catmull-Rom Spline
+          <input type="radio" name="input_curvetype" id="input_3dbezier" onchange="init(); cameraview(); settings(); draw();">3D Bézier Surface
+          <input type="radio" name="input_curvetype" id="input_3dcoons" onchange="init(); cameraview(); settings(); draw();">3D Coons Patch
+      </td>
     </tr>
-    <tr class="bezier">
+    <tr class="bezier 2d">
       <td>Sampling Method:</td>
       <td><input type="radio" name="input_b_evaltype" id="input_evalnormal" onchange="draw();" checked>Equal Division
           <input type="radio" name="input_b_evaltype" id="input_evalcasteljau" onchange="draw();">De Casteljau's algorithm</td>
     </tr>
-    <tr class="bezier">
+    <tr class="bezier 2d">
       <td>Number of Control Points (min: 3, max: 10):</td>
       <td colspan="2"><input type="number" id="input_b_numcontrolpoints" onchange="draw();" step="1" min="3" max="10" value="3"></td>
     </tr>
-    <tr id="row_rational">
+    <tr id="row_rational" class="2d">
       <td>Rational Bézier Curve:</td>
       <td colspan="2">
-        <span id="label_rational0">w0: <input type="number" id="input_rational0" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational1">w1: <input type="number" id="input_rational1" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational2">w2: <input type="number" id="input_rational2" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational3">w3: <input type="number" id="input_rational3" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational4">w4: <input type="number" id="input_rational4" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational5">w5: <input type="number" id="input_rational5" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational6">w6: <input type="number" id="input_rational6" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational7">w7: <input type="number" id="input_rational7" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational8">w8: <input type="number" id="input_rational8" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
-        <span id="label_rational9">w9: <input type="number" id="input_rational9" onchange="draw();" step="0.1" min="0" max="1" value="1" style="width:60px;"></span>
+        <span id="label_rational0">w0: <input type="number" id="input_rational0" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational1">w1: <input type="number" id="input_rational1" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational2">w2: <input type="number" id="input_rational2" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational3">w3: <input type="number" id="input_rational3" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational4">w4: <input type="number" id="input_rational4" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational5">w5: <input type="number" id="input_rational5" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational6">w6: <input type="number" id="input_rational6" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational7">w7: <input type="number" id="input_rational7" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational8">w8: <input type="number" id="input_rational8" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
+        <span id="label_rational9">w9: <input type="number" id="input_rational9" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"></span>
       </td>
     </tr>
-    <tr class="bezier">
+    <tr class="bezier 2d">
       <td>Curve Division:</td>
       <td colspan="2"><input type="checkbox" id="input_divide_curve" onchange="draw();" checked></td>
     </tr>
-    <tr id="row_divisionrate">
+    <tr id="row_divisionrate" class="2d">
       <td>Curve Division Rate:</td>
       <td colspan="2"><input type="number" id="input_ratedivision" onchange="draw();" step="0.1" min="0" max="1" value="0.2"></td>
     </tr>
-    <tr class="catmull">
+    <tr class="catmull 2d">
       <td>Sampling Method:</td>
       <td><input type="radio" name="input_c_evaltype" id="input_evaluniform" onchange="draw();" checked>Uniform
           <input type="radio" name="input_c_evaltype" id="input_evalchordal" onchange="draw();">Chordal
           <input type="radio" name="input_c_evaltype" id="input_evalcentripetal" onchange="draw();">Centripetal</td>
     </tr>
-    <tr class="catmull">
+    <tr class="catmull 2d">
       <td>Number of Control Points (min: 4, max: 10):</td>
       <td colspan="2"><input type="number" id="input_c_numcontrolpoints" onchange="draw();" step="1" min="4" max="10" value="4"></td>
     </tr>
-    <tr id="row_positions1">
-      <td>Control Points' Position (x,y):</td>
+    <tr id="row_positions1" class="2d">
+      <td rowspan="2">Control Points' Position (x,y):</td>
       <td colspan="2">
         <span id="label_controlpoints0">w0: <input type="number" id="input_controlpoints_x0" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="-1" style="width:60px;"><input type="number" id="input_controlpoints_y0" onchange="draw();" step="0.1" min="-2" max="2" value="0.8" style="width:60px;"></span>
         <span id="label_controlpoints1">w1: <input type="number" id="input_controlpoints_x1" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="1" style="width:60px;"><input type="number" id="input_controlpoints_y1" onchange="draw();" step="0.1" min="-2" max="2" value="1.1" style="width:60px;"></span>
@@ -72,9 +75,8 @@
         <span id="label_controlpoints3">w3: <input type="number" id="input_controlpoints_x3" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="1.7" style="width:60px;"><input type="number" id="input_controlpoints_y3" onchange="draw();" step="0.1" min="-2" max="2" value="-1.5" style="width:60px;"></span>
         <span id="label_controlpoints4">w4: <input type="number" id="input_controlpoints_x4" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="-0.2" style="width:60px;"><input type="number" id="input_controlpoints_y4" onchange="draw();" step="0.1" min="-2" max="2" value="0.5" style="width:60px;"></span>
       </td>  
-    <tr>
-    <tr id="row_positions2">
-      <td></td>
+    </tr>
+    <tr id="row_positions2" class="2d">
       <td colspan="2">
         <span id="label_controlpoints5">w5: <input type="number" id="input_controlpoints_x5" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="-1.9" style="width:60px;"><input type="number" id="input_controlpoints_y5" onchange="draw();" step="0.1" min="-2" max="2" value="0.8" style="width:60px;"></span>
         <span id="label_controlpoints6">w6: <input type="number" id="input_controlpoints_x6" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="0.9" style="width:60px;"><input type="number" id="input_controlpoints_y6" onchange="draw();" step="0.1" min="-2" max="2" value="1.1" style="width:60px;"></span>
@@ -82,6 +84,41 @@
         <span id="label_controlpoints8">w8: <input type="number" id="input_controlpoints_x8" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="-1.5" style="width:60px;"><input type="number" id="input_controlpoints_y8" onchange="draw();" step="0.1" min="-2" max="2" value="-0.9" style="width:60px;"></span>
         <span id="label_controlpoints9">w9: <input type="number" id="input_controlpoints_x9" onchange="draw();" step="0.1" min="-2.5" max="2.5" value="1.4" style="width:60px;"><input type="number" id="input_controlpoints_y9" onchange="draw();" step="0.1" min="-2" max="2" value="0.3" style="width:60px;"></span>  
       </td>
+    </tr>
+    
+    <tr id="row_3dpositions1" class="3d">
+      <td rowspan="4" id="rowspanctl">Control Points' Position (x,y,z):</td>
+      <td colspan="2">
+        <span id="label_3dcontrolpoints0">w0&nbsp;&nbsp;&nbsp;: <input type="number" id="input_3dcontrolpoints_x0" onchange="draw();" step="0.1" min="-5" max="5" value="-2" style="width:60px;"><input type="number" id="input_3dcontrolpoints_y0" onchange="draw();" step="0.1" min="-2" max="2" value="1" style="width:60px;"><input type="number" id="input_3dcontrolpoints_z0" onchange="draw();" step="0.1" min="-2" max="2" value="-2" style="width:60px;"></span>
+        <span id="label_3dcontrolpoints1">w1&nbsp;&nbsp;&nbsp;: <input type="number" id="input_3dcontrolpoints_x1" onchange="draw();" step="0.1" min="-5" max="5" value="-3" style="width:60px;"><input type="number" id="input_3dcontrolpoints_y1" onchange="draw();" step="0.1" min="-2" max="2" value="0" style="width:60px;"><input type="number" id="input_3dcontrolpoints_z1" onchange="draw();" step="0.1" min="-2" max="2" value="-1" style="width:60px;"></span>
+        <span id="label_3dcontrolpoints2">w2&nbsp;&nbsp;&nbsp;: <input type="number" id="input_3dcontrolpoints_x2" onchange="draw();" step="0.1" min="-5" max="5" value="-2" style="width:60px;"><input type="number" id="input_3dcontrolpoints_y2" onchange="draw();" step="0.1" min="-2" max="2" value="2" style="width:60px;"><input type="number" id="input_3dcontrolpoints_z2" onchange="draw();" step="0.1" min="-2" max="2" value="0" style="width:60px;"></span>
+        <span id="label_3dcontrolpoints3">w3&nbsp;&nbsp;&nbsp;: <input type="number" id="input_3dcontrolpoints_x3" onchange="draw();" step="0.1" min="-5" max="5" value="-3" style="width:60px;"><input type="number" id="input_3dcontrolpoints_y3" onchange="draw();" step="0.1" min="-2" max="2" value="1" style="width:60px;"><input type="number" id="input_3dcontrolpoints_z3" onchange="draw();" step="0.1" min="-2" max="2" value="1" style="width:60px;"></span>
+      </td>  
+    </tr>
+    <tr id="row_3dpositions2" class="3d">
+      <td colspan="2">
+        <span id="label_3dcontrolpoints4">w4&nbsp;&nbsp;&nbsp;: <input type="number" id="input_3dcontrolpoints_x4" onchange="draw();" step="0.1" min="-5" max="5" value="-1" style="width:60px;"><input type="number" id="input_3dcontrolpoints_y4" onchange="draw();" step="0.1" min="-2" max="2" value="0" style="width:60px;"><input type="number" id="input_3dcontrolpoints_z4" onchange="draw();" step="0.1" min="-2" max="2" value="-2" style="width:60px;"></span>
+        <span id="label_3dcontrolpoints5">w5&nbsp;&nbsp;&nbsp;: <input type="number" id="input_3dcontrolpoints_x5" onchange="draw();" step="0.1" min="-5" max="5" value="-2" style="width:60px;"><input type="number" id="input_3dcontrolpoints_y5" onchange="draw();" step="0.1" min="-2" max="2" value="3" style="width:60px;"><input type="number" id="input_3dcontrolpoints_z5" onchange="draw();" step="0.1" min="-2" max="2" value="-1" style="width:60px;"></span>
+        <span id="label_3dcontrolpoints6">w6&nbsp;&nbsp;&nbsp;: <input type="number" id="input_3dcontrolpoints_x6" onchange="draw();" step="0.1" min="-5" max="5" value="0" style="width:60px;"><input type="number" id="input_3dcontrolpoints_y6" onchange="draw();" step="0.1" min="-2" max="2" value="1" style="width:60px;"><input type="number" id="input_3dcontrolpoints_z6" onchange="draw();" step="0.1" min="-2" max="2" value="0" style="width:60px;"></span>
+        <span id="label_3dcontrolpoints7">w7&nbsp;&nbsp;&nbsp;: <input type="number" id="input_3dcontrolpoints_x7" onchange="draw();" step="0.1" min="-5" max="5" value="-1" style="width:60px;"><input type="number" id="input_3dcontrolpoints_y7" onchange="draw();" step="0.1" min="-2" max="2" value="0" style="width:60px;"><input type="number" id="input_3dcontrolpoints_z7" onchange="draw();" step="0.1" min="-2" max="2" value="1" style="width:60px;"></span>
+      </td>
+    </tr>
+    <tr id="row_3dpositions3" class="3d">
+      <td colspan="2">
+        <span id="label_3dcontrolpoints8">w8&nbsp;&nbsp;&nbsp;: <input type="number" id="input_3dcontrolpoints_x8" onchange="draw();" step="0.1" min="-5" max="5" value="0" style="width:60px;"><input type="number" id="input_3dcontrolpoints_y8" onchange="draw();" step="0.1" min="-2" max="2" value="2" style="width:60px;"><input type="number" id="input_3dcontrolpoints_z8" onchange="draw();" step="0.1" min="-2" max="2" value="-2" style="width:60px;"></span>
+        <span id="label_3dcontrolpoints9">w9&nbsp;&nbsp;&nbsp;: <input type="number" id="input_3dcontrolpoints_x9" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"><input type="number" id="input_3dcontrolpoints_y9" onchange="draw();" step="0.1" min="-2" max="2" value="1" style="width:60px;"><input type="number" id="input_3dcontrolpoints_z9" onchange="draw();" step="0.1" min="-2" max="2" value="-1" style="width:60px;"></span>
+        <span id="label_3dcontrolpoints10">w10: <input type="number" id="input_3dcontrolpoints_x10" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"><input type="number" id="input_3dcontrolpoints_y10" onchange="draw();" step="0.1" min="-2" max="2" value="0" style="width:60px;"><input type="number" id="input_3dcontrolpoints_z10" onchange="draw();" step="0.1" min="-2" max="2" value="0" style="width:60px;"></span>
+        <span id="label_3dcontrolpoints11">w11: <input type="number" id="input_3dcontrolpoints_x11" onchange="draw();" step="0.1" min="-5" max="5" value="0" style="width:60px;"><input type="number" id="input_3dcontrolpoints_y11" onchange="draw();" step="0.1" min="-2" max="2" value="-1" style="width:60px;"><input type="number" id="input_3dcontrolpoints_z11" onchange="draw();" step="0.1" min="-2" max="2" value="1" style="width:60px;"></span>
+      </td>
+    </tr>
+    <tr id="row_3dpositions4" class="3d">
+      <td colspan="2">
+        <span id="label_3dcontrolpoints12">w12: <input type="number" id="input_3dcontrolpoints_x12" onchange="draw();" step="0.1" min="-5" max="5" value="1" style="width:60px;"><input type="number" id="input_3dcontrolpoints_y12" onchange="draw();" step="0.1" min="-2" max="2" value="0" style="width:60px;"><input type="number" id="input_3dcontrolpoints_z12" onchange="draw();" step="0.1" min="-2" max="2" value="-2" style="width:60px;"></span>
+        <span id="label_3dcontrolpoints13">w13: <input type="number" id="input_3dcontrolpoints_x13" onchange="draw();" step="0.1" min="-5" max="5" value="3" style="width:60px;"><input type="number" id="input_3dcontrolpoints_y13" onchange="draw();" step="0.1" min="-2" max="2" value="1" style="width:60px;"><input type="number" id="input_3dcontrolpoints_z13" onchange="draw();" step="0.1" min="-2" max="2" value="-1" style="width:60px;"></span>
+        <span id="label_3dcontrolpoints14">w14: <input type="number" id="input_3dcontrolpoints_x14" onchange="draw();" step="0.1" min="-5" max="5" value="2" style="width:60px;"><input type="number" id="input_3dcontrolpoints_y14" onchange="draw();" step="0.1" min="-2" max="2" value="2" style="width:60px;"><input type="number" id="input_3dcontrolpoints_z14" onchange="draw();" step="0.1" min="-2" max="2" value="0" style="width:60px;"></span>
+        <span id="label_3dcontrolpoints15">w15: <input type="number" id="input_3dcontrolpoints_x15" onchange="draw();" step="0.1" min="-5" max="5" value="3" style="width:60px;"><input type="number" id="input_3dcontrolpoints_y15" onchange="draw();" step="0.1" min="-2" max="2" value="1" style="width:60px;"><input type="number" id="input_3dcontrolpoints_z15" onchange="draw();" step="0.1" min="-2" max="2" value="1" style="width:60px;"></span>
+      </td>
+    </tr>
     <tr>
       <td>Number of Steps (min: 2):</td>
       <td colspan="2"><input type="number" id="input_numsteps" onchange="draw();" step="1" min="2" value="20"></td>
@@ -94,15 +131,21 @@
       <td>Show Sample Points:</td>
       <td colspan="2"><input type="checkbox" id="input_show_samplepoints" onchange="draw();" checked></td>
     </tr>
+    <tr>
+      <td>Return to Default: </td>
+      <td><input type="button" onclick="init(); cameraview(); draw();" value="Default Viewpoint"><input type="button" onclick="settings(); draw();" value="Default Points' Positions & Numbers"></td>
+    </tr>
     
   </table>
   <h3>Usage:</h3>
   <ul>
-    <li>Drag: Move Control Points</li>
+    <li>Drag: Move Control Points (only available in Bézier Curve)</li>
     <li>Alt+Drag: Camera Pan</li>
     <li>Alt+Shift+drag: Camera Zoom</li>
+    <li>Ctrl+drag: Camera Rotate</li>
   </ul>
-
+  
+  <input type="button" onclick="location.href='../'" value="課題一覧へ">
   <div class="glitchButton" style="position:fixed;top:20px;right:20px;"></div>
   <script src="https://button.glitch.me/button.js"></script>
 </body>
