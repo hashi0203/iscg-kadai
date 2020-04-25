@@ -406,6 +406,7 @@ function draw_3dbezier(){
           legacygl.end();
       }  
       legacygl.begin(gl.POINTS);
+      legacygl.color(0.2, 0.5, 1);
         for (var i = 0; i<  num_p; i++) {
           legacygl.vertex3(p[i]);
         } 
@@ -539,8 +540,6 @@ function draw_3dcoons(){
       legacygl.color(0,0,0);
       for (var j = 0; j <= numsteps; j++) {
           var t = i / numsteps;
-          // eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
-          // perimeter(j,p,t);
           legacygl.vertex3(peri[i][j]);
       }
       legacygl.end();
@@ -558,6 +557,7 @@ function draw_3dcoons(){
       }
       legacygl.end();
       legacygl.begin(gl.POINTS);
+      legacygl.color(0.2, 0.5, 1);
         for (var i = 0; i <  num_p; i++) {
           legacygl.vertex3(p[i]);
         } 
@@ -812,6 +812,7 @@ function init() {
     };
     // init OpenGL settings
     gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.enable(gl.DEPTH_TEST);
     gl.clearColor(1, 1, 1, 1);
 };
 
