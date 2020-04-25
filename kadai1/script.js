@@ -365,8 +365,8 @@ function eval_3dbezier(p, s, t) {
   var ans = [0,0,0];
   for (var i = 0; i < 4; i++) {
     for (var j = 0; j < 4; j++){
-      c1 = comb(4,i);
-      c2 = comb(4,j)
+      c1 = comb(3,i);
+      c2 = comb(3,j);
       tmp = (c1*s**i*(1-s)**(3-i)*(c2*t**j*(1-t)**(3-j)));
       ans = vec3.scaleAndAdd_ip(ans,p[4*i+j],tmp);
     }
@@ -399,16 +399,27 @@ function draw_3dbezier(){
     }
   
     legacygl.begin(legacygl.QUADS);
+    var step = 1/numsteps;
+    // for (var i = 0; i < numsteps; i++) {
+    //   for (var j = 0; j < numsteps; j++) {
+    //       legacygl.vertex3(eval_3dbezier(p, i*step, j*step));
+    //       legacygl.vertex3(eval_3dbezier(p, i*step, (j+1)*step));
+    //       legacygl.vertex3(eval_3dbezier(p, (i+1)*step, (j+1)*step));
+    //       legacygl.vertex3(eval_3dbezier(p, (i+1)*step, j*step));
+    //   }
+    // }
+    var points = Array((numsteps+1)**2);
+    for (var i = 0; i <= numsteps; i++) {
+        for (var j = 0; j <= numsteps; j++) {
+            p[(numsteps+1)*i+j] = eval_3dbezier(p, i*step, j*step);
+        }
+    }
     for (var i = 0; i < numsteps; i++) {
       for (var j = 0; j < numsteps; j++) {
-          legacygl.vertex3(eval_3dbezier(p, i*numsteps, j*numsteps));
-          legacygl.vertex3(eval_3dbezier(p, i*numsteps, (j+1)*numsteps));
-          legacygl.vertex3(eval_3dbezier(p, (i+1)*numsteps, (j+1)*numsteps));
-          legacygl.vertex3(eval_3dbezier(p, (i+1)*numsteps, j*numsteps));
-          // legacygl.vertex3(p[4*i+j]);
-          // legacygl.vertex3(p[4*i+j+1]);
-          // legacygl.vertex3(p[4*(i+1)+j+1]);
-          // legacygl.vertex3(p[4*(i+1)+j]);
+          legacygl.vertex3(eval_3dbezier(p, i*step, j*step));
+          legacygl.vertex3(eval_3dbezier(p, i*step, (j+1)*step));
+          legacygl.vertex3(eval_3dbezier(p, (i+1)*step, (j+1)*step));
+          legacygl.vertex3(eval_3dbezier(p, (i+1)*step, j*step));
       }
     }
     // legacygl.vertex3(p[0]);
