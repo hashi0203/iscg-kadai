@@ -529,20 +529,14 @@ function draw_3dcoons(){
           legacygl.vertex3(peri[i][j]);
       }
       legacygl.end();
-      // draw sample points
-      // if (document.getElementById("input_show_samplepoints").checked) {
-      //     legacygl.begin(gl.POINTS);
-      //     for (var i = 0; i <= numsteps; ++i) {
-      //         var t = i / numsteps;
-      //         perimeter(j,p,t);
-      //         // eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
-      //     }
-      //     legacygl.end();
-      // }
     }
+  
     if (document.getElementById("input_show_controlpoints").checked) {
       legacygl.begin(gl.LINE_STRIP);
       for (var i = 0; i <= num_p; i++) {
+          if (i < num_p/4)
+          legacygl.color(0.7, 0, 0.4);
+        
           legacygl.color(0.2, 0.5, 0.8);
           legacygl.vertex3(p[i%12]);
       }
@@ -565,14 +559,12 @@ function draw_3dcoons(){
       for (var j = 0; j <= numsteps; j++) {
         s = i*step;
         t = j*step;
-        lc = vec3.scaleAndAdd_ip(vec3.scale([],peri[0][i](1-t)),peri[2][i],t);
-        ld = vec3.scaleAndAdd_ip(vec3.scale([],peri[3][j](1-s)),peri[1][j],s);
+        lc = vec3.scaleAndAdd_ip(vec3.scale([],peri[0][i],(1-t)),peri[2][i],t);
+        ld = vec3.scaleAndAdd_ip(vec3.scale([],peri[3][j],(1-s)),peri[1][j],s);
         b = vec3.scaleAndAdd_ip(vec3.scale([],peri[0][0],(1-s)*(1-t)),vec3.scaleAndAdd_ip(vec3.scale([],peri[0][numsteps],s*(1-t)), vec3.scaleAndAdd_ip(vec3.scale([],peri[2][0],(1-s)*t),peri[2][numsteps],s*t),1),1);
-        points[(numsteps+1)*i+j] = vec3.scaleAndAdd_ip(vec3.scale([],lc,1), vec2.scaleld-b;
-          // points[(numsteps+1)*i+j] = eval_3dbezier(p, i*step, j*step);
+        points[(numsteps+1)*i+j] = vec3.scaleAndAdd_ip(vec3.scale([],lc,1), vec3.scaleAndAdd_ip(vec3.scale([],ld,1),b,-1),1);
       }
     }
-    console.log(peri);
   
     legacygl.begin(legacygl.QUADS);
     legacygl.color(0.6, 0, 0.8);
@@ -586,9 +578,16 @@ function draw_3dcoons(){
     }
     legacygl.end();
   
-  
-  
-    
+    if (document.getElementById("input_show_samplepoints").checked) {
+        legacygl.begin(gl.POINTS);
+        legacygl.color(0.4, 0.4, 0.5);
+        for (var i = 0; i <= numsteps; i++) {
+            for (var j = 0; j <= numsteps; j++) {
+              legacygl.vertex3(points[(numsteps+1)*i+j]);
+            }
+        } 
+        legacygl.end();
+    }
 }
 
 function draw() {
