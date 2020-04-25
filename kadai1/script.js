@@ -65,6 +65,12 @@ function eval_quadratic_bezier(p, t, num_p, flag, w) {
     legacygl.vertex3(eval_quadratic_bezier_normal(p, t, num_p, w));
   } else if (flag == 1) {
     legacygl.vertex3(eval_quadratic_bezier_casteljau(p, t, num_p));
+  } else if (flag == 2) {
+    var tmp = eval_quadratic_bezier_normal(p, t, num_p, w);
+    legacygl.vertex3([tmp[0],tmp[1],0.01]);
+  } else if (flag == 3) {
+    var tmp = eval_quadratic_bezier_casteljau(p, t, num_p)
+    legacygl.vertex3([tmp[0],tmp[1],0.01]);
   }
 };
 
@@ -105,6 +111,15 @@ function draw_bezier() {
       if (i2 != num_p-1) {
         w[i2+1] = Number(document.getElementById("input_rational"+(num_p-i-1)).value);
       }
+    }
+  
+    for (var i = 0; i < num_p; i++) {
+      document.getElementById("label_controlpoints"+i).style.display = 'inline-block';
+      document.getElementById("input_controlpoints_x"+i).value = p[i][0];
+      document.getElementById("input_controlpoints_y"+i).value = p[i][1];
+    }
+    for (var i = num_p; i < 10; i++) {
+      document.getElementById("label_controlpoints"+i).style.display = 'none';
     }
   
     if (document.getElementById("input_evalnormal").checked) {
@@ -157,17 +172,17 @@ function draw_bezier() {
         legacygl.color(0.5, 0.2, 0.2);
         legacygl.begin(gl.LINE_STRIP);
         for (var t = 0; t < divrate; t+= 1/numsteps) {
-            eval_quadratic_bezier(p, t, num_p, flag, w);
+            eval_quadratic_bezier(p, t, num_p, flag+2, w);
         }
-        eval_quadratic_bezier(p, divrate, num_p, flag, w);
+        eval_quadratic_bezier(p, divrate, num_p, flag+2, w);
         legacygl.end();
         // draw sample points
         if (document.getElementById("input_show_samplepoints").checked) {
             legacygl.begin(gl.POINTS);
             for (var t = 0; t < divrate; t+= 1/numsteps) {
-                eval_quadratic_bezier(p, t, num_p, flag, w);
+                eval_quadratic_bezier(p, t, num_p, flag+2, w);
             }
-            eval_quadratic_bezier(p, divrate, num_p, flag, w);
+            eval_quadratic_bezier(p, divrate, num_p, flag+2, w);
             legacygl.end();
         }
     } else {
@@ -226,23 +241,6 @@ function get_coefs(p, num_p, knot) {
   return ret;
 };
 
-function init_data_catmull() {
-    var num_p = Number(document.getElementById("input_c_numcontrolpoints").value);
-    if (num_p < 4) {
-      num_p = 4;
-      document.getElementById("input_c_numcontrolpoints").value = 4;
-    } else if (num_p > 10) {
-      num_p = 10;
-      document.getElementById("input_c_numcontrolpoints").value = 10;
-    } else {
-      num_p = Math.round(num_p);
-      document.getElementById("input_c_numcontrolpoints").value = num_p;
-    }
-    for (var i = 0; i < num_p; i++) {
-      p[i] = [Number(document.getElementById("input_controlpoints_x"+i).value), Number(document.getElementById("input_controlpoints_y"+i).value),0];
-    }
-}
-
 function draw_catmull() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     // projection & camera position
@@ -266,11 +264,7 @@ function draw_catmull() {
       num_p = Math.round(num_p);
       document.getElementById("input_c_numcontrolpoints").value = num_p;
     }
-    // num_p = tmp_num_p;
     var tmp_p = Array(10);
-    // for (var i = 0; i < num_p; i++) {
-    //   tmp_p[i] = [Number(document.getElementById("input_controlpoints_x"+i).value), Number(document.getElementById("input_controlpoints_y"+i).value),0];
-    // }
     for (var i = 0; i < num_p; i++) {
       tmp_p[i] = p[i];
     }
@@ -653,6 +647,18 @@ function draw() {
   }
 };
 
+function init_data_2d() {
+    var num_p ;
+    if (document.getElementById("input_bezier").checked) {
+      num_p = Number(document.getElementById("input_b_numcontrolpoints").value);
+    } else {
+      num_p = Number(document.getElementById("input_c_numcontrolpoints").value);
+    }
+    for (var i = 0; i < num_p; i++) {
+      p[i] = [Number(document.getElementById("input_controlpoints_x"+i).value), Number(document.getElementById("input_controlpoints_y"+i).value),0];
+    }
+};
+
 function settings() {
   var hide_elements = [];
   var show_elements = [];
@@ -712,8 +718,8 @@ function settings() {
     show_elements = document.getElementsByClassName("bezier");
     hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("3d")];
     document.getElementById("row_divisionrate").style.display = 'table-row';
-    document.getElementById("row_positions1").style.display = 'none';
-    document.getElementById("row_positions2").style.display = 'none';
+    document.getElementById("row_positions1").style.display = 'table-row';
+    document.getElementById("row_positions2").style.display = 'table-row';
   }
   for (var i = 0; i < hide_elements.length; i++) {
     for (var j = 0; j < hide_elements[i].length; j++) {
