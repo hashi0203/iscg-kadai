@@ -227,9 +227,10 @@ function get_coefs(p, num_p, knot) {
 };
 
 function init_data_catmull() {
-    if (num_p < 3) {
-      num_p = 3;
-      document.getElementById("input_c_numcontrolpoints").value = 3;
+    var num_p = Number(document.getElementById("input_c_numcontrolpoints").value);
+    if (num_p < 4) {
+      num_p = 4;
+      document.getElementById("input_c_numcontrolpoints").value = 4;
     } else if (num_p > 10) {
       num_p = 10;
       document.getElementById("input_c_numcontrolpoints").value = 10;
@@ -255,9 +256,9 @@ function draw_catmull() {
     drawutil.xygrid(100);
   
     var num_p = Number(document.getElementById("input_c_numcontrolpoints").value);
-    if (num_p < 3) {
-      num_p = 3;
-      document.getElementById("input_c_numcontrolpoints").value = 3;
+    if (num_p < 4) {
+      num_p = 4;
+      document.getElementById("input_c_numcontrolpoints").value = 4;
     } else if (num_p > 10) {
       num_p = 10;
       document.getElementById("input_c_numcontrolpoints").value = 10;
