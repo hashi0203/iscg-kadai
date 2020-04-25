@@ -415,6 +415,17 @@ function draw_3dbezier(){
       }
     }
     legacygl.end();
+  
+    legacygl.begin(gl.LINE_STRIP);
+    legacygl.color(0.6, 0.8, 0.8);
+    for (var i = 0; i <= numsteps; i++) {
+      legacygl.vertex3(points[i]);
+    }
+    for (var i = 0; i <= numsteps; i++) {
+      legacygl.vertex3(points[(numsteps+1)*(i+1)]);
+    }
+    legacygl.end();
+  
     if (document.getElementById("input_show_controlpoints").checked) {
       for (var i = 0; i <  4; i++) {
           legacygl.begin(gl.LINE_STRIP);
