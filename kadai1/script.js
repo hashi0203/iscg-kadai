@@ -358,6 +358,22 @@ function draw_catmull() {
     }
 };
 
+function eval_3dbezier(p, s, t) {
+  var c1;
+  var c2;
+  var tmp;
+  var ans = [0,0,0];
+  for (var i = 0; i < 4; i++) {
+    for (var j = 0; j < 4; j++){
+      c1 = comb(4,i);
+      c2 = comb(4,j)
+      tmp = (c1*s**i*(1-s)**(3-i)*(c2*t**j*(1-t)**(3-j));
+      ans = vec3.scaleAndAdd_ip(ans,p[4*i+j],tmp);
+    }
+  }
+  return ans;
+};
+
 function draw_3dbezier(){
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     // projection & camera position
