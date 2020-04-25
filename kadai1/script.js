@@ -510,7 +510,7 @@ function draw_3dcoons(){
     
     var step = 1/numsteps;
     var peri = Array(4);
-    for (var i = 0; i <= numsteps; i++) {
+    for (var i = 0; i < 4; i++) {
         peri[i] = Array(numsteps+1);
     }
     for (var i = 0; i < 4; i++) {
@@ -565,13 +565,14 @@ function draw_3dcoons(){
       for (var j = 0; j <= numsteps; j++) {
         s = i*step;
         t = j*step;
-        lc = (1-t)*peri[0][i]+t*peri[2][i];
-        ld = (1-s)*peri[3][j]+s*peri[1][j];
-        b = peri[0][0]*(1-s)*(1-t)+peri[0][numsteps]*s*(1-t)+peri[2][0]*(1-s)*t+peri[2][numsteps]*s*t;
-        points[(numsteps+1)*i+j] = lc+ld-b;
+        lc = vec3.scaleAndAdd_ip(vec3.scale([],peri[0][i](1-t)),peri[2][i],t);
+        ld = vec3.scaleAndAdd_ip(vec3.scale([],peri[3][j](1-s)),peri[1][j],s);
+        b = vec3.scaleAndAdd_ip(vec3.scale([],peri[0][0],(1-s)*(1-t)),vec3.scaleAndAdd_ip(vec3.scale([],peri[0][numsteps],s*(1-t)), vec3.scaleAndAdd_ip(vec3.scale([],peri[2][0],(1-s)*t),peri[2][numsteps],s*t),1),1);
+        points[(numsteps+1)*i+j] = vec3.scaleAndAdd_ip(vec3.scale([],lc,1), vec2.scaleld-b;
           // points[(numsteps+1)*i+j] = eval_3dbezier(p, i*step, j*step);
       }
     }
+    console.log(peri);
   
     legacygl.begin(legacygl.QUADS);
     legacygl.color(0.6, 0, 0.8);
