@@ -241,6 +241,40 @@ function get_coefs(p, num_p, knot) {
   return ret;
 };
 
+function just_draw_catmull(p,num_p,knot) {
+  // draw line segments composing curve
+    var numsteps = Number(document.getElementById("input_numsteps").value);
+    if (numsteps < 2) {
+      numsteps = 2;
+      document.getElementById("input_numsteps").value = 2;
+    } else {
+      numsteps = Math.round(numsteps);
+      document.getElementById("input_numsteps").value = numsteps;
+    }
+  
+    var coefs = get_coefs(p, num_p, knot);
+    var each_numsteps = Math.ceil(numsteps/(num_p-3));
+    legacygl.begin(gl.LINE_STRIP);
+    for (var j = 0; j < num_p - 3; j++) {
+        for (var i = 0; i <= each_numsteps; ++i) {
+          var t = (knot[j][2]-knot[j][1]) * i / each_numsteps + knot[j][1];
+          legacygl.vertex3(vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][0],t**3), vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][1],t**2),vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][2],t),coefs[j][3],1),1),1));
+        }
+    }  
+    legacygl.end();
+    // draw sample points
+    if (document.getElementById("input_show_samplepoints").checked) {
+        legacygl.begin(gl.POINTS);
+        for (var j = 0; j < num_p - 3; j++) {
+            for (var i = 0; i <= each_numsteps; ++i) {
+              var t = (knot[j][2]-knot[j][1]) * i / each_numsteps + knot[j][1];
+              legacygl.vertex3(vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][0],t**3), vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][1],t**2),vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][2],t),coefs[j][3],1),1),1));
+            }
+        } 
+        legacygl.end();
+    }
+}
+
 function draw_catmull() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     // projection & camera position
@@ -305,7 +339,9 @@ function draw_catmull() {
         knot[i] = tmp;
       }
       legacygl.color(1, 0.6, 0.7);
-    }else if (document.getElementById("input_evalchordal").checked) {
+      just_draw_catmull(p,num_p,knot);
+    }
+    if (document.getElementById("input_evalchordal").checked) {
       for (var i = 0; i < num_p-3; i++) {
         for (var j = 1; j < 4; j++) {
            tmp[j] = tmp[j-1]+Math.abs(p[j-1][0]-p[j][0]); 
@@ -313,7 +349,9 @@ function draw_catmull() {
         knot[i] = tmp;
       }
       legacygl.color(0.1, 0.8, 0.5);
-    }else if (document.getElementById("input_evalcentripetal").checked) {
+      just_draw_catmull(p,num_p,knot);
+    }
+    if (document.getElementById("input_evalcentripetal").checked) {
       for (var i = 0; i < num_p-3; i++) {
         for (var j = 1; j < 4; j++) {
            tmp[j] = tmp[j-1]+Math.sqrt(Math.abs(p[j-1][0]-p[j][0])); 
@@ -321,38 +359,7 @@ function draw_catmull() {
         knot[i] = tmp;
       }
       legacygl.color(0.5, 0.2, 1);
-    }
-    
-    // draw line segments composing curve
-    var numsteps = Number(document.getElementById("input_numsteps").value);
-    if (numsteps < 2) {
-      numsteps = 2;
-      document.getElementById("input_numsteps").value = 2;
-    } else {
-      numsteps = Math.round(numsteps);
-      document.getElementById("input_numsteps").value = numsteps;
-    }
-  
-    var coefs = get_coefs(p, num_p, knot);
-    each_numsteps = Math.ceil(numsteps/(num_p-3));
-    legacygl.begin(gl.LINE_STRIP);
-    for (var j = 0; j < num_p - 3; j++) {
-        for (var i = 0; i <= each_numsteps; ++i) {
-          var t = (knot[j][2]-knot[j][1]) * i / each_numsteps + knot[j][1];
-          legacygl.vertex3(vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][0],t**3), vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][1],t**2),vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][2],t),coefs[j][3],1),1),1));
-        }
-    }  
-    legacygl.end();
-    // draw sample points
-    if (document.getElementById("input_show_samplepoints").checked) {
-        legacygl.begin(gl.POINTS);
-        for (var j = 0; j < num_p - 3; j++) {
-            for (var i = 0; i <= each_numsteps; ++i) {
-              var t = (knot[j][2]-knot[j][1]) * i / each_numsteps + knot[j][1];
-              legacygl.vertex3(vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][0],t**3), vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][1],t**2),vec3.scaleAndAdd_ip(vec3.scale([],coefs[j][2],t),coefs[j][3],1),1),1));
-            }
-        } 
-        legacygl.end();
+      just_draw_catmull(p,num_p,knot);
     }
   
     // draw control points
