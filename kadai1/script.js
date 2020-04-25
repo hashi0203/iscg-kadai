@@ -474,13 +474,13 @@ function perimeter(l,p,t) {
     tmp[i] = 1;
   }
   if (l == 0){ // c0
-    return eval_quadratic_bezier([p[0],p[3],p[1],p[2]], t, 4, 0, tmp);
+    return eval_quadratic_bezier_normal([p[0],p[3],p[1],p[2]], t, 4, tmp);
   } else if (l == 1){ // d1
-    return eval_quadratic_bezier([p[3],p[6],p[4],p[5]], t, 4, 0, tmp);
+    return eval_quadratic_bezier_normal([p[3],p[6],p[4],p[5]], t, 4, tmp);
   } else if (l == 2){ // c1
-    return eval_quadratic_bezier([p[9],p[6],p[8],p[7]], t, 4, 0, tmp);
+    return eval_quadratic_bezier_normal([p[9],p[6],p[8],p[7]], t, 4, tmp);
   } else if (l == 3){ // d0
-    return eval_quadratic_bezier([p[0],p[9],p[11],p[10]], t, 4, 0, tmp);
+    return eval_quadratic_bezier_normal([p[0],p[9],p[11],p[10]], t, 4, tmp);
   }
 };
 
@@ -507,14 +507,27 @@ function draw_3dcoons(){
       numsteps = Math.round(numsteps);
       document.getElementById("input_numsteps").value = numsteps;
     }
+    
+    var step = 1/numsteps;
+    var peri = Array(4);
+    for (var i = 0; i <= numsteps; i++) {
+        peri[i] = Array(numsteps+1);
+    }
+    for (var i = 0; i < 4; i++) {
+      for (var j = 0; j <= numsteps; j++) {
+          var t = j / numsteps;
+          peri[i][j] = perimeter(i,p,t);
+      }
+    }
   
-    for (var j = 0; j < 4; j++) {
+    for (var i = 0; i < 4; i++) {
       legacygl.begin(gl.LINE_STRIP);
       legacygl.color(0,0,0);
-      for (var i = 0; i <= numsteps; ++i) {
+      for (var j = 0; j <= numsteps; j++) {
           var t = i / numsteps;
           // eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
-          perimeter(j,p,t);
+          // perimeter(j,p,t);
+          legacygl.vertex3(peri[i][j]);
       }
       legacygl.end();
       // draw sample points
@@ -543,11 +556,10 @@ function draw_3dcoons(){
     }
   
     
-    var step = 1/numsteps;
     var points = Array((numsteps+1)**2);
     for (var i = 0; i <= numsteps; i++) {
       for (var j = 0; j <= numsteps; j++) {
-        points[(numsteps+1)*i+j] = perimeter
+        points[(numsteps+1)*i+j] = peri[0][i]
           points[(numsteps+1)*i+j] = eval_3dbezier(p, i*step, j*step);
       }
     }
