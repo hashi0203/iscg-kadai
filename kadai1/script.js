@@ -226,6 +226,22 @@ function get_coefs(p, num_p, knot) {
   return ret;
 };
 
+function init_data_catmull() {
+    if (num_p < 3) {
+      num_p = 3;
+      document.getElementById("input_c_numcontrolpoints").value = 3;
+    } else if (num_p > 10) {
+      num_p = 10;
+      document.getElementById("input_c_numcontrolpoints").value = 10;
+    } else {
+      num_p = Math.round(num_p);
+      document.getElementById("input_c_numcontrolpoints").value = num_p;
+    }
+    for (var i = 0; i < num_p; i++) {
+      p[i] = [Number(document.getElementById("input_controlpoints_x"+i).value), Number(document.getElementById("input_controlpoints_y"+i).value),0];
+    }
+}
+
 function draw_catmull() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     // projection & camera position
@@ -251,8 +267,11 @@ function draw_catmull() {
     }
     // num_p = tmp_num_p;
     var tmp_p = Array(10);
+    // for (var i = 0; i < num_p; i++) {
+    //   tmp_p[i] = [Number(document.getElementById("input_controlpoints_x"+i).value), Number(document.getElementById("input_controlpoints_y"+i).value),0];
+    // }
     for (var i = 0; i < num_p; i++) {
-      tmp_p[i] = [Number(document.getElementById("input_controlpoints_x"+i).value), Number(document.getElementById("input_controlpoints_y"+i).value),0];
+      tmp_p[i] = p[i];
     }
     tmp_p.sort((a, b) => a[0] - b[0]);
     for (var i = 0; i < num_p; i++){
