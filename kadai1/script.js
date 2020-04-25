@@ -534,10 +534,11 @@ function draw_3dcoons(){
     if (document.getElementById("input_show_controlpoints").checked) {
       legacygl.begin(gl.LINE_STRIP);
       for (var i = 0; i <= num_p; i++) {
-          if (i < num_p/4)
-          legacygl.color(0.7, 0, 0.4);
-        
-          legacygl.color(0.2, 0.5, 0.8);
+          if (i <= num_p/4 || (i > num_p/2 && i <= 3*num_p/4)) {
+            legacygl.color(0.2, 0.5, 0.8)
+          }else{
+            legacygl.color(0.7, 0, 0.4);
+          }
           legacygl.vertex3(p[i%12]);
       }
       legacygl.end();
