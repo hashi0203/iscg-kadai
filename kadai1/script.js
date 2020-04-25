@@ -454,7 +454,7 @@ function draw() {
   // canvas = document.getElementById("canvas");
   // camera = get_camera(canvas.width);
   if (document.getElementById("input_bezier").checked) {
-    // camera.eye = [0, 0, 7];
+    // camera.eye[3] = 7;
     draw_bezier();
     show_elements = document.getElementsByClassName("bezier");
     hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("3d")];
@@ -462,7 +462,7 @@ function draw() {
     document.getElementById("row_positions1").style.display = 'none';
     document.getElementById("row_positions2").style.display = 'none';
   } else if (document.getElementById("input_catmull").checked) {
-    camera.eye = [0, 0, 7];
+    // camera.eye = [0, 0, 7];
     draw_catmull();
     hide_elements = [document.getElementsByClassName("bezier"), document.getElementsByClassName("3d")];
     show_elements = document.getElementsByClassName("catmull");
@@ -471,7 +471,7 @@ function draw() {
     document.getElementById("row_rational").style.display = 'none';
     document.getElementById("row_divisionrate").style.display = 'none';
   } else if (document.getElementById("input_3dbezier").checked) {
-    camera.eye = [8, 8, 10];
+    // camera.eye = [8, 8, 10];
     draw_3dbezier();
     // show_elements = document.getElementsByClassName("bezier");
     hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("2d")];
@@ -483,7 +483,7 @@ function draw() {
     document.getElementById("row_3dpositions3").style.display = 'table-row';
     document.getElementById("row_3dpositions4").style.display = 'table-row';
   } else if (document.getElementById("input_3dcoons").checked) {
-    camera.eye = [8, 8, 10];
+    // camera.eye = [8, 8, 10];
     // draw_3dcoons();
     // show_elements = document.getElementsByClassName("bezier");
     hide_elements = [document.getElementsByClassName("catmull"), document.getElementsByClassName("2d")];
@@ -506,6 +506,18 @@ function draw() {
     show_elements[i].style.display = 'table-row';
   }
 };
+
+function cameraview() {
+  if (document.getElementById("input_bezier").checked) {
+    camera.eye = [0, 0, 7];
+  } else if (document.getElementById("input_catmull").checked) {
+    camera.eye = [0, 0, 7];
+  } else if (document.getElementById("input_3dbezier").checked) {
+    camera.eye = [8, 8, 10];
+  } else if (document.getElementById("input_3dcoons").checked) {
+    camera.eye = [8, 8, 10];
+  }
+} 
 function init() {
     // OpenGL context
     canvas = document.getElementById("canvas");
@@ -548,23 +560,23 @@ function init() {
     canvas.onmousedown = function(evt) {
         var mouse_win = this.get_mousepos(evt);
         if (evt.altKey) {
-            var diff = vec2.scale_ip(vec2.sub([], mouse_win, camera.prevpos), 1 / canvas.width);
-            console.log(diff);
-            var s = vec2.scale([], diff, vec3.len(camera.center_to_eye()));
-            var d0 = vec3.scale([], camera.right(), -s[0]);
-            var d1 = vec3.scale([], camera.up,      -s[1]);
-            var d = vec3.add([], d0, d1);
-            console.log(d);
-            console.log(camera.eye);
-            vec3.add_ip(camera.eye,    d);
-            console.log(camera.eye);
-            console.log(camera.center);
-            vec3.add_ip(camera.center, d);
-            console.log(camera.center);
-            console.log(camera.prevpos);
-            vec2.copy(camera.prevpos, mouse_win);
-            console.log(camera.prevpos);
-            // camera.start_moving(mouse_win, evt.shiftKey ? "zoom" : "pan");
+            // var diff = vec2.scale_ip(vec2.sub([], mouse_win, camera.prevpos), 1 / canvas.width);
+            // console.log(diff);
+            // var s = vec2.scale([], diff, vec3.len(camera.center_to_eye()));
+            // var d0 = vec3.scale([], camera.right(), -s[0]);
+            // var d1 = vec3.scale([], camera.up,      -s[1]);
+            // var d = vec3.add([], d0, d1);
+            // console.log(d);
+            // console.log(camera.eye);
+            // vec3.add_ip(camera.eye,    d);
+            // console.log(camera.eye);
+            // console.log(camera.center);
+            // vec3.add_ip(camera.center, d);
+            // console.log(camera.center);
+            // console.log(camera.prevpos);
+            // vec2.copy(camera.prevpos, mouse_win);
+            // console.log(camera.prevpos);
+            camera.start_moving(mouse_win, evt.shiftKey ? "zoom" : "pan");
             return;
         }
         // pick nearest object
