@@ -387,7 +387,12 @@ function draw_3dbezier(){
     //     drawutil.cube("line", 1);
     //     modelview.pop();
     // }
-    legacygl.begin(gl.) 
+    legacygl.begin(gl.QUADS);
+    legacygl.vertex3(p[0]);
+    legacygl.vertex3(p[1]);
+    legacygl.vertex3(p[4]);
+    legacygl.vertex3(p[5]);
+    legacygl.end();
     if (document.getElementById("input_show_controlpoints").checked) {
       for (var i = 0; i <  4; i++) {
           legacygl.color(0.2, 0.5, 0.8);
