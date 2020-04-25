@@ -80,22 +80,34 @@ function draw_bezier() {
     legacygl.color(0.5, 0.5, 0.5);
     drawutil.xygrid(100);
   
-    var tmp_num_p = Number(document.getElementById("input_b_numcontrolpoints").value);
-    if (tmp_num_p < 3) {
-      tmp_num_p = 3;
+    // var tmp_num_p = Number(document.getElementById("input_b_numcontrolpoints").value);
+    // if (tmp_num_p < 3) {
+    //   tmp_num_p = 3;
+    //   document.getElementById("input_b_numcontrolpoints").value = 3;
+    // } else if (tmp_num_p > 10) {
+    //   tmp_num_p = 10;
+    //   document.getElementById("input_b_numcontrolpoints").value = 10;
+    // } else {
+    //   tmp_num_p = Math.round(tmp_num_p);
+    //   document.getElementById("input_b_numcontrolpoints").value = tmp_num_p;
+    // }
+    // while (num_p < tmp_num_p) {
+    //   p[num_p] = [1.2+0.1*(num_p-2),0.5+(-1)**(num_p-1)*(0.8-0.1*(num_p-2)),0];
+    //   num_p++;
+    // }
+    // num_p = tmp_num_p;
+  
+    var num_p = Number(document.getElementById("input_b_numcontrolpoints").value);
+    if (num_p < 3) {
+      num_p = 3;
       document.getElementById("input_b_numcontrolpoints").value = 3;
-    } else if (tmp_num_p > 10) {
-      tmp_num_p = 10;
+    } else if (num_p > 10) {
+      num_p = 10;
       document.getElementById("input_b_numcontrolpoints").value = 10;
     } else {
-      tmp_num_p = Math.round(tmp_num_p);
-      document.getElementById("input_b_numcontrolpoints").value = tmp_num_p;
+      num_p = Math.round(num_p);
+      document.getElementById("input_b_numcontrolpoints").value = num_p;
     }
-    while (num_p < tmp_num_p) {
-      p[num_p] = [1.2+0.1*(num_p-2),0.5+(-1)**(num_p-1)*(0.8-0.1*(num_p-2)),0];
-      num_p++;
-    }
-    num_p = tmp_num_p;
     
     for (var i = 0; i < num_p; i++) {
       document.getElementById("label_rational"+i).style.display = 'inline-block';
@@ -243,22 +255,24 @@ function draw_catmull() {
     legacygl.color(0.5, 0.5, 0.5);
     drawutil.xygrid(100);
   
-    var tmp_num_p = Number(document.getElementById("input_c_numcontrolpoints").value);
-    if (tmp_num_p < 3) {
-      tmp_num_p = 3;
+    var num_p = Number(document.getElementById("input_c_numcontrolpoints").value);
+    if (num_p < 3) {
+      num_p = 3;
       document.getElementById("input_c_numcontrolpoints").value = 3;
-    } else if (tmp_num_p > 10) {
-      tmp_num_p = 10;
+    } else if (num_p > 10) {
+      num_p = 10;
       document.getElementById("input_c_numcontrolpoints").value = 10;
     } else {
-      tmp_num_p = Math.round(tmp_num_p);
-      document.getElementById("input_c_numcontrolpoints").value = tmp_num_p;
+      num_p = Math.round(num_p);
+      document.getElementById("input_c_numcontrolpoints").value = num_p;
     }
-    num_p = tmp_num_p;
+    // num_p = tmp_num_p;
+    var tmp_p = Array(10);
     for (var i = 0; i < num_p; i++) {
-      p[i] = [Number(document.getElementById("input_controlpoints_x"+i).value), Number(document.getElementById("input_controlpoints_y"+i).value),0];
+      tmp_p[i] = [Number(document.getElementById("input_controlpoints_x"+i).value), Number(document.getElementById("input_controlpoints_y"+i).value),0];
     }
-    p.sort((a, b) => a[0] - b[0]);
+    tmp_p.sort((a, b) => a[0] - b[0]);
+    for (var i = 0; i < num_p
     for (var i = 0; i < num_p-1; i++) {
       if (p[i][0] == p[i+1][0]) {
         p[i+1][0] += 0.1;
@@ -595,7 +609,8 @@ function settings() {
   } else if (document.getElementById("input_catmull").checked) {
     p = [[-1, 0.8, 0], [1, 1.1, 0], [0.6, 0.5, 0], [1.7, -1.5, 0], [-0.2, 0.5, 0], [-1.9, 0.8, 0], [0.9, 1.1, 0], [0.2, 1, 0], [-1.5, -0.9, 0], [1.4, 0.3, 0]];
     for (var i = 0; i < 10; i++) {
-      document.getElementById("input_controlpoints_x"+i).value = p[]
+      document.getElementById("input_controlpoints_x"+i).value = p[i][0];
+      document.getElementById("input_controlpoints_y"+i).value = p[i][1];
     }
     hide_elements = [document.getElementsByClassName("bezier"), document.getElementsByClassName("3d")];
     show_elements = document.getElementsByClassName("catmull");
@@ -684,8 +699,11 @@ function init() {
     camera = get_camera(canvas.width);
     camera.eye = [0, 0, 7];
     p[0] = [-1.3, -0.9, 0];
-    p[2] = [1.2, -0.3, 0];
     p[1] = [-0.4, 1.3, 0];
+    p[2] = [1.2, -0.3, 0];
+    for (var i = 3; i < 10; i++) {
+      p[i] = [1.2+0.1*(i-2),0.5+(-1)**(i-1)*(0.8-0.1*(i-2)),0];
+    }
     // event handlers
     canvas.onmousedown = function(evt) {
         var mouse_win = this.get_mousepos(evt);
