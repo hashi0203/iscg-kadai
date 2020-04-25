@@ -456,6 +456,16 @@ function draw_3dbezier(){
       }
     }
     legacygl.end();
+    if (document.getElementById("input_show_samplepoints").checked) {
+        legacygl.begin(gl.POINTS);
+        legacygl.color(0.4, 0.4, 0.5);
+        for (var i = 0; i <= numsteps; i++) {
+            for (var j = 0; j <= numsteps; j++) {
+              legacygl.vertex3(points[(numsteps+1)*i+j]);
+            }
+        } 
+        legacygl.end();
+    }
 };
 
 function perimeter(l,p,t) {
@@ -498,10 +508,53 @@ function draw_3dcoons(){
       document.getElementById("input_numsteps").value = numsteps;
     }
   
-    legacygl.begin(legacygl.QUADS);
-    legacygl.color(0.6, 0, 0.8);
+    for (var j = 0; j < 4; j++) {
+      legacygl.begin(gl.LINE_STRIP);
+      legacygl.color(0,0,0);
+      for (var i = 0; i <= numsteps; ++i) {
+          var t = i / numsteps;
+          // eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
+          perimeter(j,p,t);
+      }
+      legacygl.end();
+      // draw sample points
+      // if (document.getElementById("input_show_samplepoints").checked) {
+      //     legacygl.begin(gl.POINTS);
+      //     for (var i = 0; i <= numsteps; ++i) {
+      //         var t = i / numsteps;
+      //         perimeter(j,p,t);
+      //         // eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
+      //     }
+      //     legacygl.end();
+      // }
+    }
+    if (document.getElementById("input_show_controlpoints").checked) {
+      legacygl.begin(gl.LINE_STRIP);
+      for (var i = 0; i <= num_p; i++) {
+          legacygl.color(0.2, 0.5, 0.8);
+          legacygl.vertex3(p[i%12]);
+      }
+      legacygl.end();
+      legacygl.begin(gl.POINTS);
+        for (var i = 0; i <  num_p; i++) {
+          legacygl.vertex3(p[i]);
+        } 
+      legacygl.end();
+    }
+  
+    
     var step = 1/numsteps;
     var points = Array((numsteps+1)**2);
+    for (var i = 0; i <= numsteps; i++) {
+      for (var j = 0; j <= numsteps; j++) {
+        points[(numsteps+1)*i+j] = perimeter
+          points[(numsteps+1)*i+j] = eval_3dbezier(p, i*step, j*step);
+      }
+    }
+  
+    legacygl.begin(legacygl.QUADS);
+    legacygl.color(0.6, 0, 0.8);
+    
   
     // var tmp = Array(10);
     // for (var i = 0; i < 10; i++) {
@@ -528,38 +581,7 @@ function draw_3dcoons(){
   
   
   
-    for (var j = 0; j < 4; j++) {
-      legacygl.begin(gl.LINE_STRIP);
-      for (var i = 0; i <= numsteps; ++i) {
-          var t = i / numsteps;
-          // eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
-          perimeter(j,p,t);
-      }
-      legacygl.end();
-      // draw sample points
-      if (document.getElementById("input_show_samplepoints").checked) {
-          legacygl.begin(gl.POINTS);
-          for (var i = 0; i <= numsteps; ++i) {
-              var t = i / numsteps;
-              perimeter(j,p,t);
-              // eval_quadratic_bezier([p[3*j],p[(3*j+3)%12],p[3*j+1],p[3*j+2]], t, 4, 0, tmp);
-          }
-          legacygl.end();
-      }
-    }
-    if (document.getElementById("input_show_controlpoints").checked) {
-      legacygl.begin(gl.LINE_STRIP);
-      for (var i = 0; i <= num_p; i++) {
-          legacygl.color(0.2, 0.5, 0.8);
-          legacygl.vertex3(p[i%12]);
-      }
-      legacygl.end();
-      legacygl.begin(gl.POINTS);
-        for (var i = 0; i <  num_p; i++) {
-          legacygl.vertex3(p[i]);
-        } 
-      legacygl.end();
-    }
+    
 }
 
 function draw() {
