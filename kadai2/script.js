@@ -193,7 +193,6 @@ function subdivide(flag) {
     } else if (flag == 'catmull') {
         mesh_subdiv.faces.forEach(function(f){
             f.subdiv_point = vec3.scale([],f.vertices().reduce((a,b) => vec3.add([],a,b.point), [0,0,0]), 1 / f.vertices().length);
-            console.log(f.subdiv_point);
             legacygl.begin(gl.POINTS);
             legacygl.vertex3(f.subdiv_point);
             legacygl.end();
@@ -203,7 +202,6 @@ function subdivide(flag) {
             var gmid = vec3.scale([], e.halfedges().reduce((a,b) => vec3.add([],a,b.face.subdiv_point), [0,0,0]), 1 / 2);
             var mid = vec3.scale([], e.vertices().reduce((a,b) => vec3.add([],a,b.point), [0,0,0]), 1 / 2);
             e.subdiv_point = vec3.scale([], vec3.add([],gmid,mid), 1 / 2);
-            console.log(e.subdiv_point);
             legacygl.begin(gl.POINTS);
             legacygl.vertex3(e.subdiv_point);
             legacygl.end();
@@ -214,6 +212,10 @@ function subdivide(flag) {
             var gmid = vec3.scale([], v.faces().reduce((a,b) => vec3.add([],a,b.subdiv_point), [0,0,0]), 1 / n**2);
             var mid = vec3.scale([], v.edges().reduce((a,b) => vec3.add([],a,b.subdiv_point), [0,0,0]), 2 / n**2);
             v.subdiv_point = vec3.scaleAndAdd_ip(vec3.add([], gmid, mid), v.point, (n-3) / n**2);
+            console.log(v.faces());
+            console.log(gmid);
+            console.log(v.edges());
+            console.log(mid);
             console.log(v.subdiv_point);
             legacygl.begin(gl.POINTS);
             legacygl.vertex3(v.subdiv_point);
