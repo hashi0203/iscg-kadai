@@ -153,20 +153,31 @@ function subdivide() {
     
     var offsets = [0];
     mesh_subdiv.faces.forEach(function(f){
-        offsets.push(offsets[f.id-1]+f.subdiv_points.length);
+        offsets.push(offsets[f.id] + f.subdiv_points.length);
     });
     mesh_subdiv.faces.forEach(function(f){
-        f.halfedges().forEach(function(h){
-            var fv_indices = [h.from_vertex().id];
-            fv_indices.push(offset + h.edge.id);
-            fv_indices.push(offset + h.prev.edge.id);
-            mesh_subdiv_next.add_face(fv_indices);
-        });
         var fv_indices = [];
-        f.edges().forEach(function(e){
-            fv_indices.push(offset + e.id);
-        });
+        for (var i = 0; i < f.subdiv_points.length; i++) {
+          fv_indices.push(offsets[f.id]+i);
+        }
         mesh_subdiv_next.add_face(fv_indices);
+      
+        for (var i = 0; i < f.subdiv_points.length; i++) {
+          var fv_indices = [f[i]];
+          fv_in
+        }
+        
+        // f.halfedges().forEach(function(h){
+        //     var fv_indices = [h.from_vertex().id];
+        //     fv_indices.push(offset + h.edge.id);
+        //     fv_indices.push(offset + h.prev.edge.id);
+        //     mesh_subdiv_next.add_face(fv_indices);
+        // });
+        // var fv_indices = [];
+        // f.edges().forEach(function(e){
+        //     fv_indices.push(offset + e.id);
+        // });
+        // mesh_subdiv_next.add_face(fv_indices);
     });
     var idx = 0;
     mesh_subdiv.faces.forEach(function(f){
