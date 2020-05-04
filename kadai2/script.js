@@ -202,7 +202,15 @@ function subdivide(flag) {
     document.getElementById("label_mesh_nv").innerHTML = mesh_subdiv.num_vertices();
     document.getElementById("label_mesh_nf").innerHTML = mesh_subdiv.num_faces();
     document.getElementById("label_mesh_ne").innerHTML = mesh_subdiv.num_edges();
-}
+};
+function change_mesh() {
+    if (document.getElementById("default1").checked) {
+        init(1);
+    } else if (document.getElementById("default2").checked) {
+        init(2);
+    }
+    draw();
+};
 function write_mesh() {
     var filename = "mesh_subdiv.obj";
     var content = meshio.write(mesh_subdiv, filename);
@@ -212,7 +220,7 @@ function write_mesh() {
     a.download = filename;
     a.click();
 }
-function init(f) {
+function init(flag) {
     // OpenGL context
     canvas = document.getElementById("canvas");
     gl = canvas.getContext("experimental-webgl");
@@ -341,8 +349,12 @@ function init(f) {
         };
         xhr.send();
     };
+    if (flag == 1) {
+        read_default_mesh("https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fmesh_cube.obj?v=1588592855302");
+    } else if (flag == 2) {
+        read_default_mesh("https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fmesh_subdiv.obj?v=1588592862069");
+    }
     // read_default_mesh("https://cdn.glitch.com/e530aeed-ec07-4e9a-b2b2-e5dd9fc39322%2Floop-test.obj?1556153350921");
-    read_default_mesh("https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fmesh_cube.obj?v=1588592855302");
     // texture
     function read_texture(dataurl) {
         var img = document.getElementById("img_material");
