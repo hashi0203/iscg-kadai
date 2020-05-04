@@ -110,19 +110,15 @@ function subdivide() {
   
     mesh_subdiv.faces.forEach(function(f){
         var v = f.vertices();
-        var fmid = v.reduce((a,b) => vec3.add([],a,b)) / v.length;
+        var fmid = vec3.scale([],v.reduce((a,b) => vec3.add([],a,b)), 1 / v.length);
         var vmid = [];
         for (var i = 0; i < v.length; i++) {
-          vmid.push(v[i] + v[i%v.length])
+          vmid.push(vec3.scale([], vec3.add([], v[i], v[i%v.length]), 1 / 2));
         }
-      
-        var w = [e.halfedge.next.vertex, e.halfedge.opposite.next.vertex];
-        if (e.is_boundary()) {
-            e.subdiv_point = vec3.scale([], vec3.add([], v[0].point, v[1].point), 0.5);
-        } else {
-            e.subdiv_point = vec3.add([],
-                vec3.scale([], vec3.add([], v[0].point, v[1].point), 3 / 8),
-                vec3.scale([], vec3.add([], w[0].point, w[1].point), 1 / 8))
+        for (var i = 0; i < v.length; i++) {
+           f.subdiv_point = vec3.scale([], vec3.add([],
+              vec3.add([], v[i], fmid),
+              vec3.add([], vmid[(i-1)%v.length], vmid[i])), 1 / 4);
         }
     });
   
