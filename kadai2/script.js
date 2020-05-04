@@ -151,6 +151,7 @@ function subdivide() {
     mesh_subdiv.faces.forEach(function(f){
         offsets.push(offsets[f.id] + f.subdiv_points.length);
     });
+  
     mesh_subdiv.faces.forEach(function(f){
         var offset = offsets[f.id];
         var len = f.subdiv_points.length;
@@ -159,34 +160,26 @@ function subdivide() {
           fv_indices.push(offset+i);
         }
         mesh_subdiv_next.add_face(fv_indices);
-      
-        f.halfedges().forEach(function(h){
-            var ho = h.opposite;
-            var hof = ho.face;
-            if (f.id < hof.id) {
-                var fv_indices = [offset+(h.id+len-1)%len,offset+h.id];
-                var i = hof.halfedges().indexOf(ho);
-                fv_indices.push(offset[hof.id]+(i+hof.subdiv_points.length-1)%hof.subdiv_points.length, offset[hof.id]+i);
-                mesh_subdiv_next.add_face(fv_indices);
-            }
-        });
-      
-        f.vertices().forEach(function(h){
-          
-        });
-        
-        // f.halfedges().forEach(function(h){
-        //     var fv_indices = [h.from_vertex().id];
-        //     fv_indices.push(offset + h.edge.id);
-        //     fv_indices.push(offset + h.prev.edge.id);
-        //     mesh_subdiv_next.add_face(fv_indices);
-        // });
-        // var fv_indices = [];
-        // f.edges().forEach(function(e){
-        //     fv_indices.push(offset + e.id);
-        // });
-        // mesh_subdiv_next.add_face(fv_indices);
     });
+  
+    mesh_subdiv.edges_forEach(function(e){
+        var fv_indices = [];
+        e.halfedges.forEach(function(h){
+            var hf = h.face;
+            var i = h.face.halfedges().indexOf(h);
+            fv_indices.push(offset[h.face.id]+(i+))
+        });
+        var hof = ho.face;
+        var fv_indices = [offset+(h.id+len-1)%len,offset+h.id];
+        var i = hof.halfedges().indexOf(ho);
+        fv_indices.push(offset[hof.id]+(i+hof.subdiv_points.length-1)%hof.subdiv_points.length, offset[hof.id]+i);
+        mesh_subdiv_next.add_face(fv_indices);
+    });
+
+    f.vertices().forEach(function(h){
+
+    });
+  
     var idx = 0;
     mesh_subdiv.faces.forEach(function(f){
         f.subdiv_points.forEach(function(v){
