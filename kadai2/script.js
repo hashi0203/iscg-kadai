@@ -79,19 +79,35 @@ function draw() {
     }
 };
 function subdivide() {
-    // for each edge, compute subdivided point
-    mesh_subdiv.edges_forEach(function(e){
-        var v = e.vertices();
-        var w = [e.halfedge.next.vertex, e.halfedge.opposite.next.vertex];
-        if (e.is_boundary()) {
-            e.subdiv_point = vec3.scale([], vec3.add([], v[0].point, v[1].point), 0.5);
-        } else {
-            e.subdiv_point = vec3.add([],
-                vec3.scale([], vec3.add([], v[0].point, v[1].point), 3 / 8),
-                vec3.scale([], vec3.add([], w[0].point, w[1].point), 1 / 8))
-        }
-    });
-    // for each vertex, compute displaced point
+    // // for each edge, compute subdivided point
+    // mesh_subdiv.edges_forEach(function(e){
+    //     var v = e.vertices();
+    //     var w = [e.halfedge.next.vertex, e.halfedge.opposite.next.vertex];
+    //     if (e.is_boundary()) {
+    //         e.subdiv_point = vec3.scale([], vec3.add([], v[0].point, v[1].point), 0.5);
+    //     } else {
+    //         e.subdiv_point = vec3.add([],
+    //             vec3.scale([], vec3.add([], v[0].point, v[1].point), 3 / 8),
+    //             vec3.scale([], vec3.add([], w[0].point, w[1].point), 1 / 8))
+    //     }
+    // });
+    // // for each vertex, compute displaced point
+    // mesh_subdiv.vertices.forEach(function(v){
+    //     if (v.is_boundary()) {
+    //         var w0 = v.halfedge.prev.from_vertex();
+    //         var w1 = v.halfedge.vertex;
+    //         v.subdiv_point = vec3.add([],
+    //             vec3.scale([], v.point, 3 / 4),
+    //             vec3.scale([], vec3.add([], w0.point, w1.point), 1 / 8));
+    //     } else {
+    //         var w = v.vertices();
+    //         var alpha = Math.pow(3 / 8 + 1 / 4 * Math.cos(2 * Math.PI / w.length), 2) + 3 / 8;
+    //         v.subdiv_point = vec3.scale([], v.point, alpha);
+    //         for (var i = 0; i < w.length; ++i)
+    //             v.subdiv_point = vec3.add([], v.subdiv_point, vec3.scale([], w[i].point, (1 - alpha) / w.length));
+    //     }
+    // });
+  
     mesh_subdiv.vertices.forEach(function(v){
         if (v.is_boundary()) {
             var w0 = v.halfedge.prev.from_vertex();
@@ -107,6 +123,7 @@ function subdivide() {
                 v.subdiv_point = vec3.add([], v.subdiv_point, vec3.scale([], w[i].point, (1 - alpha) / w.length));
         }
     });
+  
     // make next subdiv mesh topology
     var mesh_subdiv_next = make_halfedge_mesh();
     var offset = mesh_subdiv.num_vertices();
