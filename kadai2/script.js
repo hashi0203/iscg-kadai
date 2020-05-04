@@ -50,7 +50,6 @@ function draw() {
     // subdiv mesh faces
     legacygl.uniforms.use_material.push();
     legacygl.uniforms.use_material.value = 1;
-    console.log(displist_subdiv_faces);
     displist_subdiv_faces.draw(function() {
         // NOTE: this code assumes all faces are triangles!
         // Quads can be drawn by using gl.QUADS which internally splits each quad into two triangles
@@ -85,119 +84,124 @@ function draw() {
         });
     }
 };
-function subdivide() {
-    // // for each edge, compute subdivided point
-    // mesh_subdiv.edges_forEach(function(e){
-    //     var v = e.vertices();
-    //     var w = [e.halfedge.next.vertex, e.halfedge.opposite.next.vertex];
-    //     if (e.is_boundary()) {
-    //         e.subdiv_point = vec3.scale([], vec3.add([], v[0].point, v[1].point), 0.5);
-    //     } else {
-    //         e.subdiv_point = vec3.add([],
-    //             vec3.scale([], vec3.add([], v[0].point, v[1].point), 3 / 8),
-    //             vec3.scale([], vec3.add([], w[0].point, w[1].point), 1 / 8))
-    //     }
-    // });
-    // // for each vertex, compute displaced point
-    // mesh_subdiv.vertices.forEach(function(v){
-    //     if (v.is_boundary()) {
-    //         var w0 = v.halfedge.prev.from_vertex();
-    //         var w1 = v.halfedge.vertex;
-    //         v.subdiv_point = vec3.add([],
-    //             vec3.scale([], v.point, 3 / 4),
-    //             vec3.scale([], vec3.add([], w0.point, w1.point), 1 / 8));
-    //     } else {
-    //         var w = v.vertices();
-    //         var alpha = Math.pow(3 / 8 + 1 / 4 * Math.cos(2 * Math.PI / w.length), 2) + 3 / 8;
-    //         v.subdiv_point = vec3.scale([], v.point, alpha);
-    //         for (var i = 0; i < w.length; ++i)
-    //             v.subdiv_point = vec3.add([], v.subdiv_point, vec3.scale([], w[i].point, (1 - alpha) / w.length));
-    //     }
-    // });
-  
-    mesh_subdiv.faces.forEach(function(f){
-        var v = f.vertices();
-        var fmid = vec3.scale([],v.reduce((a,b) => vec3.add([],a,b.point), v[0].point), 1 / v.length);
-        var vmid = [];
-        for (var i = 0; i < v.length; i++) {
-            vmid.push(vec3.scale([], vec3.add([], v[i].point, v[i%v.length].point), 1 / 2));
-        }
-        f.subdiv_points = [];
-        for (var i = 0; i < v.length; i++) {
-            f.subdiv_points.push(vec3.scale([], vec3.add([],
-                vec3.add([], v[i], fmid),
-                vec3.add([], vmid[(i+v.length-1)%v.length], vmid[i])), 1 / 4));
-        }
-    });
-  
-    // make next subdiv mesh topology
-    var mesh_subdiv_next = make_halfedge_mesh();
-    // var offset = mesh_subdiv.num_vertices();
-    // mesh_subdiv.faces.forEach(function(f){
-    //     f.halfedges().forEach(function(h){
-    //         var fv_indices = [h.from_vertex().id];
-    //         fv_indices.push(offset + h.edge.id);
-    //         fv_indices.push(offset + h.prev.edge.id);
-    //         mesh_subdiv_next.add_face(fv_indices);
-    //     });
-    //     var fv_indices = [];
-    //     f.edges().forEach(function(e){
-    //         fv_indices.push(offset + e.id);
-    //     });
-    //     mesh_subdiv_next.add_face(fv_indices);
-    // });
-    // // set geometry for the next subdiv mesh
-    // mesh_subdiv.vertices.forEach(function(v){
-    //     mesh_subdiv_next.vertices[v.id].point = v.subdiv_point;
-    // });
-    // mesh_subdiv.edges_forEach(function(e){
-    //     mesh_subdiv_next.vertices[offset + e.id].point = e.subdiv_point;
-    // });
-    
-    var offsets = [0];
-    mesh_subdiv.faces.forEach(function(f){
-        offsets.push(offsets[f.id] + f.subdiv_points.length);
-    });
-  
-    mesh_subdiv.faces.forEach(function(f){
-        var offset = offsets[f.id];
-        var fv_indices = [];
-        for (var i = 0; i < f.subdiv_points.length; i++) {
-          fv_indices.push(offset+i);
-        }
-        mesh_subdiv_next.add_face(fv_indices);
-    });
-  
-    mesh_subdiv.edges_forEach(function(e){
-        var fv_indices = [];
-        e.halfedges().forEach(function(h){
-            var hf = h.face;
-            var i = hf.halfedges().indexOf(h);
-            fv_indices.push(offsets[hf.id]+i, offsets[hf.id]+(i+hf.subdiv_points.length-1)%hf.subdiv_points.length);
+function subdivide(flag) {
+    if (flag == 'loop') {
+        // for each edge, compute subdivided point
+        mesh_subdiv.edges_forEach(function(e){
+            var v = e.vertices();
+            var w = [e.halfedge.next.vertex, e.halfedge.opposite.next.vertex];
+            if (e.is_boundary()) {
+                e.subdiv_point = vec3.scale([], vec3.add([], v[0].point, v[1].point), 0.5);
+            } else {
+                e.subdiv_point = vec3.add([],
+                    vec3.scale([], vec3.add([], v[0].point, v[1].point), 3 / 8),
+                    vec3.scale([], vec3.add([], w[0].point, w[1].point), 1 / 8))
+            }
         });
-        mesh_subdiv_next.add_face(fv_indices);
-    });
+        // for each vertex, compute displaced point
+        mesh_subdiv.vertices.forEach(function(v){
+            if (v.is_boundary()) {
+                var w0 = v.halfedge.prev.from_vertex();
+                var w1 = v.halfedge.vertex;
+                v.subdiv_point = vec3.add([],
+                    vec3.scale([], v.point, 3 / 4),
+                    vec3.scale([], vec3.add([], w0.point, w1.point), 1 / 8));
+            } else {
+                var w = v.vertices();
+                var alpha = Math.pow(3 / 8 + 1 / 4 * Math.cos(2 * Math.PI / w.length), 2) + 3 / 8;
+                v.subdiv_point = vec3.scale([], v.point, alpha);
+                for (var i = 0; i < w.length; ++i)
+                    v.subdiv_point = vec3.add([], v.subdiv_point, vec3.scale([], w[i].point, (1 - alpha) / w.length));
+            }
+        });
+      
+        // make next subdiv mesh topology
+        var mesh_subdiv_next = make_halfedge_mesh();
+        var offset = mesh_subdiv.num_vertices();
+        mesh_subdiv.faces.forEach(function(f){
+            f.halfedges().forEach(function(h){
+                var fv_indices = [h.from_vertex().id];
+                fv_indices.push(offset + h.edge.id);
+                fv_indices.push(offset + h.prev.edge.id);
+                mesh_subdiv_next.add_face(fv_indices);
+            });
+            var fv_indices = [];
+            f.edges().forEach(function(e){
+                fv_indices.push(offset + e.id);
+            });
+            mesh_subdiv_next.add_face(fv_indices);
+        });
+        // set geometry for the next subdiv mesh
+        mesh_subdiv.vertices.forEach(function(v){
+            mesh_subdiv_next.vertices[v.id].point = v.subdiv_point;
+        });
+        mesh_subdiv.edges_forEach(function(e){
+            mesh_subdiv_next.vertices[offset + e.id].point = e.subdiv_point;
+        });
+    } else if (flag == 'doo') {
+        mesh_subdiv.faces.forEach(function(f){
+            var v = f.vertices();
+            var fmid = vec3.scale([],v.reduce((a,b) => vec3.add([],a,b.point), v[0].point), 1 / v.length);
+            var vmid = [];
+            for (var i = 0; i < v.length; i++) {
+                vmid.push(vec3.scale([], vec3.add([], v[i].point, v[i%v.length].point), 1 / 2));
+            }
+            f.subdiv_points = [];
+            for (var i = 0; i < v.length; i++) {
+                f.subdiv_points.push(vec3.scale([], vec3.add([],
+                    vec3.add([], v[i].point, fmid),
+                    vec3.add([], vmid[(i+v.length-1)%v.length], vmid[i])), 1 / 4));
+            }
+        });
 
-    mesh_subdiv.vertices.forEach(function(v){
-        var fv_indices = [];
-        v.faces().forEach(function(f){
-            fv_indices.unshift(offsets[f.id]+f.vertices().indexOf(v));
+        // make next subdiv mesh topology
+        var mesh_subdiv_next = make_halfedge_mesh();    
+        var offsets = [0];
+        mesh_subdiv.faces.forEach(function(f){
+            offsets.push(offsets[f.id] + f.subdiv_points.length);
         });
-        mesh_subdiv_next.add_face(fv_indices);
-    });
-  
-    var idx = 0;
-    mesh_subdiv.faces.forEach(function(f){
-        f.subdiv_points.forEach(function(v){
-            mesh_subdiv_next.vertices[idx].point = v;
-            idx++;
+
+        mesh_subdiv.faces.forEach(function(f){
+            var offset = offsets[f.id];
+            var fv_indices = [];
+            for (var i = 0; i < f.subdiv_points.length; i++) {
+              fv_indices.push(offset+i);
+            }
+            mesh_subdiv_next.add_face(fv_indices);
         });
-    });
+
+        mesh_subdiv.edges_forEach(function(e){
+            var fv_indices = [];
+            e.halfedges().forEach(function(h){
+                var hf = h.face;
+                var i = hf.halfedges().indexOf(h);
+                fv_indices.push(offsets[hf.id]+i, offsets[hf.id]+(i+hf.subdiv_points.length-1)%hf.subdiv_points.length);
+            });
+            mesh_subdiv_next.add_face(fv_indices);
+        });
+
+        mesh_subdiv.vertices.forEach(function(v){
+            var fv_indices = [];
+            v.faces().forEach(function(f){
+                fv_indices.unshift(offsets[f.id]+f.vertices().indexOf(v));
+            });
+            mesh_subdiv_next.add_face(fv_indices);
+        });
+
+        var idx = 0;
+        mesh_subdiv.faces.forEach(function(f){
+            f.subdiv_points.forEach(function(v){
+                mesh_subdiv_next.vertices[idx].point = v;
+                idx++;
+            });
+        }); 
+    }
                               
     mesh_subdiv = mesh_subdiv_next;
     mesh_subdiv.init_ids();
     mesh_subdiv.init_boundaries();
     mesh_subdiv.compute_normals();
+    console.log(mesh_subdiv);
     displist_subdiv_faces.invalidate();
     displist_subdiv_edges.invalidate();
     draw();
