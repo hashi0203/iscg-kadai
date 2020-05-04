@@ -161,28 +161,23 @@ function subdivide() {
         mesh_subdiv_next.add_face(fv_indices);
     });
   
-    console.log("aa");
-  
     mesh_subdiv.edges_forEach(function(e){
         var fv_indices = [];
         e.halfedges().forEach(function(h){
             var hf = h.face;
             var i = hf.halfedges().indexOf(h);
-            fv_indices.push(offsets[hf.id]+(i+hf.subdiv_points.length-1)%hf.subdiv_points.length, offsets[hf.id]+i);
+            fv_indices.push(offsets[hf.id]+i, offsets[hf.id]+(i+hf.subdiv_points.length-1)%hf.subdiv_points.length);
         });
-        console.log(fv_)
         mesh_subdiv_next.add_face(fv_indices);
     });
-    console.log("bb");
 
     mesh_subdiv.vertices.forEach(function(v){
         var fv_indices = [];
         v.faces().forEach(function(f){
-            fv_indices.push(offsets[f.id]+f.vertices().indexOf(v));
+            fv_indices.unshift(offsets[f.id]+f.vertices().indexOf(v));
         });
         mesh_subdiv_next.add_face(fv_indices);
     });
-    console.log("cc");
   
     var idx = 0;
     mesh_subdiv.faces.forEach(function(f){
