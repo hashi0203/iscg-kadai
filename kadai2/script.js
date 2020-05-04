@@ -190,6 +190,73 @@ function subdivide(flag) {
                 idx++;
             });
         }); 
+    } else if (flag == 'catmull') {
+        mesh_subdiv.faces.forEach(function(f){
+            // var v = f.vertices();
+            f.subdiv_point = vec3.scale([],f.vertices().reduce((a,b) => vec3.add([],a,b.point), [0,0,0]), 1 / f.vertices().length);            
+            // var vmid = [];
+            // for (var i = 0; i < v.length; i++) {
+            //     vmid.push(vec3.scale([], vec3.add([], v[i].point, v[(i+1)%v.length].point), 1 / 2));
+            // }
+            // f.subdiv_points = [];
+            // for (var i = 0; i < v.length; i++) {
+            //     f.subdiv_points.push(vec3.scale([], vec3.add([],
+            //         vec3.add([], v[i].point, fmid),
+            //         vec3.add([], vmid[(i+v.length-1)%v.length], vmid[i])), 1 / 4));
+            // }
+        });
+        
+        mesh_subdiv.edges_forEach(function(e){
+            e.halfedges().forEach(function(h){
+                var hf = h.face;
+                var i = hf.halfedges().indexOf(h);
+                fv_indices.push(offsets[hf.id]+i, offsets[hf.id]+(i+hf.subdiv_points.length-1)%hf.subdiv_points.length);
+            });
+            mesh_subdiv_next.add_face(fv_indices);
+        });
+      
+
+        // make next subdiv mesh topology
+        var mesh_subdiv_next = make_halfedge_mesh();    
+        var offsets = [0];
+        mesh_subdiv.faces.forEach(function(f){
+            offsets.push(offsets[f.id] + f.subdiv_points.length);
+        });
+
+        mesh_subdiv.faces.forEach(function(f){
+            var offset = offsets[f.id];
+            var fv_indices = [];
+            for (var i = 0; i < f.subdiv_points.length; i++) {
+              fv_indices.push(offset+i);
+            }
+            mesh_subdiv_next.add_face(fv_indices);
+        });
+
+        mesh_subdiv.edges_forEach(function(e){
+            var fv_indices = [];
+            e.halfedges().forEach(function(h){
+                var hf = h.face;
+                var i = hf.halfedges().indexOf(h);
+                fv_indices.push(offsets[hf.id]+i, offsets[hf.id]+(i+hf.subdiv_points.length-1)%hf.subdiv_points.length);
+            });
+            mesh_subdiv_next.add_face(fv_indices);
+        });
+
+        mesh_subdiv.vertices.forEach(function(v){
+            var fv_indices = [];
+            v.faces().forEach(function(f){
+                fv_indices.unshift(offsets[f.id]+f.vertices().indexOf(v));
+            });
+            mesh_subdiv_next.add_face(fv_indices);
+        });
+
+        var idx = 0;
+        mesh_subdiv.faces.forEach(function(f){
+            f.subdiv_points.forEach(function(v){
+                mesh_subdiv_next.vertices[idx].point = v;
+                idx++;
+            });
+        }); 
     }
                               
     mesh_subdiv = mesh_subdiv_next;
