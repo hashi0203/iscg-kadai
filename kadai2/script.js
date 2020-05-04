@@ -207,14 +207,16 @@ function subdivide(flag) {
         });
         
         mesh_subdiv.edges_forEach(function(e){
-            e.halfedges().forEach(function(h){
-                var hf = h.face;
-                var i = hf.halfedges().indexOf(h);
-                fv_indices.push(offsets[hf.id]+i, offsets[hf.id]+(i+hf.subdiv_points.length-1)%hf.subdiv_points.length);
-            });
-            mesh_subdiv_next.add_face(fv_indices);
+            var gmid = vec3.scale([], e.halfedges().reduce((a,b) => vec3.add([],a,b.face.subdiv_point), [0,0,0]), 1 / 2);
+            var mid = vec3.scale([], e.vertices().reduce((a,b) => vec3.add([],a,b.point), [0,0,0]), 1 / 2);
+            e.subdiv_point = vec3.scale([], vec3.add([],gmid,mid), 1 / 2);
         });
       
+        mesh_subdiv.vertices.forEach(function(v){
+            var n = v.faces.length;
+            var gmid = vec3.scale([], v.faces.reduce((a,b) => vec3.add([],a,b.subdiv_point), [0,0,0]), 1 / n**2);
+            var mid = vec3.scale([], v.)
+        });
 
         // make next subdiv mesh topology
         var mesh_subdiv_next = make_halfedge_mesh();    
