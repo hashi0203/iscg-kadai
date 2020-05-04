@@ -193,6 +193,7 @@ function subdivide(flag) {
     } else if (flag == 'catmull') {
         mesh_subdiv.faces.forEach(function(f){
             f.subdiv_point = vec3.scale([],f.vertices().reduce((a,b) => vec3.add([],a,b.point), [0,0,0]), 1 / f.vertices().length);
+            console.log(f.subdiv_point);
             legacygl.begin(gl.POINTS);
             legacygl.vertex3(f.subdiv_point);
             legacygl.end();
@@ -202,6 +203,7 @@ function subdivide(flag) {
             var gmid = vec3.scale([], e.halfedges().reduce((a,b) => vec3.add([],a,b.face.subdiv_point), [0,0,0]), 1 / 2);
             var mid = vec3.scale([], e.vertices().reduce((a,b) => vec3.add([],a,b.point), [0,0,0]), 1 / 2);
             e.subdiv_point = vec3.scale([], vec3.add([],gmid,mid), 1 / 2);
+            console.log(e.subdiv_point);
             legacygl.begin(gl.POINTS);
             legacygl.vertex3(e.subdiv_point);
             legacygl.end();
@@ -224,7 +226,6 @@ function subdivide(flag) {
         var offsetv = offsete+mesh_subdiv.num_edges();
 
         mesh_subdiv.faces.forEach(function(f){
-            console.log(f.halfedges());
             f.halfedges().forEach(function(h){
                 var fv_indices = [f.id, offsete+h.edge.id, offsetv+h.vertex.id, offsete+h.next.edge.id];
                 mesh_subdiv_next.add_face(fv_indices);
@@ -429,7 +430,7 @@ function init(flag) {
         xhr.send();
     };
     if (flag == 1) {
-        read_default_mesh("https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fmesh_cube.obj?v=1588592855302");
+        read_default_mesh("https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fmesh_cube.obj?v=1588599495366");
     } else if (flag == 2) {
         read_default_mesh("https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fmesh_subdiv.obj?v=1588592862069");
     }
