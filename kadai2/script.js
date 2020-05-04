@@ -136,12 +136,10 @@ function subdivide(flag) {
     } else if (flag == 'doo') {
         mesh_subdiv.faces.forEach(function(f){
             var v = f.vertices();
-            var fmid = vec3.scale([],v.reduce((a,b) => vec3.add([],a,b.point), [0,0,0]), 1 / v.length);
-            legacygl.begin(gl.POINTS);
-            
+            var fmid = vec3.scale([],v.reduce((a,b) => vec3.add([],a,b.point), [0,0,0]), 1 / v.length);            
             var vmid = [];
             for (var i = 0; i < v.length; i++) {
-                vmid.push(vec3.scale([], vec3.add([], v[i].point, v[i%v.length].point), 1 / 2));
+                vmid.push(vec3.scale([], vec3.add([], v[i].point, v[(i+1)%v.length].point), 1 / 2));
             }
             f.subdiv_points = [];
             for (var i = 0; i < v.length; i++) {
@@ -149,7 +147,6 @@ function subdivide(flag) {
                     vec3.add([], v[i].point, fmid),
                     vec3.add([], vmid[(i+v.length-1)%v.length], vmid[i])), 1 / 4));
             }
-            console.log(f.subdiv_points);
         });
 
         // make next subdiv mesh topology
@@ -199,7 +196,6 @@ function subdivide(flag) {
     mesh_subdiv.init_ids();
     mesh_subdiv.init_boundaries();
     mesh_subdiv.compute_normals();
-    console.log(mesh_subdiv);
     displist_subdiv_faces.invalidate();
     displist_subdiv_edges.invalidate();
     draw();
@@ -216,7 +212,7 @@ function write_mesh() {
     a.download = filename;
     a.click();
 }
-function init() {
+function init(f) {
     // OpenGL context
     canvas = document.getElementById("canvas");
     gl = canvas.getContext("experimental-webgl");

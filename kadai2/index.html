@@ -14,7 +14,7 @@
 <script src="https://legacygl-js.glitch.me/boundingbox.js"></script>
 <script src="script.js"></script>
 </head>
-<body onload="init(); draw();">
+<body onload="init(1); draw();">
   <h2><a target="_blank" href="http://research.nii.ac.jp/~takayama/teaching/utokyo-iscg-2020/assignments/iscg-2020-assignment-m2-subdivision.pdf"><script type="text/javascript">document.write(document.getElementById("title").innerHTML);</script></a></h2>
   <table>
     <tr>
@@ -23,6 +23,7 @@
       </td>
       <td>
         <ul>
+          <li>Read Default Mesh: <label><input type="radio" name="default_mesh" value="default1" onchange="change_mesh();" checked>default1</label><label><input type="radio" name="default_mesh" value="default2" onchange="change_mesh();">default2</label></li>
           <li>Read Control Mesh from Disk: <input type="file" id="text_mesh_disk" accept=".off,.obj"></li>
           <li>Subdivided Mesh Statistics:</li>
           <ul>
