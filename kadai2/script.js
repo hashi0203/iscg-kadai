@@ -53,20 +53,17 @@ function draw() {
     displist_subdiv_faces.draw(function() {
         // NOTE: this code assumes all faces are triangles!
         // Quads can be drawn by using gl.QUADS which internally splits each quad into two triangles
-        legacygl.begin(gl.TRIANGLES);
-        mesh_subdiv.faces.forEach(function(f) {
-            legacygl.normal3(f.normal);
-            var vs  = f.vertices();
-            for (var i = 1; i < vs.length-1; i++) {
-                legacygl.vertex3(vs[0].point);
-                legacygl.vertex3(vs[i].point);
-                legacygl.vertex3(vs[i+1].point);
-            }
-            // f.vertices().forEach(function(v){
-            //     legacygl.vertex3(v.point);
-            // });
-        });
-        legacygl.end();
+        // legacygl.begin(gl.TRIANGLES);
+        // mesh_subdiv.faces.forEach(function(f) {
+        //     legacygl.normal3(f.normal);
+        //     var vs  = f.vertices();
+        //     for (var i = 1; i < vs.length-1; i++) {
+        //         legacygl.vertex3(vs[0].point);
+        //         legacygl.vertex3(vs[i].point);
+        //         legacygl.vertex3(vs[i+1].point);
+        //     }
+        // });
+        // legacygl.end();
     });
     legacygl.uniforms.use_material.pop();
     
@@ -146,12 +143,16 @@ function subdivide(flag) {
             for (var i = 0; i < v.length; i++) {
                 vmid.push(vec3.scale([], vec3.add([], v[i].point, v[i%v.length].point), 1 / 2));
             }
+            console.log(v);
+            console.log(fmid);
+            console.log(vmid);
             f.subdiv_points = [];
             for (var i = 0; i < v.length; i++) {
                 f.subdiv_points.push(vec3.scale([], vec3.add([],
                     vec3.add([], v[i].point, fmid),
                     vec3.add([], vmid[(i+v.length-1)%v.length], vmid[i])), 1 / 4));
             }
+            console.log(f.subdiv_points);
         });
 
         // make next subdiv mesh topology
@@ -237,6 +238,7 @@ function init() {
             gl_Position = u_projectionMatrix * u_modelviewMatrix * vec4(a_vertex, 1.0);\
             v_color = a_color;\
             v_normal = u_normalMatrix * a_normal;\
+            gl_PointSize = 5.0;\
         }\
         ";
     var fragment_shader_src = "\
