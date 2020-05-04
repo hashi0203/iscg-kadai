@@ -154,13 +154,14 @@ function subdivide() {
   
     mesh_subdiv.faces.forEach(function(f){
         var offset = offsets[f.id];
-        var len = f.subdiv_points.length;
         var fv_indices = [];
-        for (var i = 0; i < len; i++) {
+        for (var i = 0; i < f.subdiv_points.length; i++) {
           fv_indices.push(offset+i);
         }
         mesh_subdiv_next.add_face(fv_indices);
     });
+  
+    console.log("aa");
   
     mesh_subdiv.edges_forEach(function(e){
         var fv_indices = [];
@@ -169,8 +170,10 @@ function subdivide() {
             var i = hf.halfedges().indexOf(h);
             fv_indices.push(offsets[hf.id]+(i+hf.subdiv_points.length-1)%hf.subdiv_points.length, offsets[hf.id]+i);
         });
+        console.log(fv_)
         mesh_subdiv_next.add_face(fv_indices);
     });
+    console.log("bb");
 
     mesh_subdiv.vertices.forEach(function(v){
         var fv_indices = [];
@@ -179,6 +182,7 @@ function subdivide() {
         });
         mesh_subdiv_next.add_face(fv_indices);
     });
+    console.log("cc");
   
     var idx = 0;
     mesh_subdiv.faces.forEach(function(f){
