@@ -113,17 +113,17 @@ function subdivide() {
         var fmid = vec3.scale([],v.reduce((a,b) => vec3.add([],a,b.point), v[0].point), 1 / v.length);
         var vmid = [];
         for (var i = 0; i < v.length; i++) {
-          vmid.push(vec3.scale([], vec3.add([], v[i].point, v[i%v.length].point), 1 / 2));
+            vmid.push(vec3.scale([], vec3.add([], v[i].point, v[i%v.length].point), 1 / 2));
         }
         f.subdiv_points = [];
         console.log(v);
         console.log(fmid);
         console.log(vmid);
         for (var i = 0; i < v.length; i++) {
-          
-           f.subdiv_points.push(vec3.scale([], vec3.add([],
-              vec3.add([], v[i], fmid),
-              vec3.add([], vmid[(i-1)%v.length], vmid[i])), 1 / 4));
+            console.log((i+v.length-1)%v.length);
+            f.subdiv_points.push(vec3.scale([], vec3.add([],
+                vec3.add([], v[i], fmid),
+                vec3.add([], vmid[(i+v.length-1)%v.length], vmid[i])), 1 / 4));
         }
     });
   
@@ -152,10 +152,10 @@ function subdivide() {
     // });
     var idx = 0;
     mesh_subdiv.faces.forEach(function(f){
-      f.subdiv_points.forEach(function(v){
-          mesh_subdiv_next.vertices[idx] = v;
-          idx++;
-      });
+        f.subdiv_points.forEach(function(v){
+            mesh_subdiv_next.vertices[idx].point = v;
+            idx++;
+        });
     });
                               
     mesh_subdiv = mesh_subdiv_next;
