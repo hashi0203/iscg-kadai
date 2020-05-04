@@ -51,19 +51,17 @@ function draw() {
     legacygl.uniforms.use_material.push();
     legacygl.uniforms.use_material.value = 1;
     displist_subdiv_faces.draw(function() {
-        // NOTE: this code assumes all faces are triangles!
-        // Quads can be drawn by using gl.QUADS which internally splits each quad into two triangles
-        // legacygl.begin(gl.TRIANGLES);
-        // mesh_subdiv.faces.forEach(function(f) {
-        //     legacygl.normal3(f.normal);
-        //     var vs  = f.vertices();
-        //     for (var i = 1; i < vs.length-1; i++) {
-        //         legacygl.vertex3(vs[0].point);
-        //         legacygl.vertex3(vs[i].point);
-        //         legacygl.vertex3(vs[i+1].point);
-        //     }
-        // });
-        // legacygl.end();
+        legacygl.begin(gl.TRIANGLES);
+        mesh_subdiv.faces.forEach(function(f) {
+            legacygl.normal3(f.normal);
+            var vs  = f.vertices();
+            for (var i = 1; i < vs.length-1; i++) {
+                legacygl.vertex3(vs[0].point);
+                legacygl.vertex3(vs[i].point);
+                legacygl.vertex3(vs[i+1].point);
+            }
+        });
+        legacygl.end();
     });
     legacygl.uniforms.use_material.pop();
     
@@ -138,14 +136,11 @@ function subdivide(flag) {
     } else if (flag == 'doo') {
         mesh_subdiv.faces.forEach(function(f){
             var v = f.vertices();
-            var fmid = vec3.scale([],v.reduce((a,b) => vec3.add([],a,b.point), v[0].point), 1 / v.length);
+            var fmid = vec3.scale([],v.reduce((a,b) => vec3.add([],a,b.point), [0,0,0]), 1 / v.length);
             var vmid = [];
             for (var i = 0; i < v.length; i++) {
                 vmid.push(vec3.scale([], vec3.add([], v[i].point, v[i%v.length].point), 1 / 2));
             }
-            console.log(v);
-            console.log(fmid);
-            console.log(vmid);
             f.subdiv_points = [];
             for (var i = 0; i < v.length; i++) {
                 f.subdiv_points.push(vec3.scale([], vec3.add([],
