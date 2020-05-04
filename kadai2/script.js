@@ -108,19 +108,21 @@ function subdivide() {
     //     }
     // });
   
-    mesh_subdiv.vertices.forEach(function(v){
-        if (v.is_boundary()) {
-            var w0 = v.halfedge.prev.from_vertex();
-            var w1 = v.halfedge.vertex;
-            v.subdiv_point = vec3.add([],
-                vec3.scale([], v.point, 3 / 4),
-                vec3.scale([], vec3.add([], w0.point, w1.point), 1 / 8));
+    mesh_subdiv.faces.forEach(function(f){
+        var v = f.vertices();
+        var fmid = v.reduce((a,b) => vec3.add([],a,b)) / v.length;
+        var vmid = [];
+        for (var i = 0; i < v.length; i++) {
+          vmid.push(v[i] + v[i%v.length])
+        }
+      
+        var w = [e.halfedge.next.vertex, e.halfedge.opposite.next.vertex];
+        if (e.is_boundary()) {
+            e.subdiv_point = vec3.scale([], vec3.add([], v[0].point, v[1].point), 0.5);
         } else {
-            var w = v.vertices();
-            var alpha = Math.pow(3 / 8 + 1 / 4 * Math.cos(2 * Math.PI / w.length), 2) + 3 / 8;
-            v.subdiv_point = vec3.scale([], v.point, alpha);
-            for (var i = 0; i < w.length; ++i)
-                v.subdiv_point = vec3.add([], v.subdiv_point, vec3.scale([], w[i].point, (1 - alpha) / w.length));
+            e.subdiv_point = vec3.add([],
+                vec3.scale([], vec3.add([], v[0].point, v[1].point), 3 / 8),
+                vec3.scale([], vec3.add([], w[0].point, w[1].point), 1 / 8))
         }
     });
   
