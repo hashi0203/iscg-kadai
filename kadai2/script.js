@@ -50,15 +50,22 @@ function draw() {
     // subdiv mesh faces
     legacygl.uniforms.use_material.push();
     legacygl.uniforms.use_material.value = 1;
+    console.log(displist_subdiv_faces);
     displist_subdiv_faces.draw(function() {
         // NOTE: this code assumes all faces are triangles!
         // Quads can be drawn by using gl.QUADS which internally splits each quad into two triangles
         legacygl.begin(gl.TRIANGLES);
         mesh_subdiv.faces.forEach(function(f) {
             legacygl.normal3(f.normal);
-            f.vertices().forEach(function(v){
-                legacygl.vertex3(v.point);
-            });
+            var vs  = f.vertices();
+            for (var i = 1; i < vs.length-1; i++) {
+                legacygl.vertex3(vs[0].point);
+                legacygl.vertex3(vs[i].point);
+                legacygl.vertex3(vs[i+1].point);
+            }
+            // f.vertices().forEach(function(v){
+            //     legacygl.vertex3(v.point);
+            // });
         });
         legacygl.end();
     });
