@@ -160,14 +160,20 @@ function subdivide() {
         }
         mesh_subdiv_next.add_face(fv_indices);
       
-        var hs = f.halfedges();
-        for (var i = 0; i < len; i++) {
-          var fv_indices = [offset+(i+len-1)%len,offset+i];
-          var ho = hs[i].opposite;
-          var hof = ho.face;
-          var j = hof.halfedges().indexOf(ho);
-          fv_indices.push(offset[hof.id]+(j+hof.subdiv_points.length-1)%hof.subdiv_points.length)
-        }
+        f.halfedges().forEach(function(h){
+            var ho = h.opposite;
+            var hof = ho.face;
+            if (f.id < hof.id) {
+                var fv_indices = [offset+(h.id+len-1)%len,offset+h.id];
+                var i = hof.halfedges().indexOf(ho);
+                fv_indices.push(offset[hof.id]+(i+hof.subdiv_points.length-1)%hof.subdiv_points.length, offset[hof.id]+i);
+                mesh_subdiv_next.add_face(fv_indices);
+            }
+        });
+      
+        f.vertices().forEach(function(h){
+          
+        });
         
         // f.halfedges().forEach(function(h){
         //     var fv_indices = [h.from_vertex().id];
