@@ -137,6 +137,8 @@ function subdivide(flag) {
         mesh_subdiv.faces.forEach(function(f){
             var v = f.vertices();
             var fmid = vec3.scale([],v.reduce((a,b) => vec3.add([],a,b.point), [0,0,0]), 1 / v.length);
+            legacygl.begin(gl.POINTS);
+            
             var vmid = [];
             for (var i = 0; i < v.length; i++) {
                 vmid.push(vec3.scale([], vec3.add([], v[i].point, v[i%v.length].point), 1 / 2));
@@ -296,17 +298,17 @@ function init() {
     };
     function read_mesh(filename, content) {
         var mesh_temp = meshio.read(filename, content);
-        var has_nontriangle = false;
-        for (var i = 0; i < mesh_temp.faces.length; ++i) {
-            if (mesh_temp.faces[i].halfedges().length != 3) {
-                has_nontriangle = true;
-                break;
-            }
-        }
-        if (has_nontriangle) {
-            alert("Non-triangle polygon found! Please triangulate the mesh first.");
-            return;
-        }
+        // var has_nontriangle = false;
+        // for (var i = 0; i < mesh_temp.faces.length; ++i) {
+        //     if (mesh_temp.faces[i].halfedges().length != 3) {
+        //         has_nontriangle = true;
+        //         break;
+        //     }
+        // }
+        // if (has_nontriangle) {
+        //     alert("Non-triangle polygon found! Please triangulate the mesh first.");
+        //     return;
+        // }
         mesh_control = mesh_subdiv = mesh_temp;
         mesh_subdiv.compute_normals();
         bbox = make_boundingbox();
@@ -343,7 +345,8 @@ function init() {
         };
         xhr.send();
     };
-    read_default_mesh("https://cdn.glitch.com/e530aeed-ec07-4e9a-b2b2-e5dd9fc39322%2Floop-test.obj?1556153350921");
+    // read_default_mesh("https://cdn.glitch.com/e530aeed-ec07-4e9a-b2b2-e5dd9fc39322%2Floop-test.obj?1556153350921");
+    read_default_mesh("https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fmesh_cube.obj?v=1588592855302");
     // texture
     function read_texture(dataurl) {
         var img = document.getElementById("img_material");
