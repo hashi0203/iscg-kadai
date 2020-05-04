@@ -116,11 +116,7 @@ function subdivide() {
             vmid.push(vec3.scale([], vec3.add([], v[i].point, v[i%v.length].point), 1 / 2));
         }
         f.subdiv_points = [];
-        console.log(v);
-        console.log(fmid);
-        console.log(vmid);
         for (var i = 0; i < v.length; i++) {
-            console.log((i+v.length-1)%v.length);
             f.subdiv_points.push(vec3.scale([], vec3.add([],
                 vec3.add([], v[i], fmid),
                 vec3.add([], vmid[(i+v.length-1)%v.length], vmid[i])), 1 / 4));
@@ -156,15 +152,21 @@ function subdivide() {
         offsets.push(offsets[f.id] + f.subdiv_points.length);
     });
     mesh_subdiv.faces.forEach(function(f){
+        var offset = offsets[f.id];
+        var len = f.subdiv_points.length;
         var fv_indices = [];
-        for (var i = 0; i < f.subdiv_points.length; i++) {
-          fv_indices.push(offsets[f.id]+i);
+        for (var i = 0; i < len; i++) {
+          fv_indices.push(offset+i);
         }
         mesh_subdiv_next.add_face(fv_indices);
       
-        for (var i = 0; i < f.subdiv_points.length; i++) {
-          var fv_indices = [f[i]];
-          fv_in
+        var hs = f.halfedges();
+        for (var i = 0; i < len; i++) {
+          var fv_indices = [offset+(i+len-1)%len,offset+i];
+          var ho = hs[i].opposite;
+          var hof = ho.face;
+          var j = hof.halfedges().indexOf(ho);
+          fv_indices.push(offset[hof.id]+(j+hof.subdiv_points.length-1)%hof.subdiv_points.length)
         }
         
         // f.halfedges().forEach(function(h){
