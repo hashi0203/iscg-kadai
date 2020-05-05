@@ -8,59 +8,13 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <h2><a target="_blank" href="http://research.nii.ac.jp/~takayama/teaching/utokyo-iscg-2020/assignments/iscg-2020-assignment-m2-subdivision.pdf"><script type="text/javascript">document.write(document.getElementById("title").innerHTML);</script></a></h2>
   <h2><a target="_blank" href="http://research.nii.ac.jp/~takayama/teaching/utokyo-iscg-2020/assignments/iscg-2020-assignment-m1-spline.pdf"><script type="text/javascript">document.write(document.getElementById("title").innerHTML);</script></a></h2>
   <h3>実装内容:</h3>
   <ul>
-    <li>全体を通して
-      <ul>
-        <li>制御点の移動(ドラッグと座標指定両方可能)</li>
-        <li>ステップ数の変更(2以上)</li>
-        <li>制御点，サンプル点の表示・非表示</li>
-        <li>カメラの視点や座標や制御点の個数をデフォルトに指定</li>
-      </ul>
-    </li>
-    <li>ベジェ曲線
-      <ul>
-        <li>制御点の追加・削除</li>
-        <li><math><mn>n</mn></math>次ベジェ曲線の描画
-          <math><mfenced><mrow>
-            <mn>3</mn>
-            <mo>&le;</mo>
-            <mn>n</mn>
-            <mo>&le;</mo>
-            <mn>10</mn>
-          </mrow></mfenced></math>
-        </li>
-        <li>ベジェ曲線の分割(0から1の間の値で指定)</li>
-        <li>パラメタ<math><mn>t</mn></math>のサンプリング方法の変更(等分とド・カステリョのアルゴリズム)</li>
-        <li>有理ベジェ曲線の描画(各点の重みを数値で指定可能)</li>
-      </ul>
-    </li>
-    <li>3次 Catmull-Rom スプライン
-      <ul>
-        <li>制御点の追加・削除</li>
-        <li>制御点が同時に同じ<math><mn>x</mn></math>座標を取らないように制御</li>
-        <li>ノット列の決め方(一様，孤長依存，求心性依存)</li>
-        <li>同時に複数のノット列の決め方による曲線を描画可能</li>
-      </ul>
-    </li>
-    <li>ベジェ曲面
-      <ul>
-        <li>制御点は16個で固定</li>
-        <li>制御点間の線の色分け(<math><mn>x</mn></math>軸方向は赤，<math><mn>z</mn></math>軸方向は青)</li>
-        <li>曲面上にメッシュを表示</li>
-        <li>Zバッファ法で前後関係による表示・非表示の制御</li>
-      </ul>
-    </li>
-    <li>Coons曲面
-      <ul>
-        <li>制御点は12個で固定</li>
-        <li>各辺上の制御点間は等分にサンプリングしたベジェ曲線を使用</li>
-        <li>制御点間の線の色分け(<math><mn>x</mn></math>軸方向は赤，<math><mn>z</mn></math>軸方向は青)</li>
-        <li>曲面上にメッシュを表示</li>
-        <li>Zバッファ法で前後関係による表示・非表示の制御</li>
-      </ul>
-    </li>
+    <li>Doo-Sabin 法 と Catmull-Clark 法でサブディビジョンサーフェスを実装 (Loop 法はサンプルと同じ)</li>
+    <li>デフォルトのメッシュに立方体と立方体が3つ重なったものを追加</li>
+    <li>メッシュの初期化機能を追加</li>
   </ul>
   
   <h3>制御点名と制御点位置:</h3>
@@ -98,10 +52,9 @@
   
   <h3>マウス操作:</h3>
   <ul>
-    <li>Drag: 制御点の移動</li>
-    <li>Alt+Drag: 視点の移動</li>
-    <li>Alt+Shift+Drag: ズーム</li>
-    <li>Ctrl+Drag: 視点の回転</li>
+    <li>Drag: 視点の回転</li>
+    <li>Shift+drag: ズーム</li>
+    <li>Ctrl+Drag: 視点の移動</li>
   </ul>
   
   <input type="button" onclick="location.href='../'" value="課題一覧へ">
