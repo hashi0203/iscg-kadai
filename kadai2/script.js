@@ -206,12 +206,7 @@ function subdivide(flag) {
             var n = v.faces().length;
             var gmid = vec3.scale([], v.faces().reduce((a,b) => vec3.add([],a,b.subdiv_point), [0,0,0]), 1 / n**2);
             var mid = vec3.scale([], v.edges().reduce((a,b) => vec3.add([],a,b.mid_point), [0,0,0]), 2 / n**2);
-            v.subdiv_point = vec3.scaleAndAdd_ip(vec3.add([], gmid, mid), v.point, (n-3) / n**2);
-            console.log(v.faces());
-            console.log(gmid);
-            console.log(v.edges());
-            console.log(mid);
-            console.log(v.subdiv_point);
+            v.subdiv_point = vec3.scaleAndAdd_ip(vec3.add([], gmid, mid), v.point, (n-3) / n);
         });
 
         // make next subdiv mesh topology
@@ -282,7 +277,7 @@ function change_mesh() {
         init(1);
     } else if (document.getElementById("default2").checked) {
         init(2);
-    }
+    } 
     draw();
 };
 function write_mesh() {
