@@ -80,60 +80,7 @@ function draw() {
     }
 };
 function subdivide(flag) {
-    if (flag == 'loop') {
-        // for each edge, compute subdivided point
-        mesh_subdiv.edges_forEach(function(e){
-            var v = e.vertices();
-            var w = [e.halfedge.next.vertex, e.halfedge.opposite.next.vertex];
-            if (e.is_boundary()) {
-                e.subdiv_point = vec3.scale([], vec3.add([], v[0].point, v[1].point), 0.5);
-            } else {
-                e.subdiv_point = vec3.add([],
-                    vec3.scale([], vec3.add([], v[0].point, v[1].point), 3 / 8),
-                    vec3.scale([], vec3.add([], w[0].point, w[1].point), 1 / 8))
-            }
-        });
-        // for each vertex, compute displaced point
-        mesh_subdiv.vertices.forEach(function(v){
-            if (v.is_boundary()) {
-                var w0 = v.halfedge.prev.from_vertex();
-                var w1 = v.halfedge.vertex;
-                v.subdiv_point = vec3.add([],
-                    vec3.scale([], v.point, 3 / 4),
-                    vec3.scale([], vec3.add([], w0.point, w1.point), 1 / 8));
-            } else {
-                var w = v.vertices();
-                var alpha = Math.pow(3 / 8 + 1 / 4 * Math.cos(2 * Math.PI / w.length), 2) + 3 / 8;
-                v.subdiv_point = vec3.scale([], v.point, alpha);
-                for (var i = 0; i < w.length; ++i)
-                    v.subdiv_point = vec3.add([], v.subdiv_point, vec3.scale([], w[i].point, (1 - alpha) / w.length));
-            }
-        });
-      
-        // make next subdiv mesh topology
-        var mesh_subdiv_next = make_halfedge_mesh();
-        var offset = mesh_subdiv.num_vertices();
-        mesh_subdiv.faces.forEach(function(f){
-            f.halfedges().forEach(function(h){
-                var fv_indices = [h.from_vertex().id];
-                fv_indices.push(offset + h.edge.id);
-                fv_indices.push(offset + h.prev.edge.id);
-                mesh_subdiv_next.add_face(fv_indices);
-            });
-            var fv_indices = [];
-            f.edges().forEach(function(e){
-                fv_indices.push(offset + e.id);
-            });
-            mesh_subdiv_next.add_face(fv_indices);
-        });
-        // set geometry for the next subdiv mesh
-        mesh_subdiv.vertices.forEach(function(v){
-            mesh_subdiv_next.vertices[v.id].point = v.subdiv_point;
-        });
-        mesh_subdiv.edges_forEach(function(e){
-            mesh_subdiv_next.vertices[offset + e.id].point = e.subdiv_point;
-        });
-    } else if (flag == 'doo') {
+    if (flag == 'doo') {
         mesh_subdiv.faces.forEach(function(f){
             var v = f.vertices();
             var fmid = vec3.scale([],v.reduce((a,b) => vec3.add([],a,b.point), [0,0,0]), 1 / v.length);            
@@ -232,33 +179,59 @@ function subdivide(flag) {
         mesh_subdiv.vertices.forEach(function(v){
             mesh_subdiv_next.vertices[offsetv+v.id].point = v.subdiv_point;
         });
+    } else if (flag == 'loop') {
+        // for each edge, compute subdivided point
+        mesh_subdiv.edges_forEach(function(e){
+            var v = e.vertices();
+            var w = [e.halfedge.next.vertex, e.halfedge.opposite.next.vertex];
+            if (e.is_boundary()) {
+                e.subdiv_point = vec3.scale([], vec3.add([], v[0].point, v[1].point), 0.5);
+            } else {
+                e.subdiv_point = vec3.add([],
+                    vec3.scale([], vec3.add([], v[0].point, v[1].point), 3 / 8),
+                    vec3.scale([], vec3.add([], w[0].point, w[1].point), 1 / 8))
+            }
+        });
+        // for each vertex, compute displaced point
+        mesh_subdiv.vertices.forEach(function(v){
+            if (v.is_boundary()) {
+                var w0 = v.halfedge.prev.from_vertex();
+                var w1 = v.halfedge.vertex;
+                v.subdiv_point = vec3.add([],
+                    vec3.scale([], v.point, 3 / 4),
+                    vec3.scale([], vec3.add([], w0.point, w1.point), 1 / 8));
+            } else {
+                var w = v.vertices();
+                var alpha = Math.pow(3 / 8 + 1 / 4 * Math.cos(2 * Math.PI / w.length), 2) + 3 / 8;
+                v.subdiv_point = vec3.scale([], v.point, alpha);
+                for (var i = 0; i < w.length; ++i)
+                    v.subdiv_point = vec3.add([], v.subdiv_point, vec3.scale([], w[i].point, (1 - alpha) / w.length));
+            }
+        });
       
-        console.log(mesh_subdiv_next);
-
-//         mesh_subdiv.edges_forEach(function(e){
-//             var fv_indices = [];
-//             e.halfedges().forEach(function(h){
-//                 var hf = h.face;
-//                 var i = hf.halfedges().indexOf(h);
-//                 fv_indices.push(offsets[hf.id]+i, offsets[hf.id]+(i+hf.subdiv_points.length-1)%hf.subdiv_points.length);
-//             });
-//             mesh_subdiv_next.add_face(fv_indices);
-//         });
-
-        // mesh_subdiv.vertices.forEach(function(v){
-        //     var fv_indices = [];
-        //     v.faces().forEach(function(f){
-        //         fv_indices.unshift(offsets[f.id]+f.vertices().indexOf(v));
-        //     });
-        //     mesh_subdiv_next.add_face(fv_indices);
-        // });
-
-        // mesh_subdiv.faces.forEach(function(f){
-        //     f.subdiv_points.forEach(function(v){
-        //         mesh_subdiv_next.vertices[idx].point = v;
-        //         idx++;
-        //     });
-        // }); 
+        // make next subdiv mesh topology
+        var mesh_subdiv_next = make_halfedge_mesh();
+        var offset = mesh_subdiv.num_vertices();
+        mesh_subdiv.faces.forEach(function(f){
+            f.halfedges().forEach(function(h){
+                var fv_indices = [h.from_vertex().id];
+                fv_indices.push(offset + h.edge.id);
+                fv_indices.push(offset + h.prev.edge.id);
+                mesh_subdiv_next.add_face(fv_indices);
+            });
+            var fv_indices = [];
+            f.edges().forEach(function(e){
+                fv_indices.push(offset + e.id);
+            });
+            mesh_subdiv_next.add_face(fv_indices);
+        });
+        // set geometry for the next subdiv mesh
+        mesh_subdiv.vertices.forEach(function(v){
+            mesh_subdiv_next.vertices[v.id].point = v.subdiv_point;
+        });
+        mesh_subdiv.edges_forEach(function(e){
+            mesh_subdiv_next.vertices[offset + e.id].point = e.subdiv_point;
+        });
     }
                               
     mesh_subdiv = mesh_subdiv_next;
@@ -277,7 +250,9 @@ function change_mesh() {
         init(1);
     } else if (document.getElementById("default2").checked) {
         init(2);
-    } 
+    } else if (document.getElementById("default3").checked) {
+        init(3);
+    }
     draw();
 };
 function write_mesh() {
@@ -420,7 +395,9 @@ function init(flag) {
     };
     if (flag == 1) {
         read_default_mesh("https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fmesh_cube.obj?v=1588599495366");
-    } else if (flag == 2) {
+    } else if (flag == 2){
+        read_default_mesh("https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fmesh_cube2.obj?v=1588599494896");
+    } else if (flag == 3) {
         read_default_mesh("https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fmesh_subdiv.obj?v=1588592862069");
     }
     // read_default_mesh("https://cdn.glitch.com/e530aeed-ec07-4e9a-b2b2-e5dd9fc39322%2Floop-test.obj?1556153350921");

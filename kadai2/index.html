@@ -23,7 +23,12 @@
       </td>
       <td>
         <ul>
-          <li>Read Default Mesh: <label><input type="radio" name="default_mesh" id="default1" onchange="change_mesh();" checked>1 cube</label><label><input type="radio" name="default_mesh" id="default2" onchange="change_mesh();">3 cubes</label><label><input type="radio" name="default_mesh" id="default3" onchange="change_mesh();">default</label></li>
+          <li>Read Default Mesh: </li>
+          <ul>
+            <li><label><input type="radio" name="default_mesh" id="default1" onchange="change_mesh();" checked>1 cube</label></li>
+            <li><label><input type="radio" name="default_mesh" id="default2" onchange="change_mesh();">3 cubes</label></li>
+            <li><label><input type="radio" name="default_mesh" id="default3" onchange="change_mesh();">default</label></li>
+          </ul>
           <li>Read Control Mesh from Disk: <input type="file" id="text_mesh_disk" accept=".off,.obj"></li>
           <li>Subdivided Mesh Statistics:</li>
           <ul>
@@ -31,10 +36,13 @@
             <li><span id="label_mesh_nf">0</span> Faces</li>
             <li><span id="label_mesh_ne">0</span> Edges</li>
           </ul>
-          <li><button onclick="subdivide('loop'); draw()">Loop</button></li>
-          <li><button onclick="subdivide('doo'); draw()">Doo-Sabin</button></li>
-          <li><button onclick="subdivide('catmull'); draw()">Catmull-Clark</button></li>
-          <li><button onclick="change_mesh();">Initiate</button></li>
+          <li>Subdivide Method: </li>
+          <ul>
+            <li><button onclick="subdivide('doo'); draw()">Doo-Sabin</button></li>
+            <li><button onclick="subdivide('catmull'); draw()">Catmull-Clark</button></li>
+            <li><button onclick="subdivide('loop'); draw()">Loop</button></li>
+          </ul>
+          <li><button onclick="change_mesh();">Initialize</button></li>
           <li><button onclick="write_mesh()">Write Mesh</button></li>
           <li>Material: <img id="img_material"></li>
           <ul>
