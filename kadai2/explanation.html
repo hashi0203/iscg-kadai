@@ -2,52 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title id="title">[utokyo-iscg-2020] Basic Assignment M1 (Spline)</title>
+<title id="title">[utokyo-iscg-2020] Advanced Assignment M2 (Subdivision)</title>
 <script src="script.js"></script>
 <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=MML_SVG"></script>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h2><a target="_blank" href="http://research.nii.ac.jp/~takayama/teaching/utokyo-iscg-2020/assignments/iscg-2020-assignment-m2-subdivision.pdf"><script type="text/javascript">document.write(document.getElementById("title").innerHTML);</script></a></h2>
-  <h2><a target="_blank" href="http://research.nii.ac.jp/~takayama/teaching/utokyo-iscg-2020/assignments/iscg-2020-assignment-m1-spline.pdf"><script type="text/javascript">document.write(document.getElementById("title").innerHTML);</script></a></h2>
   <h3>実装内容:</h3>
   <ul>
     <li>Doo-Sabin 法 と Catmull-Clark 法でサブディビジョンサーフェスを実装 (Loop 法はサンプルと同じ)</li>
     <li>デフォルトのメッシュに立方体と立方体が3つ重なったものを追加</li>
     <li>メッシュの初期化機能を追加</li>
-  </ul>
-  
-  <h3>制御点名と制御点位置:</h3>
-  <p>
-    制御点の追加・削除ができ，ドラッグと座標指定の両方で制御点を移動できるようにしたが，制御点と制御点名の関係をうまく示すことができなかった．
-    具体的には座標上の点の横に制御点名を入れようとしたが，かなり複雑なため挫折してしまった．
-    そのため，制御点名と位置の関係を記しておく．
-  </p>
-  <ul>
-    <li>ベジェ曲線
-      <p>
-        初期状態で左下にあるものから制御点間の青線を辿る順に<math><mn>w0</mn></math>，<math><mn>w1</mn></math>，<math><mn>w2</mn></math>となる．
-        制御点を増やしても<math><mn>w0</mn></math>はずっと変わらず，制御点間の青線を辿る順に最大<math><mn>w10</mn></math>まで定義される．
-      </p>
-    </li>
-    <li>3次 Catmull-Rom スプライン
-      <p>
-        常に<math><mn>x</mn></math>座標の小さい順に<math><mn>w0</mn></math>から最大<math><mn>w10</mn></math>まで定義される．
-      </p>
-    </li>
-    <li>ベジェ曲面
-      <p>
-        初期状態で<math><mn>z</mn></math>座標が最も小さい中で<math><mn>x</mn></math>座標が最も小さい点を<math><mn>w0</mn></math>とし，その後おおよそ<math><mn>z</mn></math>軸正の方向に<math><mn>w4</mn></math>まで定義される．
-        次は<math><mn>z</mn></math>座標が最も小さい中で<math><mn>x</mn></math>座標が2番目に小さい点を<math><mn>w4</mn></math>とし，同様に<math><mn>z</mn></math>軸正の方向に<math><mn>w8</mn></math>まで定義される．
-        これを繰り返して，<math><mn>w15</mn></math>まで定義される．それぞれの制御点の名称はこれ以降座標を変化させても変わらない．
-      </p>
-    </li>
-    <li>Coons曲面
-      <p>
-        初期状態で<math><mn>z</mn></math>座標が最も小さい中で<math><mn>x</mn></math>座標が最も小さい点を<math><mn>w0</mn></math>とし，その後おおよそ<math><mn>z</mn></math>軸正の方向に最も近い点<math><mn>w1</mn></math>を取る．
-        その後，曲面の周囲を回るように<math><mn>w11</mn></math>まで定義する．それぞれの制御点の名称はこれ以降座標を変化させても変わらない．
-      </p>
-    </li>
   </ul>
   
   <h3>マウス操作:</h3>
