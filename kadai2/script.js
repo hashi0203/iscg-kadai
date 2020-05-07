@@ -83,7 +83,6 @@ function subdivide(flag) {
     if (flag == 'doo') {
         mesh_subdiv.faces.forEach(function(f){
             var v = f.vertices();
-            var fmid = vec3.scale([],v.reduce((a,b) => vec3.add([],a,b.point), [0,0,0]), 1 / v.length);            
             var vmid = [];
             for (var i = 0; i < v.length; i++) {
                 vmid.push(vec3.scale([], vec3.add([], v[i].point, v[(i+1)%v.length].point), 1 / 2));
@@ -91,7 +90,7 @@ function subdivide(flag) {
             f.subdiv_points = [];
             for (var i = 0; i < v.length; i++) {
                 f.subdiv_points.push(vec3.scale([], vec3.add([],
-                    vec3.add([], v[i].point, fmid),
+                    vec3.add([], v[i].point, f.centroid()),
                     vec3.add([], vmid[(i+v.length-1)%v.length], vmid[i])), 1 / 4));
             }
         });
@@ -138,12 +137,8 @@ function subdivide(flag) {
             });
         }); 
     } else if (flag == 'catmull') {
-        mesh_subdiv.faces.forEach(function(f){
-            f.subdiv_point = vec3.scale([],f.vertices().reduce((a,b) => vec3.add([],a,b.point), [0,0,0]), 1 / f.vertices().length);
-        });
-        
         mesh_subdiv.edges_forEach(function(e){
-            var gmid = vec3.scale([], e.halfedges().reduce((a,b) => vec3.add([],a,b.face.subdiv_point), [0,0,0]), 1 / 2);
+            var gmid = vec3.scale([], e.halfedges().reduce((a,b) => vec3.add([],a,b.face.centroid()), [0,0,0]), 1 / 2);
             var mid = vec3.scale([], e.vertices().reduce((a,b) => vec3.add([],a,b.point), [0,0,0]), 1 / 2);
             e.mid_point = mid;
             e.subdiv_point = vec3.scale([], vec3.add([],gmid,mid), 1 / 2);
@@ -151,7 +146,7 @@ function subdivide(flag) {
       
         mesh_subdiv.vertices.forEach(function(v){
             var n = v.faces().length;
-            var gmid = vec3.scale([], v.faces().reduce((a,b) => vec3.add([],a,b.subdiv_point), [0,0,0]), 1 / n**2);
+            var gmid = vec3.scale([], v.faces().reduce((a,b) => vec3.add([],a,b.centroid()), [0,0,0]), 1 / n**2);
             var mid = vec3.scale([], v.edges().reduce((a,b) => vec3.add([],a,b.mid_point), [0,0,0]), 2 / n**2);
             v.subdiv_point = vec3.scaleAndAdd_ip(vec3.add([], gmid, mid), v.point, (n-3) / n);
         });
@@ -169,7 +164,7 @@ function subdivide(flag) {
         });
       
         mesh_subdiv.faces.forEach(function(f){
-            mesh_subdiv_next.vertices[f.id].point = f.subdiv_point;
+            mesh_subdiv_next.vertices[f.id].point = f.centroid();
         });
       
         mesh_subdiv.edges_forEach(function(e){
