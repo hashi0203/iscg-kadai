@@ -12,17 +12,23 @@
   <h3>実装内容:</h3>
   <ul>
     <li>GLSL Sandbox を使用してレイトレーシングを1から実装</li>
-    <li>カメラからレイを⾶飛ばして各物体との交点を計算して，シェーディングをした結果</li>
-    <li>デフォルトのメッシュに立方体と立方体が3つ重なったものを追加</li>
-    <li>メッシュの初期化機能を追加</li>
+    <li>カメラからレイを⾶ばして各物体との交点を計算し，一番近い物体の色を塗った結果を表示</li>
+    <li>球，三角形，平面，円錐との交点の計算</li>
+    <li>ソースコードは<a href='https://hashi0203-iscg-kadai.glitch.me/kadai-R1/script.js'>こちら</a>にも掲載</li>
   </ul>
   
-  <h3>マウス操作:</h3>
-  <ul>
-    <li>Drag: 視点の回転</li>
-    <li>Shift+drag: ズーム</li>
-    <li>Ctrl+Drag: 視点の移動</li>
-  </ul>
+  <h3>物体の変更:</h3>
+  <ol>
+    <li>n を作成したいオブジェクトの個数とする</li>
+    <li>main 関数内2行目を polygon objects[n]; に変更</li>
+    <li>その下に objects[i] = (物体) のようにして物体を生成(物体は以下のものを指定可能)</li>
+    <ul>
+      <li>球：create_sphere(vec3 中心座標, float 半径, vec4 色
+        )</li>
+      <li>三角形：create_triangle(vec3 点a, vec3 点b, vec3 点c, vec4(r,g,b,a))</li>
+    </ul>
+    <li>球(中心,半径,色) OR 三角形(点a,点b,点c,色) OR 平面(平面上の任意の1点a,法線ベクトル,色) OR 円錐(底面の円の中心,法線ベクトル,底面半径,高さ,色)</li>
+  </ol>
   
   <input type="button" onclick="location.href='../'" value="課題一覧へ">
   <input type="button" onclick="window.open('http://glslsandbox.com/e#64393.21')" target="_blank" value="課題へ">
