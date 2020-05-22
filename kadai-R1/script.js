@@ -249,6 +249,7 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 				i.t = tc_min;
 				vec3 p = o_rotate + d_rotate*i.t;
 				vec3 n = normalize(vec3(normalize(vec2(p[0],p[1])),obj.c.r/obj.c.h));
+				// 元の座標系に戻す
 				i.p = rotate_inv(p-trans,cs_z,cs_y);
 				i.n = rotate_inv(n,cs_z,cs_y);
 				return i;
@@ -259,11 +260,13 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 					i.t = mi;
 					vec3 p = o_rotate + d_rotate*i.t;
 					vec3 n;
+					// 底面と交わったか側面と交わったか判定
 					if (tz_min > tc_min) {
 						n = vec3(0,0,-1);
 					} else {
 						n = normalize(vec3(normalize(vec2(p[0],p[1])),obj.c.r/obj.c.h));
 					}
+					// 元の座標系に戻す
 					i.p = rotate_inv(p-trans,cs_z,cs_y);
 					i.n = rotate_inv(n,cs_z,cs_y);
 					return i;
@@ -277,39 +280,40 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 	}
 }
 
-// 点光源の位置
-const vec3 PLS = vec3(5,0,8);
 // オブジェクトの個数
 const int OBJ_NUM = 10;
+// 点光源の位置
+const vec3 PLS = vec3(5,0,8);
 // 反射回数
 const int REFRECT_NUM = 3;
+// ランバート反射の輝度
+const float IL = 1.0;
+// ピンホールとフィルムの距離を指定
+const float l = 2.0;
+// フィルムの横幅を指定(縦幅は解像度に合わせて自動で指定)
+const float film_w = 5.0;
+float film_h = film_w*resolution.y/resolution.x;
+// カメラ(ピンホール)位置を指定
+//const vec3 c_from = vec3(7,0,6);
+vec3 c_from = vec3(sin(time*0.1)*10.0,cos(time*0.1)*10.0,6);
+// カメラの方向を指定
+const vec3 c_to = vec3(0,0,0);
+// カメラのUPベクトルを指定
+const vec3 c_up = vec3(0,0,10);
 
 void main( void ) {
 	// 球(中心,半径,色) OR 三角形(点a,点b,点c,色) OR 平面(平面上の任意の1点a,法線ベクトル,色) OR 円錐(底面の円の中心,法線ベクトル,底面半径,高さ,色) のオブジェクトを作成
 	polygon objects[OBJ_NUM];
 	objects[0] = create_plane(vec3(10.0,0,0),vec3(-1,0,0),vec4(0.3,0.3,0.3,1.0));
-	objects[1] = create_plane(vec3(0,10.0,0),vec3(0,-1,0),vec4(0.2,0.2,0.2,1.0));
+	objects[1] = create_plane(vec3(0,10.0,0),vec3(0,-1,0),vec4(0.3,0.3,0.3,1.0));
 	objects[2] = create_plane(vec3(-10.0,0,0),vec3(1,0,0),vec4(0.3,0.3,0.3,1.0));
-	objects[3] = create_plane(vec3(0,-10.0,0),vec3(0,1,0),vec4(0.2,0.2,0.2,1.0));
-	objects[4] = create_plane(vec3(0,0,-10.0),vec3(0,0,1),vec4(0.1,0.1,0.1,1.0));
+	objects[3] = create_plane(vec3(0,-10.0,0),vec3(0,1,0),vec4(0.3,0.3,0.3,1.0));
+	objects[4] = create_plane(vec3(0,0,-10.0),vec3(0,0,1),vec4(0.3,0.3,0.3,1.0));
 	objects[5] = create_sphere(vec3(0,0,0),2.0,vec4(1.0, 0.0, 1.0, 1.0));
 	objects[6] = create_sphere(vec3(1,2,2),1.0,vec4(0.0, 1.0, 1.0, 1.0));
 	objects[7] = create_triangle(vec3(4,5,0),vec3(4,-5,2),vec3(0,0,0),vec4(1.0,1.0,0,1.0));
 	objects[8] = create_cone(vec3(1,1,-0.5),vec3(0,2,4),3.0,4.0,vec4(0,1.0,0,1.0));
 	objects[9] = create_sphere(vec3(0.5-mouse.y,mouse.x-0.5,0.0)*9.0,1.0,vec4(0.8, 0.8, 0.8, 1.0));
-	
-	// ピンホールとフィルムの距離を指定
-	float l = 2.0;
-	// フィルムの横幅を指定(縦幅は解像度に合わせて自動で指定)
-	float film_w = 5.0;
-	float film_h = film_w*resolution.y/resolution.x;
-	// カメラ(ピンホール)位置を指定
-	//vec3 c_from = vec3(7,0,6);
-	vec3 c_from = vec3(sin(time*0.1)*10.0,cos(time*0.1)*10.0,6);
-	// カメラの方向を指定
-	vec3 c_to = vec3(0,0,0);
-	// カメラのUPベクトルを指定
-	vec3 c_up = vec3(0,0,10);
 	
 	// カメラレイを計算
 	vec3 w = normalize(c_from-c_to);
@@ -336,7 +340,7 @@ void main( void ) {
 				hit_color = objects[i].color;
 			}
 		}
-		float d = clamp(dot(normalize(PLS-first_hit.p), first_hit.n),0.1,1.0);
+		float d = clamp(dot(normalize(PLS-first_hit.p), first_hit.n)*IL,0.1,1.0);
 		tmp_color *= hit_color*d;
 		fin_color += tmp_color;
 		origin = first_hit.p + first_hit.n * 0.0001;
