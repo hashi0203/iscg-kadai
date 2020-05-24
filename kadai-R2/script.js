@@ -8,6 +8,8 @@ uniform float time;
 uniform vec2 mouse;
 uniform vec2 resolution;
 
+const float PI = 3.14159265359;
+
 struct triangle
 {
 	vec3 a;
@@ -39,6 +41,8 @@ struct polygon
 	plane p;
 	cone c;
 	vec4 color;
+	int refl;
+	float refr;
 };
 	
 struct intersection{
@@ -47,35 +51,41 @@ struct intersection{
 	vec3 n;
 };
 	
-polygon create_sphere (vec3 c, float r, vec4 color) {
+polygon create_sphere (vec3 c, float r, vec4 color, int refl, float refr) {
 	polygon obj;
 	obj.flag = 0;
 	obj.s.c = c;
 	obj.s.r = r;
 	obj.color = color;
+	obj.refl = refl;
+	obj.refr = refr;
 	return obj;
 }
 
-polygon create_triangle (vec3 a, vec3 b, vec3 c, vec4 color) {
+polygon create_triangle (vec3 a, vec3 b, vec3 c, vec4 color, int refl, float refr) {
 	polygon obj;
 	obj.flag = 1;
 	obj.t.a = a;
 	obj.t.b = b;
 	obj.t.c = c;
 	obj.color = color;
+	obj.refl = refl;
+	obj.refr = refr;
 	return obj;
 }
 
-polygon create_plane (vec3 a, vec3 n, vec4 color) {
+polygon create_plane (vec3 a, vec3 n, vec4 color, int refl, float refr) {
 	polygon obj;
 	obj.flag = 2;
 	obj.p.a = a;
 	obj.p.n = n;
 	obj.color = color;
+	obj.refl = refl;
+	obj.refr = refr;
 	return obj;
 }
 
-polygon create_cone (vec3 c, vec3 n, float r, float h, vec4 color) {
+polygon create_cone (vec3 c, vec3 n, float r, float h, vec4 color, int refl, float refr) {
 	polygon obj;
 	obj.flag = 3;
 	obj.c.c = c;
@@ -83,7 +93,25 @@ polygon create_cone (vec3 c, vec3 n, float r, float h, vec4 color) {
 	obj.c.r = r;
 	obj.c.h = h;
 	obj.color = color;
+	obj.refl = refl;
+	obj.refr = refr;
 	return obj;
+}
+
+float irradiance(float phi, vec3 n, vec3 p, vec3 PLS) {
+	vec3 l_not_normed = PLS-p;
+	vec3 l = normalize(l_not_normed);
+	float r2 = dot(l_not_normed,l_not_normed);
+	return phi*dot(n,l)/(4.0*PI*r2);
+}
+
+float fresnel(float cos_a, float refr) {
+	float A = refr;
+	float B = cos_a;
+	float C = sqrt(1.0-A*A*(1.0-B)*(1.0-B));
+	float p1 = 1.0-2.0*C/(A*B+C);
+	float p2 = 1.0-2.0*B/(A*C+B);
+	return (p1*p1+p2*p2)/2.0;
 }
 
 vec3 rotate(vec3 v, vec2 cs_z, vec2 cs_y) {
@@ -280,14 +308,26 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 	}
 }
 
+// 点光源の個数
+const int PL_NUM = 2;
+// 点光源の位置
+vec3 PLS[PL_NUM];
 // オブジェクトの個数
 const int OBJ_NUM = 10;
-// 点光源の位置
-const vec3 PLS = vec3(5,0,8);
+// オブジェクトのプロパティ
+polygon objects[OBJ_NUM];
+// 点光源の放射束
+const float phi = 10000.0;
 // 反射回数
 const int REFL_NUM = 3;
-// ランバート反射の輝度
-const float IL = 1.0;
+// 反射能
+const float Kd = 0.8;
+// 正反射率
+const float Ks = 0.8;
+// 開始点の物質の屈折率
+const float refr_origin = 1.33;
+// 背景色
+const vec4 back_color = vec4(0.3,0.4,1,1);
 // ピンホールとフィルムの距離を指定
 const float l = 2.0;
 // フィルムの横幅を指定(縦幅は解像度に合わせて自動で指定)
@@ -301,19 +341,149 @@ const vec3 c_to = vec3(0,0,0);
 // カメラのUPベクトルを指定
 const vec3 c_up = vec3(0,0,10);
 
+float shadow(intersection first_hit) {
+	vec3 p = first_hit.p + first_hit.n * 0.0001;
+	intersection shadow;
+	float coord = 0.0;
+	for (int j = 0; j < PL_NUM; j++) {
+		vec3 l = normalize(PLS[j] - p);
+		float len = length(PLS[j] - p);
+		int flag = 0;
+		// 光源との間に物体があるかどうか判定
+		for (int i = 0; i < OBJ_NUM; i++) {
+		    shadow = intersect(p,l,objects[i]);
+		    if (shadow.t > 0.0 && shadow.t < len) {
+		    	flag = 1;
+		    }
+		}
+		float tmp = (Kd/PI)*irradiance(phi,first_hit.n,first_hit.p,PLS[j]);
+		// 影になっていれば色を0.2倍にして表示
+		if (flag == 0) {
+		    coord += tmp;
+		} else {
+		    coord += tmp*0.2;
+		}
+	}
+	return clamp(coord,0.1,1.0);
+}
+
+vec4 shade(vec3 o, vec3 d, polygon objects[OBJ_NUM]) {
+	vec4 tmp_color = vec4(1,1,1,0);
+	vec4 fin_color = vec4(0,0,0,1);
+	float refr = refr_origin;
+	int flag = 1;
+	
+	intersection first_hit;
+	first_hit.t = -1.0;
+	vec4 hit_color = vec4(0.5,0.5,0.5,1.0);
+	int hit_refl = 0;
+	float hit_refr;
+	
+	// フレネル反射で寄与が2番目に大きいものを入れるスタック
+	vec4 s_tmp_color = vec4(0);
+	vec3 s_o;
+	vec3 s_d;
+	
+	
+	for (int j = 0; j < REFL_NUM; j++){
+		if (flag == 1) {
+			// 各オブジェクトについて交点を計算
+			for (int i = 0; i < OBJ_NUM; i++) {
+			    intersection hit = intersect(o,d,objects[i]);
+			    if (hit.t > 0.0 && (hit.t < first_hit.t || first_hit.t < 0.0)) {
+				first_hit = hit;
+				hit_color = objects[i].color;
+				hit_refl = objects[i].refl;
+				hit_refr = objects[i].refr;
+			    }
+			}
+			if (hit_refl == 0) {
+				tmp_color *= hit_color*shadow(first_hit);
+				fin_color += tmp_color;
+				flag = 0;
+			} else if (hit_refl == 1) {
+				o = first_hit.p + first_hit.n * 0.0001;
+				d = reflect(d, first_hit.n);
+				tmp_color *= Ks;
+			} else if (hit_refl == 2) {
+				vec3 o_refl = first_hit.p + first_hit.n * 0.0001;
+				vec3 d_refl = reflect(d, first_hit.n);
+				float cos_a = dot(-d,first_hit.n);
+				float refr_rate = refr/hit_refr;
+				float tmp = 1.0-pow(refr_rate,2.0)*pow(1.0-pow(cos_a,2.0),2.0);
+				if (tmp < 0.0) {
+					o = o_refl;
+					d = d_refl;
+				} else {
+					float R = fresnel(cos_a,refr_rate);
+					// 寄与が大きい方のみを計算
+					// 小さい方はスタックに溜まっているものよりも寄与が大きければスタックに入れ替える
+					if (R >= 0.5) {
+						if (tmp_color[0] * (1.0-R) > s_tmp_color[0]) {
+							s_tmp_color = tmp_color * (1.0-R);
+							s_o = first_hit.p - first_hit.n * 0.0001;
+							s_d = refr_rate*(d+cos_a*first_hit.n)-sqrt(tmp)*first_hit.n;
+						}
+						tmp_color *= R;
+						o = o_refl;
+						d = d_refl;
+					} else {
+						if (tmp_color[0] * R > s_tmp_color[0]) {
+							s_tmp_color = tmp_color * R;
+							s_o = o_refl;
+							s_d = d_refl;
+						}
+						tmp_color *= 1.0-R;
+						o = first_hit.p - first_hit.n * 0.0001;
+						d = refr_rate*(d+cos_a*first_hit.n)-sqrt(tmp)*first_hit.n;
+						refr = hit_refr;
+					}
+				}
+			}
+		}
+	}
+	
+	// 寄与が2番目に大きかったものがあれば，そのRayを一度だけ計算
+	if (s_tmp_color[0] != 0.0) {
+		tmp_color = s_tmp_color;
+		o = s_o;
+		d = s_d;
+	
+		// 各オブジェクトについて交点を計算
+		for (int i = 0; i < OBJ_NUM; i++) {
+			intersection hit = intersect(o,d,objects[i]);
+			if (hit.t > 0.0 && (hit.t < first_hit.t || first_hit.t < 0.0)) {
+				first_hit = hit;
+				hit_color = objects[i].color;
+				hit_refl = objects[i].refl;
+			}
+		}
+		if (hit_refl == 0) {
+			tmp_color *= hit_color*shadow(first_hit);
+			fin_color += tmp_color;
+		}
+	}
+	
+	return fin_color;
+}
+
 void main( void ) {
+	// 点光源の位置
+	PLS[0] = vec3(4,0,6);
+	PLS[1] = vec3(-4,0,5);
+	
 	// 球(中心,半径,色) OR 三角形(点a,点b,点c,色) OR 平面(平面上の任意の1点a,法線ベクトル,色) OR 円錐(底面の円の中心,法線ベクトル,底面半径,高さ,色) のオブジェクトを作成
-	polygon objects[OBJ_NUM];
-	objects[0] = create_plane(vec3(10.0,0,0),vec3(-1,0,0),vec4(0.3,0.3,0.3,1.0));
-	objects[1] = create_plane(vec3(0,10.0,0),vec3(0,-1,0),vec4(0.3,0.3,0.3,1.0));
-	objects[2] = create_plane(vec3(-10.0,0,0),vec3(1,0,0),vec4(0.3,0.3,0.3,1.0));
-	objects[3] = create_plane(vec3(0,-10.0,0),vec3(0,1,0),vec4(0.3,0.3,0.3,1.0));
-	objects[4] = create_plane(vec3(0,0,-10.0),vec3(0,0,1),vec4(0.3,0.3,0.3,1.0));
-	objects[5] = create_sphere(vec3(0,0,0),2.0,vec4(1.0, 0.0, 1.0, 1.0));
-	objects[6] = create_sphere(vec3(1,2,2),1.0,vec4(0.0, 1.0, 1.0, 1.0));
-	objects[7] = create_triangle(vec3(4,5,0),vec3(4,-5,2),vec3(0,0,0),vec4(1.0,1.0,0,1.0));
-	objects[8] = create_cone(vec3(1,1,-0.5),vec3(0,2,4),3.0,4.0,vec4(0,1.0,0,1.0));
-	objects[9] = create_sphere(vec3(0.5-mouse.y,mouse.x-0.5,0.0)*9.0,1.0,vec4(0.8, 0.8, 0.8, 1.0));
+	//objects[0] = create_plane(vec3(10.0,0,0),vec3(-1,0,0),vec4(0.3,0.3,0.3,1.0),1,1.0);
+	objects[1] = create_plane(vec3(0,10.0,0),vec3(0,-1,0),vec4(0.3,0.3,0.3,1.0),1,1.0);
+	//objects[2] = create_plane(vec3(-10.0,0,0),vec3(1,0,0),vec4(0.3,0.3,0.3,1.0),1,1.0);
+	objects[3] = create_plane(vec3(0,-10.0,0),vec3(0,1,0),vec4(0.3,0.3,0.3,1.0),1,1.0);
+	objects[4] = create_plane(vec3(0,0,-5.0),vec3(0,0,1),vec4(0.7,0.5,0.4,1.0),0,1.0);
+	objects[5] = create_sphere(vec3(0,0,0),3.5,vec4(1.0, 0.0, 1.0, 1.0),2,1.0);
+	objects[6] = create_sphere(vec3(1,2,2),1.0,vec4(0.0, 1.0, 1.0, 1.0),0,1.0);
+	objects[7] = create_triangle(vec3(4,5,0),vec3(4,-5,2),vec3(0,0,0),vec4(1.0,1.0,0,1.0),0,1.0);
+	objects[8] = create_cone(vec3(1,1,-0.5),vec3(0,2,4),3.0,4.0,vec4(0,1.0,0,1.0),0,1.0);
+	//objects[8] = create_cone(vec3(1,1,-0.5),vec3(0,2,4),3.0,4.0,back_color,2,1.33);
+	objects[9] = create_sphere(vec3(0.5-mouse.y,mouse.x-0.5,0.0)*9.0,1.0,vec4(0.8, 0.8, 0.8, 1.0),0,1.33);
 	
 	// カメラレイを計算
 	vec3 w = normalize(c_from-c_to);
@@ -327,25 +497,5 @@ void main( void ) {
 	vec4 tmp_color = vec4(1,1,1,0);
 	vec4 fin_color = vec4(0,0,0,1);
 	
-	// 反射回数だけ繰り返す
-	for (int r = 0; r < REFL_NUM; r++) {
-		intersection first_hit;
-		first_hit.t = -1.0;
-		vec4 hit_color;
-		// 各オブジェクトについて交点を計算
-		for (int i = 0; i < OBJ_NUM; i++) {
-			intersection hit = intersect(origin,direction,objects[i]);
-			if (hit.t > 0.0 && (hit.t < first_hit.t || first_hit.t < 0.0)) {
-				first_hit = hit;
-				hit_color = objects[i].color;
-			}
-		}
-		float d = clamp(dot(normalize(PLS-first_hit.p), first_hit.n)*IL,0.1,1.0);
-		tmp_color *= hit_color*d;
-		fin_color += tmp_color;
-		origin = first_hit.p + first_hit.n * 0.0001;
-		direction = reflect(direction, first_hit.n);
-	}
-	
-	gl_FragColor = fin_color;
+	gl_FragColor = shade(origin,direction,objects);
 }
