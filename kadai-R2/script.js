@@ -152,6 +152,10 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 		if (i.t < 0.0) return i;
 		i.p = o + d*i.t;
 		i.n = normalize(i.p - c);
+		// 方向ベクトルと反対方向を向く法線ベクトルを選択
+		if (dot(d,i.n) >= 0.0) {
+			i.n *= -1.0;
+		}
 		return i;
 	} else if (obj.flag == 1) {		
 		vec3 a1 = obj.t.a - obj.t.b;
@@ -164,17 +168,13 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 		if (beta > 0.0 && gamma > 0.0 && beta+gamma<1.0) {
 			i.t = dot(cross(a1,a2),b)/detA;
 			i.p = o + d*i.t;
-			vec3 c12 = cross(a1,a2);
+			i.n = normalize(cross(a1,a2));
 			// 方向ベクトルと反対方向を向く法線ベクトルを選択
-			if (dot(d,c12) < 0.0) {
-				i.n = normalize(c12);
-			} else {
-				i.n = normalize(cross(a2,a1));
+			if (dot(d,i.n) >= 0.0) {
+				i.n *= -1.0;
 			}
-			return i;
-		} else {
-			return i;
 		}
+		return i;
 	} else if (obj.flag == 2) {
 		// (a-(o + td))・n = 0 <-> t = (a-o)・n/d・n
 		float dn = dot(d,obj.p.n);
@@ -274,9 +274,17 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 			
 			if (d_rotate[2] == 0.0) {
 				// 水平方向に見ている時z方向は無視
-				i.t = tc_min;
+				if (tc_min > 0.0) {
+					i.t = tc_min;
+				} else {
+					i.t = tc_max;
+				}
 				vec3 p = o_rotate + d_rotate*i.t;
 				vec3 n = normalize(vec3(normalize(vec2(p[0],p[1])),obj.c.r/obj.c.h));
+				// 方向ベクトルと反対方向を向く法線ベクトルを選択
+				if (dot(d_rotate,n) >= 0.0) {
+					n *= -1.0;
+				}
 				// 元の座標系に戻す
 				i.p = rotate_inv(p-trans,cs_z,cs_y);
 				i.n = rotate_inv(n,cs_z,cs_y);
@@ -285,22 +293,28 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 				float mi = max(tz_min,tc_min);
 				float ma = min(tz_max,tc_max);
 				if (mi <= ma) {
-					i.t = mi;
+					if (mi > 0.0) {
+						i.t = mi;
+					} else {
+						i.t = ma;
+					}
 					vec3 p = o_rotate + d_rotate*i.t;
 					vec3 n;
 					// 底面と交わったか側面と交わったか判定
-					if (tz_min > tc_min) {
+					if ((mi > 0.0 && tz_min > tc_min) || (mi <= 0.0 && tz_max < tc_max)) {
 						n = vec3(0,0,-1);
 					} else {
 						n = normalize(vec3(normalize(vec2(p[0],p[1])),obj.c.r/obj.c.h));
 					}
+					// 方向ベクトルと反対方向を向く法線ベクトルを選択
+					if (dot(d_rotate,n) >= 0.0) {
+						n *= -1.0;
+					}
 					// 元の座標系に戻す
 					i.p = rotate_inv(p-trans,cs_z,cs_y);
 					i.n = rotate_inv(n,cs_z,cs_y);
-					return i;
-				} else {
-					return i;
 				}
+				return i;
 			}
 		}
 	} else {
@@ -309,7 +323,7 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 }
 
 // 点光源の個数
-const int PL_NUM = 2;
+const int PL_NUM = 3;
 // 点光源の位置
 vec3 PLS[PL_NUM];
 // オブジェクトの個数
@@ -327,19 +341,19 @@ const float Ks = 0.8;
 // 開始点の物質の屈折率
 const float refr_origin = 1.33;
 // 背景色
-const vec4 back_color = vec4(0.3,0.4,1,1);
+const vec4 background_color = vec4(0.66,0.81,0.92,1);
 // ピンホールとフィルムの距離を指定
 const float l = 2.0;
 // フィルムの横幅を指定(縦幅は解像度に合わせて自動で指定)
 const float film_w = 5.0;
 float film_h = film_w*resolution.y/resolution.x;
 // カメラ(ピンホール)位置を指定
-//const vec3 c_from = vec3(7,0,6);
-vec3 c_from = vec3(sin(time*0.1)*10.0,cos(time*0.1)*10.0,6);
+const vec3 c_from = vec3(10,0,-3);
+//vec3 c_from = vec3(sin(time*0.1)*10.0,cos(time*0.1)*10.0,6);
 // カメラの方向を指定
 const vec3 c_to = vec3(0,0,0);
 // カメラのUPベクトルを指定
-const vec3 c_up = vec3(0,0,10);
+const vec3 c_up = vec3(10,0,10);
 
 float shadow(intersection first_hit) {
 	vec3 p = first_hit.p + first_hit.n * 0.0001;
@@ -349,10 +363,10 @@ float shadow(intersection first_hit) {
 		vec3 l = normalize(PLS[j] - p);
 		float len = length(PLS[j] - p);
 		int flag = 0;
-		// 光源との間に物体があるかどうか判定
+		// 光源との間に透明でない物体があるかどうか判定
 		for (int i = 0; i < OBJ_NUM; i++) {
 		    shadow = intersect(p,l,objects[i]);
-		    if (shadow.t > 0.0 && shadow.t < len) {
+		    if (shadow.t > 0.0 && shadow.t < len && objects[i].refl == 0) {
 		    	flag = 1;
 		    }
 		}
@@ -384,59 +398,74 @@ vec4 shade(vec3 o, vec3 d, polygon objects[OBJ_NUM]) {
 	vec3 s_o;
 	vec3 s_d;
 	
-	
 	for (int j = 0; j < REFL_NUM; j++){
 		if (flag == 1) {
 			// 各オブジェクトについて交点を計算
 			for (int i = 0; i < OBJ_NUM; i++) {
 			    intersection hit = intersect(o,d,objects[i]);
-			    if (hit.t > 0.0 && (hit.t < first_hit.t || first_hit.t < 0.0)) {
+			    if (hit.t > 0.01 && (hit.t < first_hit.t || first_hit.t < 0.0)) {
 				first_hit = hit;
 				hit_color = objects[i].color;
 				hit_refl = objects[i].refl;
 				hit_refr = objects[i].refr;
 			    }
 			}
-			if (hit_refl == 0) {
+			// 外界に出るときは屈折率1.0，そうでないときは当たった物体の屈折率
+			if (hit_refr == refr) {
+				hit_refr = 1.0;
+			}
+			if (first_hit.t < 0.0) {
+				first_hit.t = 5.0;
+				tmp_color *= background_color*shadow(first_hit);
+				fin_color += tmp_color;
+				flag = 0;
+			} else if (hit_refl == 0) {
 				tmp_color *= hit_color*shadow(first_hit);
 				fin_color += tmp_color;
 				flag = 0;
-			} else if (hit_refl == 1) {
-				o = first_hit.p + first_hit.n * 0.0001;
-				d = reflect(d, first_hit.n);
-				tmp_color *= Ks;
-			} else if (hit_refl == 2) {
-				vec3 o_refl = first_hit.p + first_hit.n * 0.0001;
-				vec3 d_refl = reflect(d, first_hit.n);
-				float cos_a = dot(-d,first_hit.n);
-				float refr_rate = refr/hit_refr;
-				float tmp = 1.0-pow(refr_rate,2.0)*pow(1.0-pow(cos_a,2.0),2.0);
-				if (tmp < 0.0) {
-					o = o_refl;
-					d = d_refl;
-				} else {
-					float R = fresnel(cos_a,refr_rate);
-					// 寄与が大きい方のみを計算
-					// 小さい方はスタックに溜まっているものよりも寄与が大きければスタックに入れ替える
-					if (R >= 0.5) {
-						if (tmp_color[0] * (1.0-R) > s_tmp_color[0]) {
-							s_tmp_color = tmp_color * (1.0-R);
-							s_o = first_hit.p - first_hit.n * 0.0001;
-							s_d = refr_rate*(d+cos_a*first_hit.n)-sqrt(tmp)*first_hit.n;
+			} else {
+				// 最後の一回が反射や屈折なら計算しても意味がない
+				if (j < REFL_NUM - 1) {
+					if (hit_refl == 1) {
+						o = first_hit.p + first_hit.n * 0.0001;
+						d = reflect(d, first_hit.n);
+						tmp_color *= Ks;
+					} else if (hit_refl == 2) {
+						vec3 o_refl = first_hit.p + first_hit.n * 0.0001;
+						vec3 d_refl = reflect(d, first_hit.n);
+						float cos_a = dot(-d,first_hit.n);
+						float refr_rate = refr/hit_refr;
+						float tmp = 1.0-pow(refr_rate,2.0)*(1.0-pow(cos_a,2.0));
+						// 全反射するとき
+						if (tmp < 0.0) {
+							o = o_refl;
+							d = d_refl;
+							tmp_color *= Ks;
+						} else {
+							float R = fresnel(cos_a,refr_rate);
+							// 寄与が大きい方のみを計算
+							// 小さい方はスタックに溜まっているものよりも寄与が大きければスタックに入れ替える
+							if (R >= 0.5) {
+								if (tmp_color[0] * (1.0-R) > s_tmp_color[0]) {
+									s_tmp_color = tmp_color * (1.0-R);
+									s_o = first_hit.p - first_hit.n * 0.0001;
+									s_d = refr_rate*(d+cos_a*first_hit.n)-sqrt(tmp)*first_hit.n;
+								}
+								tmp_color *= R;
+								o = o_refl;
+								d = d_refl;
+							} else {
+								if (tmp_color[0] * R > s_tmp_color[0]) {
+									s_tmp_color = tmp_color * R;
+									s_o = o_refl;
+									s_d = d_refl;
+								}
+								tmp_color *= 1.0-R;
+								o = first_hit.p - first_hit.n * 0.0001;
+								d = refr_rate*(d+cos_a*first_hit.n)-sqrt(tmp)*first_hit.n;
+								refr = hit_refr;
+							}
 						}
-						tmp_color *= R;
-						o = o_refl;
-						d = d_refl;
-					} else {
-						if (tmp_color[0] * R > s_tmp_color[0]) {
-							s_tmp_color = tmp_color * R;
-							s_o = o_refl;
-							s_d = d_refl;
-						}
-						tmp_color *= 1.0-R;
-						o = first_hit.p - first_hit.n * 0.0001;
-						d = refr_rate*(d+cos_a*first_hit.n)-sqrt(tmp)*first_hit.n;
-						refr = hit_refr;
 					}
 				}
 			}
@@ -452,13 +481,17 @@ vec4 shade(vec3 o, vec3 d, polygon objects[OBJ_NUM]) {
 		// 各オブジェクトについて交点を計算
 		for (int i = 0; i < OBJ_NUM; i++) {
 			intersection hit = intersect(o,d,objects[i]);
-			if (hit.t > 0.0 && (hit.t < first_hit.t || first_hit.t < 0.0)) {
+			if (hit.t > 0.001 && (hit.t < first_hit.t || first_hit.t < 0.0)) {
 				first_hit = hit;
 				hit_color = objects[i].color;
 				hit_refl = objects[i].refl;
 			}
 		}
-		if (hit_refl == 0) {
+		if (first_hit.t < 0.0) {
+			first_hit.t = 5.0;
+			tmp_color *= background_color*shadow(first_hit);
+			fin_color += tmp_color;
+		} else if (hit_refl == 0) {
 			tmp_color *= hit_color*shadow(first_hit);
 			fin_color += tmp_color;
 		}
@@ -469,21 +502,25 @@ vec4 shade(vec3 o, vec3 d, polygon objects[OBJ_NUM]) {
 
 void main( void ) {
 	// 点光源の位置
-	PLS[0] = vec3(4,0,6);
-	PLS[1] = vec3(-4,0,5);
+	PLS[0] = vec3(5,0,6);
+	PLS[1] = vec3(10,0,-4);
+	PLS[2] = vec3(-8,0,3);
 	
 	// 球(中心,半径,色) OR 三角形(点a,点b,点c,色) OR 平面(平面上の任意の1点a,法線ベクトル,色) OR 円錐(底面の円の中心,法線ベクトル,底面半径,高さ,色) のオブジェクトを作成
-	//objects[0] = create_plane(vec3(10.0,0,0),vec3(-1,0,0),vec4(0.3,0.3,0.3,1.0),1,1.0);
-	objects[1] = create_plane(vec3(0,10.0,0),vec3(0,-1,0),vec4(0.3,0.3,0.3,1.0),1,1.0);
-	//objects[2] = create_plane(vec3(-10.0,0,0),vec3(1,0,0),vec4(0.3,0.3,0.3,1.0),1,1.0);
-	objects[3] = create_plane(vec3(0,-10.0,0),vec3(0,1,0),vec4(0.3,0.3,0.3,1.0),1,1.0);
+	//objects[0] = create_plane(vec3(-10,0,0.1),vec3(1,0,-2),background_color,0,1.0);
+	objects[1] = create_sphere(vec3(-9,0,0),20.0,background_color,0,1.0);
+	//objects[1] = create_plane(vec3(0,10.0,0),vec3(0,-1,0),vec4(0.3,0.3,0.3,1.0),1,1.0);
+	objects[2] = create_plane(vec3(-10,0,0),vec3(1,0,0),vec4(0.3,0.3,0.3,1.0),1,1.0);
+	//objects[3] = create_plane(vec3(0,-10.0,0),vec3(0,1,0),vec4(0.3,0.3,0.3,1.0),1,1.0);
+	objects[3] = create_cone(vec3(-9,0,0),vec3(0,0,-1),22.0,30.0,background_color,2,1.33);
 	objects[4] = create_plane(vec3(0,0,-5.0),vec3(0,0,1),vec4(0.7,0.5,0.4,1.0),0,1.0);
-	objects[5] = create_sphere(vec3(0,0,0),3.5,vec4(1.0, 0.0, 1.0, 1.0),2,1.0);
+	objects[5] = create_sphere(vec3(0,3.0,-2.5),1.0,vec4(1.0, 0.0, 1.0, 1.0),2,1.56);
 	objects[6] = create_sphere(vec3(1,2,2),1.0,vec4(0.0, 1.0, 1.0, 1.0),0,1.0);
 	objects[7] = create_triangle(vec3(4,5,0),vec3(4,-5,2),vec3(0,0,0),vec4(1.0,1.0,0,1.0),0,1.0);
 	objects[8] = create_cone(vec3(1,1,-0.5),vec3(0,2,4),3.0,4.0,vec4(0,1.0,0,1.0),0,1.0);
 	//objects[8] = create_cone(vec3(1,1,-0.5),vec3(0,2,4),3.0,4.0,back_color,2,1.33);
-	objects[9] = create_sphere(vec3(0.5-mouse.y,mouse.x-0.5,0.0)*9.0,1.0,vec4(0.8, 0.8, 0.8, 1.0),0,1.33);
+	objects[9] = create_sphere(vec3(vec2(0.5-mouse.y,mouse.x-0.5)*10.0,-3.5),1.0,vec4(0.8, 0.8, 0.8, 1.0),0,1.0);
+	
 	
 	// カメラレイを計算
 	vec3 w = normalize(c_from-c_to);
