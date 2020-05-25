@@ -8,7 +8,7 @@ uniform float time;
 uniform vec2 mouse;
 uniform vec2 resolution;
 
-const float PI = 3.14159265359;
+const float PI = 3.1415;
 
 struct triangle
 {
@@ -40,7 +40,7 @@ struct polygon
 	triangle t;
 	plane p;
 	cone c;
-	vec4 color;
+	vec3 color;
 	int refl;
 	float refr;
 };
@@ -51,7 +51,7 @@ struct intersection{
 	vec3 n;
 };
 	
-polygon create_sphere (vec3 c, float r, vec4 color, int refl, float refr) {
+polygon create_sphere (vec3 c, float r, vec3 color, int refl, float refr) {
 	polygon obj;
 	obj.flag = 0;
 	obj.s.c = c;
@@ -62,7 +62,7 @@ polygon create_sphere (vec3 c, float r, vec4 color, int refl, float refr) {
 	return obj;
 }
 
-polygon create_triangle (vec3 a, vec3 b, vec3 c, vec4 color, int refl, float refr) {
+polygon create_triangle (vec3 a, vec3 b, vec3 c, vec3 color, int refl, float refr) {
 	polygon obj;
 	obj.flag = 1;
 	obj.t.a = a;
@@ -74,7 +74,7 @@ polygon create_triangle (vec3 a, vec3 b, vec3 c, vec4 color, int refl, float ref
 	return obj;
 }
 
-polygon create_plane (vec3 a, vec3 n, vec4 color, int refl, float refr) {
+polygon create_plane (vec3 a, vec3 n, vec3 color, int refl, float refr) {
 	polygon obj;
 	obj.flag = 2;
 	obj.p.a = a;
@@ -85,7 +85,7 @@ polygon create_plane (vec3 a, vec3 n, vec4 color, int refl, float refr) {
 	return obj;
 }
 
-polygon create_cone (vec3 c, vec3 n, float r, float h, vec4 color, int refl, float refr) {
+polygon create_cone (vec3 c, vec3 n, float r, float h, vec3 color, int refl, float refr) {
 	polygon obj;
 	obj.flag = 3;
 	obj.c.c = c;
@@ -154,7 +154,7 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 		i.n = normalize(i.p - c);
 		// 方向ベクトルと反対方向を向く法線ベクトルを選択
 		if (dot(d,i.n) >= 0.0) {
-			i.n *= -1.0;
+			i.n = -i.n;
 		}
 		return i;
 	} else if (obj.flag == 1) {		
@@ -171,7 +171,7 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 			i.n = normalize(cross(a1,a2));
 			// 方向ベクトルと反対方向を向く法線ベクトルを選択
 			if (dot(d,i.n) >= 0.0) {
-				i.n *= -1.0;
+				i.n = -i.n;
 			}
 		}
 		return i;
@@ -283,7 +283,7 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 				vec3 n = normalize(vec3(normalize(vec2(p[0],p[1])),obj.c.r/obj.c.h));
 				// 方向ベクトルと反対方向を向く法線ベクトルを選択
 				if (dot(d_rotate,n) >= 0.0) {
-					n *= -1.0;
+					n = -n;
 				}
 				// 元の座標系に戻す
 				i.p = rotate_inv(p-trans,cs_z,cs_y);
@@ -308,7 +308,7 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 					}
 					// 方向ベクトルと反対方向を向く法線ベクトルを選択
 					if (dot(d_rotate,n) >= 0.0) {
-						n *= -1.0;
+						n = -n;
 					}
 					// 元の座標系に戻す
 					i.p = rotate_inv(p-trans,cs_z,cs_y);
@@ -327,31 +327,34 @@ const int PL_NUM = 2;
 // 点光源の位置
 vec3 PLS[PL_NUM];
 // オブジェクトの個数
-const int OBJ_NUM = 16;
+const int OBJ_NUM = 18;
 // オブジェクトのプロパティ
 polygon objects[OBJ_NUM];
 // 点光源の放射束
 const float phi = 10000.0;
 // 反射回数
-const int REFL_NUM = 6;
+const int REFL_NUM = 8;
 // 反射能
 const float Kd = 0.8;
 // 正反射率
 const float Ks = 0.8;
-// 開始点の物質の屈折率
-const float refr_origin = 1.33;
+// 物質の屈折率
+const float refr_air = 1.00;
+const float refr_ice = 1.31;
+const float refr_water = 1.33;
+const float refr_glass = 1.56;
+const float refr_diamond = 2.42;
 // 背景色
-const vec4 background_color = vec4(0.66,0.81,0.92,1);
+const vec3 background_color = vec3(0.66,0.81,0.92);
 // ピンホールとフィルムの距離を指定
 const float l = 2.0;
 // フィルムの横幅を指定(縦幅は解像度に合わせて自動で指定)
 const float film_w = 5.0;
 float film_h = film_w*resolution.y/resolution.x;
 // カメラ(ピンホール)位置を指定
-//const vec3 c_from = vec3(10,0,-3);
-//vec3 c_from = vec3(sin(time*0.1)*10.0,cos(time*0.1)*10.0,6);
-vec3 c_from =vec3(10,0,sin(time*0.1)*4.0);
-//const vec3 c_from =vec3(10,0,4.0);
+vec3 c_from =vec3(10,0,sin(time*0.1)*4.0); // 動くカメラ
+//const vec3 c_from = vec3(10,0,-3); // 水中カメラ
+//const vec3 c_from =vec3(10,0,4.0); // 空中カメラ
 // カメラの方向を指定
 const vec3 c_to = vec3(0,0,0);
 // カメラのUPベクトルを指定
@@ -383,30 +386,32 @@ float shadow(intersection first_hit) {
 	return clamp(coord,0.1,1.0);
 }
 
-vec4 shade(vec3 o, vec3 d, polygon objects[OBJ_NUM]) {
-	vec4 tmp_color = vec4(1,1,1,0);
-	vec4 fin_color = vec4(0,0,0,1);
+vec3 shade(vec3 o, vec3 d, polygon objects[OBJ_NUM]) {
+	vec3 tmp_color = vec3(1,1,1);
+	vec3 fin_color = vec3(0,0,0);
 	float refr;
 	if (c_from[2] > 0.0) {
-		refr = 1.0;
+		refr = refr_air;
+	} else if (c_from[2] < -3.5) {
+		refr = refr_glass;
 	} else {
-		refr = 1.33;
+		refr = refr_water;
 	}
 	int flag = 1;
 	
 	intersection first_hit;
-	vec4 hit_color;
+	vec3 hit_color;
 	int hit_refl;
 	float hit_refr;
 	
 	// フレネル反射で寄与が2番目に大きいものを入れるスタック
-	vec4 s_tmp_color = vec4(0);
+	vec3 s_tmp_color = vec3(0);
 	vec3 s_o;
 	vec3 s_d;
 	
 	for (int j = 0; j < REFL_NUM; j++){
 		first_hit.t = -1.0;
-		hit_color = vec4(0.5,0.5,0.5,1.0);
+		hit_color = background_color;
 		hit_refl = 0;
 		
 		if (flag == 1) {
@@ -420,13 +425,19 @@ vec4 shade(vec3 o, vec3 d, polygon objects[OBJ_NUM]) {
 				hit_refr = objects[i].refr;
 			    }
 			}
-			// 外界に出るときは屈折率1.0，そうでないときは当たった物体の屈折率
+			// z座標が負のところで物体から外に出る時物体の屈折率はrefr_waterになり，正のところではrefr_airになり，(6,2,-2)を中心とする半径1の円上ならダイヤモンドとなる
 			if (hit_refr == refr) {
-				hit_refr = 1.0;
+				if (first_hit.p[2] > 0.0) {
+					hit_refr = refr_air;
+				} else if (length(first_hit.p - vec3(6,2,-2)) < 1.0 && length(first_hit.p[2] + 2.0) < 0.01) {
+					hit_refr = refr_diamond;
+				} else {
+					hit_refr = refr_water;
+				}
 			}
 			if (first_hit.t < 0.0) {
 				first_hit.t = 3.0;
-				tmp_color *= background_color*shadow(first_hit);
+				tmp_color *= hit_color*shadow(first_hit);
 				fin_color += tmp_color;
 				flag = 0;
 			} else if (hit_refl == 0) {
@@ -451,9 +462,6 @@ vec4 shade(vec3 o, vec3 d, polygon objects[OBJ_NUM]) {
 							o = o_refl;
 							d = d_refl;
 							tmp_color *= Ks;
-							//if (j == 0 && d[2] < 0.0) {
-							//	return vec4(1);
-							//}
 						} else {
 							float R = fresnel(cos_a,refr_rate);
 							// 寄与が大きい方のみを計算
@@ -492,7 +500,7 @@ vec4 shade(vec3 o, vec3 d, polygon objects[OBJ_NUM]) {
 		d = s_d;
 		
 		first_hit.t = -1.0;
-		hit_color = vec4(0.5,0.5,0.5,1.0);
+		hit_color = background_color;
 		hit_refl = 0;
 	
 		// 各オブジェクトについて交点を計算
@@ -505,15 +513,14 @@ vec4 shade(vec3 o, vec3 d, polygon objects[OBJ_NUM]) {
 			}
 		}
 		if (first_hit.t < 0.0) {
-			first_hit.t = 5.0;
-			tmp_color *= background_color*shadow(first_hit);
+			first_hit.t = 3.0;
+			tmp_color *= hit_color*shadow(first_hit);
 			fin_color += tmp_color;
 		} else if (hit_refl == 0) {
 			tmp_color *= hit_color*shadow(first_hit);
 			fin_color += tmp_color;
 		}
 	}
-	
 	return fin_color;
 }
 
@@ -521,28 +528,27 @@ void main( void ) {
 	// 点光源の位置
 	PLS[0] = vec3(5,0,6);
 	PLS[1] = vec3(10,0,-4);
-	//PLS[2] = vec3(-8,0,3);
-	
+
+	vec3 no_color = vec3(1);
+	float no_refr = 0.0;
 	// 球(中心,半径,色) OR 三角形(点a,点b,点c,色) OR 平面(平面上の任意の1点a,法線ベクトル,色) OR 円錐(底面の円の中心,法線ベクトル,底面半径,高さ,色) のオブジェクトを作成
-	objects[0] = create_plane(vec3(20,0,-5),vec3(-1,0,1),vec4(0.7,0.5,0.4,1.0),0,1.0);
-	//objects[1] = create_sphere(vec3(-9,0,0),20.0,background_color,0,1.0);
-	//objects[1] = create_plane(vec3(0,10.0,0),vec3(0,-1,0),vec4(0.3,0.3,0.3,1.0),1,1.0);
-	objects[2] = create_plane(vec3(-10,0,0),vec3(1,0,0),vec4(0.3,0.3,0.3,1.0),1,1.0);
-	//objects[3] = create_plane(vec3(0,-10.0,0),vec3(0,1,0),vec4(0.3,0.3,0.3,1.0),1,1.0);
-	objects[3] = create_cone(vec3(-9,0,0),vec3(0,0,-1),22.0,30.0,background_color,2,1.33);
-	objects[4] = create_plane(vec3(0,0,-5.0),vec3(0,0,1),vec4(0.7,0.5,0.4,1.0),0,1.0);
-	objects[5] = create_sphere(vec3(2,3,-2.5),2.0,vec4(1.0, 0.0, 1.0, 1.0),2,1.56);
-	objects[6] = create_sphere(vec3(1,2,2),1.0,vec4(0.0, 1.0, 1.0, 1.0),0,1.0);
-	objects[7] = create_triangle(vec3(4,5,0),vec3(4,-3,2),vec3(0,0,-1.1),vec4(1.0,1.0,0,1.0),0,1.0);
-	objects[8] = create_cone(vec3(1,1,-0.5),vec3(0,2,4),3.0,4.0,vec4(0,1.0,0,1.0),0,1.0);
-	objects[1] = create_cone(vec3(11,-3,-5),vec3(0,-2,4),3.0,4.0,background_color,2,1.56);
-	objects[9] = create_sphere(vec3(vec2(0.5-mouse.y,mouse.x-0.5)*10.0,-3.5),1.0,vec4(0.8, 0.8, 0.8, 1.0),0,1.0);
-	objects[10] = create_plane(vec3(-10,0,0),vec3(3,0,-1),background_color,0,1.0);
-	objects[11] = create_sphere(vec3(1,-6,-1),2.0,background_color,2,1.31);
-	objects[12] = create_sphere(vec3(9.2,0,-4),1.0,background_color,2,1.56);	
-	objects[13] = create_sphere(vec3(1,-2,-0.5),1.0,background_color, 1,1.0);
-	objects[14] = create_triangle(vec3(-1,-8,-1),vec3(-4,-6,-5),vec3(-1,-7,-3.5),vec4(1,0,0,1),0,1.0);
-	objects[15] = create_sphere(vec3(2,3,-3),0.5,vec4(0,0,1,1),0,1.0);
+	objects[0] = create_plane(vec3(0,0,-5),vec3(0,0,1),vec3(0.7,0.5,0.4),0,no_refr); // 地面
+	objects[1] = create_plane(vec3(20,0,-5),vec3(-1,0,1),vec3(0.7,0.5,0.4),0,no_refr); // 地面の延長
+	objects[2] = create_plane(vec3(-10,0,0),vec3(3,0,-1),background_color,0,no_refr); // 空の背景
+	objects[3] = create_plane(vec3(-10,0,0),vec3(1,0,0),no_color,1,no_refr); // 鏡
+	objects[4] = create_triangle(vec3(4,5,0),vec3(4,-3,2),vec3(0,0,-1.1),vec3(1,1,0),0,no_refr); // 黄色の三角
+	objects[5] = create_triangle(vec3(-1,-8,-1),vec3(-4,-6,-5),vec3(-1,-7,-3.5),vec3(1,0,0),0,no_refr); // 赤の三角
+	objects[7] = create_sphere(vec3(vec2(0.5-mouse.y,mouse.x-0.5)*10.0,-3.5),1.0,vec3(0.8,0.8,0.8),0,no_refr); // 動く球
+	objects[8] = create_sphere(vec3(2,3,-3),0.5,vec3(0,0,1),0,no_refr); // 青の球
+	objects[9] = create_sphere(vec3(1,-2,-0.5),1.0,no_color,1,no_refr); // 水面に浮かぶ鏡の球
+	objects[10] = create_sphere(vec3(1,-6,-1),2.0,no_color,2,refr_ice); // 水面に浮かぶ氷の球
+	objects[11] = create_sphere(vec3(2,3,-2.5),2.0,no_color,2,refr_glass); // 水中にあるガラスの球
+	objects[12] = create_sphere(vec3(9.134,0,-4),1.0,no_color,2,refr_glass); // カメラが通るガラスの球
+	objects[13] = create_cone(vec3(1,1,-0.5),vec3(0,2,4),3.0,4.0,vec3(0,1,0),0,no_refr); // 緑の円錐
+	objects[14] = create_cone(vec3(-9,0,0),vec3(0,0,-1),22.0,30.0,no_color,2,refr_water); // 水中
+	objects[15] = create_cone(vec3(5,-4,-5),vec3(0,-2,4),2.0,3.0,no_color,2,refr_air); // 水中の気泡
+	objects[16] = create_cone(vec3(6 ,2,-2),vec3(0,0,1),1.0,0.5,no_color,2,refr_diamond); // 水中のダイヤモンドの上側
+	objects[17] = create_cone(vec3(6 ,2,-2),vec3(0,0,-1),1.0,1.5,no_color,2,refr_diamond); // 水中のダイヤモンドも下側
 	
 	// カメラレイを計算
 	vec3 w = normalize(c_from-c_to);
@@ -553,8 +559,5 @@ void main( void ) {
 	vec3 origin = c_from;
 	vec3 direction = normalize(origin-pixel);
 	
-	vec4 tmp_color = vec4(1,1,1,0);
-	vec4 fin_color = vec4(0,0,0,1);
-	
-	gl_FragColor = shade(origin,direction,objects);
+	gl_FragColor = vec4(shade(origin,direction,objects),1);
 }
