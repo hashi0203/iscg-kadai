@@ -124,6 +124,10 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 		if (i.t < 0.0) return i;
 		i.p = o + d*i.t;
 		i.n = normalize(i.p - c);
+		// 方向ベクトルと反対方向を向く法線ベクトルを選択
+		if (dot(d,i.n) >= 0.0) {
+			i.n = -i.n;
+		}
 		return i;
 	} else if (obj.flag == 1) {		
 		vec3 a1 = obj.t.a - obj.t.b;
@@ -136,17 +140,13 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 		if (beta > 0.0 && gamma > 0.0 && beta+gamma<1.0) {
 			i.t = dot(cross(a1,a2),b)/detA;
 			i.p = o + d*i.t;
-			vec3 c12 = cross(a1,a2);
+			i.n = normalize(cross(a1,a2));
 			// 方向ベクトルと反対方向を向く法線ベクトルを選択
-			if (dot(d,c12) < 0.0) {
-				i.n = normalize(c12);
-			} else {
-				i.n = normalize(cross(a2,a1));
+			if (dot(d,i.n) >= 0.0) {
+				i.n = -i.n;
 			}
-			return i;
-		} else {
-			return i;
 		}
+		return i;
 	} else if (obj.flag == 2) {
 		// (a-(o + td))・n = 0 <-> t = (a-o)・n/d・n
 		float dn = dot(d,obj.p.n);
@@ -246,9 +246,17 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 			
 			if (d_rotate[2] == 0.0) {
 				// 水平方向に見ている時z方向は無視
-				i.t = tc_min;
+				if (tc_min > 0.0) {
+					i.t = tc_min;
+				} else {
+					i.t = tc_max;
+				}
 				vec3 p = o_rotate + d_rotate*i.t;
 				vec3 n = normalize(vec3(normalize(vec2(p[0],p[1])),obj.c.r/obj.c.h));
+				// 方向ベクトルと反対方向を向く法線ベクトルを選択
+				if (dot(d_rotate,n) >= 0.0) {
+					n = -n;
+				}
 				// 元の座標系に戻す
 				i.p = rotate_inv(p-trans,cs_z,cs_y);
 				i.n = rotate_inv(n,cs_z,cs_y);
@@ -257,22 +265,28 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 				float mi = max(tz_min,tc_min);
 				float ma = min(tz_max,tc_max);
 				if (mi <= ma) {
-					i.t = mi;
+					if (mi > 0.0) {
+						i.t = mi;
+					} else {
+						i.t = ma;
+					}
 					vec3 p = o_rotate + d_rotate*i.t;
 					vec3 n;
 					// 底面と交わったか側面と交わったか判定
-					if (tz_min > tc_min) {
+					if ((mi > 0.0 && tz_min > tc_min) || (mi <= 0.0 && tz_max < tc_max)) {
 						n = vec3(0,0,-1);
 					} else {
 						n = normalize(vec3(normalize(vec2(p[0],p[1])),obj.c.r/obj.c.h));
 					}
+					// 方向ベクトルと反対方向を向く法線ベクトルを選択
+					if (dot(d_rotate,n) >= 0.0) {
+						n = -n;
+					}
 					// 元の座標系に戻す
 					i.p = rotate_inv(p-trans,cs_z,cs_y);
 					i.n = rotate_inv(n,cs_z,cs_y);
-					return i;
-				} else {
-					return i;
 				}
+				return i;
 			}
 		}
 	} else {
