@@ -14,8 +14,8 @@
   <h3>実装内容:</h3>
   <ul>
     <li>GLSL Sandbox を使用してレイトレーシングを1から実装</li>
-    <li>カメラからレイを⾶ばして各物体との交点を計算</li>
     <li>球，三角形，平面，円錐との交点の計算</li>
+    <li>カメラからレイを⾶ばして各物体との交点を計算</li>
     <li>各物体との交点から更にレイを飛ばして鏡面反射，屈折，フレネル反射，全反射を実装</li>
     <ul>
       <li>GLSL Sandbox では再帰関数を使用できないことと動作が現状でもかなり重いことから，フレネル反射を完全に再現することは諦めて，屈折と反射の内寄与が大きい方のみを追跡する</li>
@@ -28,6 +28,7 @@
       <li>影は屈折や反射等を考慮していない</li>
       <li>屈折を起こす物体の影も考慮していない</li>
     </ul>
+    <li>どの物体にも当たらない場合は背景色を表示</li>
     <li>マウスの位置に応じて真ん中の灰色の球が移動</li>
     <li>カメラが上下に移動</li>
     <li>GLSL Sandbox の解像度を2に設定していると処理がかなり重い</li>
@@ -97,7 +98,12 @@
         <li>色は反射屈折の種類が 1,2 の場合は関係ないので no_color と設定し，屈折率は屈折の場合以外は関係ないので no_refr と設定する</li>
       </ul>
     </ul>
-    <li>物体の中から外に出る際の外側の物質の屈折率を変更</li>
+    <li>物体の中から外に出る際の外側の物質の屈折率変更</li>
+    <ul>
+      <li>shade 関数内の以下の部分を変更</li>
+      <li>物体の中から外に出るときは外の物質との交差判定がされないので，次にどの物質を進んでいるのかわからなくなるため各自設定が必要になる</li>
+      <li>判定プログラムを組むことも可能だが，これ以上動作が重くなるのを避けるため手動で設定することにした</li>
+    </ul>
     <div class="theme_preview">
         <pre class="prettyprint linenums lang-html prettyprinted" style=""><code>  if (first_hit.p[2] >= -0.0001) {
     hit_refr = refr_air;
@@ -136,14 +142,11 @@
   
   <h3>その他設定の変更:</h3>
   <ol>
-    <li>点光源の位置：const vec3 PLS = vec3(5,0,8); の(5,0,8)を変更</li>
-    <li>反射回数：const int REFRECT_NUM = 3; の3を変更</li>
-    <li>ランバート反射の輝度：const float IL = 1.0; の1.0を変更</li>
-    <li>ピンホールとフィルムの距離：float l = 2.0; の2.0を変更</li>
-    <li>フィルムの横幅(縦幅は解像度に合わせて自動で指定)：float film_w = 5.0; の5.0を変更</li>
-    <li>カメラ(ピンホール)位置：vec3 c_from = vec3(sin(time*0.1)*10.0,cos(time*0.1)*10.0,6); の(sin(time*0.1)*10.0,cos(time*0.1)*10.0,6)を変更</li>
-    <li>カメラの向いている先：vec3 c_to = vec3(0,0,0); の(0,0,0)を変更</li>
-    <li>カメラのUPベクトル：vec3 c_up = vec3(5,0,10); の(5,0,10)を変更</li>
+    <li>点光源の放射束：const float phi を変更</li>
+    <li>反射回数：const int REFL_NUM を変更</li>
+    <li>反射能：const float Kd を変更</li>
+    <li>正反射率：const float Ks を変更</li>
+    <li>背景色：const vec3 background_color を変更</li>
   </ol>
   
   <input type="button" onclick="location.href='../'" value="課題一覧へ">
