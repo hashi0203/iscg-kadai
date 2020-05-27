@@ -372,7 +372,7 @@ float shadow(intersection first_hit) {
 		for (int i = 0; i < OBJ_NUM; i++) {
 		    if (flag == 0) {
 			    shadow = intersect(p,l,objects[i]);
-			    if (shadow.t > 0.0 && shadow.t < len && objects[i].refl == 0) {
+			    if (shadow.t > 0.0 && shadow.t < len && objects[i].refl != 2) {
 				flag = 1;
 			    }
 		    }
@@ -528,8 +528,8 @@ vec3 shade(vec3 o, vec3 d, polygon objects[OBJ_NUM]) {
 
 void main( void ) {
 	// 点光源の位置
-	PLS[0] = vec3(5,0,6);
-	PLS[1] = vec3(10,0,-4);
+	PLS[0] = vec3(5,0,7);
+	PLS[1] = vec3(10,0,-3);
 
 	vec3 no_color = vec3(1);
 	float no_refr = 0.0;
