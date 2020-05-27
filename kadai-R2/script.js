@@ -354,7 +354,7 @@ float film_h = film_w*resolution.y/resolution.x;
 vec3 c_from = vec3(10,0,sin(time*0.1)*4.0); // 動くカメラ
 //const vec3 c_from = vec3(10,0,-4); // ガラス中カメラ
 //const vec3 c_from = vec3(10,0,-3); // 水中カメラ
-//const vec3 c_from =vec3(10,0,4.0); // 空中カメラ
+//const vec3 c_from = vec3(10,0,4.0); // 空中カメラ
 // カメラの方向を指定
 const vec3 c_to = vec3(0,0,0);
 // カメラのUPベクトルを指定
@@ -391,6 +391,8 @@ float shadow(intersection first_hit) {
 vec3 shade(vec3 o, vec3 d, polygon objects[OBJ_NUM]) {
 	vec3 tmp_color = vec3(1,1,1);
 	vec3 fin_color = vec3(0,0,0);
+	
+	// カメラがある位置に応じて屈折率を変更
 	float refr;
 	if (c_from[2] > 0.0) {
 		refr = refr_air;
@@ -399,6 +401,7 @@ vec3 shade(vec3 o, vec3 d, polygon objects[OBJ_NUM]) {
 	} else {
 		refr = refr_water;
 	}
+	
 	int flag = 1;
 	
 	intersection first_hit;

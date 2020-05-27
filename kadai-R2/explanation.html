@@ -46,7 +46,7 @@
     <ul>
       <li>屈折する物体に関しては空気，水，氷，ガラス，ダイヤモンドの4つを用意</li>
       <li>詳細は main 関数内の polygon objects 変数の定義のコメント(以下にコピーしたもの)を参照</li>
-      <div id="atelier-forest-light" class="theme__preview">
+      <div class="theme__preview">
         <pre class="prettyprint linenums lang-html prettyprinted" style=""><code>  // 球(中心,半径,色, 反射屈折の種類, 屈折率) OR 三角形(点a,点b,点c,色, 反射屈折の種類, 屈折率) OR 平面(平面上の任意の1点a,法線ベクトル,色, 反射屈折の種類, 屈折率) OR 円錐(底面の円の中心,法線ベクトル,底面半径,高さ,色, 反射屈折の種類, 屈折率) のオブジェクトを作成
   // 反射屈折の種類は 0ならどちらもなし，1なら反射，2なら屈折することを表している
   // 屈折率としては ,空気: refr_air，水: refr_water，氷: refr_ice，ガラス: refr_glass，ダイヤモンド: refr_diamond を設定可能だが，自由に1以上の浮動小数点数を入れてもよい
@@ -97,6 +97,15 @@
         <li>色は反射屈折の種類が 1,2 の場合は関係ないので no_color と設定し，屈折率は屈折の場合以外は関係ないので no_refr と設定する</li>
       </ul>
     </ul>
+    <li>物体の中から外に出る際の外側の物質の屈折率を変更</li>
+    <div class="theme_preview">
+        <pre class="prettyprint linenums lang-html prettyprinted" style=""><code>  if (first_hit.p[2] >= -0.0001) {
+    hit_refr = refr_air;
+  } else if (length(first_hit.p - vec3(6,2,-2)) < 1.0 && length(first_hit.p[2] + 2.0) < 0.0001) {
+    hit_refr = refr_diamond;
+  } else {
+    hit_refr = refr_water;
+  }</code></pre></div>
   </ol>
   
   <h3>カメラ設定の変更:</h3>
@@ -112,6 +121,17 @@
     </ul>
     <li>カメラの向いている先：vec3 c_to を変更</li>
     <li>カメラのUPベクトル：vec3 c_up を変更</li>
+    <li>カメラの位置に応じた屈折率：shade 関数内の以下の部分を変更</li>
+    <div class="theme_preview">
+        <pre class="prettyprint linenums lang-html prettyprinted" style=""><code>  // カメラがある位置に応じて屈折率を変更
+  float refr;
+  if (c_from[2] > 0.0) {
+    refr = refr_air;
+  } else if (c_from[2] < -3.5) {
+    refr = refr_glass;
+  } else {
+    refr = refr_water;
+  }</code></pre></div>
   </ol>
   
   <h3>その他設定の変更:</h3>
