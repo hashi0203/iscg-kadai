@@ -105,13 +105,13 @@ float irradiance(float phi, vec3 n, vec3 p, vec3 PLS) {
 	return phi*dot(n,l)/(4.0*PI*r2);
 }
 
-float fresnel(float cos_a, float refr) {
+float fresnel(float cos_a, float refr, float tmp) {
 	float A = refr;
 	float B = cos_a;
-	float C = sqrt(1.0-A*A*(1.0-B)*(1.0-B));
+	float C = sqrt(tmp);
 	float p1 = 1.0-2.0*C/(A*B+C);
 	float p2 = 1.0-2.0*B/(A*C+B);
-	return (p1*p1+p2*p2)/2.0;
+	return (pow(p1,2.0)+pow(p2,2.0))/2.0;
 }
 
 vec3 rotate(vec3 v, vec2 cs_z, vec2 cs_y) {
@@ -193,9 +193,7 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 		}
 	} else if (obj.flag == 3) {
 		// 底面半径と高さのどちらかが0以下の場合は不適
-		if (obj.c.r <= 0.0 || obj.c.h <= 0.0) {
-			return i;
-		}
+		if (obj.c.r <= 0.0 || obj.c.h <= 0.0) return i;
 		vec2 cs_z;
 		vec2 cs_y;
 		// 円錐の頂点が原点，底面の中心がz軸負の方向に移動するように回転・平行移動
@@ -219,23 +217,23 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 		float tz_min = 0.0;
 		float tz_max = 0.0;
 		if (d_rotate[2] == 0.0) {
-			if (o_rotate[2] > 0.0 ||  o_rotate[2] < -obj.c.h) {
-				return i;
-			}
+			if (o_rotate[2] > 0.0 ||  o_rotate[2] < -obj.c.h) return i;
 		} else {
 			float t1 = -o_rotate[2]/d_rotate[2];
-			float t2 = -(obj.c.h+o_rotate[2])/d_rotate[2];
+			float t2 = -obj.c.h/d_rotate[2]+t1;
 			tz_min = min(t1,t2);
 			tz_max = max(t1,t2);
+            		if(tz_max <= 0.0) return i;
 		}
 		
 		// 点v(= o_rotate + t*d_rotate) が円錐内にある条件を満たすtの範囲を求める
 		// v[2]^2/(v,v)^2 >= h^2/(h^2+r^2) <-> A t^2 + B t + C <= 0
-		float hr = obj.c.h*obj.c.h/(obj.c.h*obj.c.h+obj.c.r*obj.c.r);
-		float A = hr*dot(d_rotate,d_rotate) - d_rotate[2]*d_rotate[2];
+		float ch2 = pow(obj.c.h,2.0);
+		float hr = ch2/(ch2+pow(obj.c.r,2.0));
+		float A = hr*dot(d_rotate,d_rotate) - pow(d_rotate[2],2.0);
 		float B = hr*dot(o_rotate,d_rotate) - o_rotate[2]*d_rotate[2];
-		float C = hr*dot(o_rotate,o_rotate) - o_rotate[2]*o_rotate[2];
-		float D4 = B*B - A*C;
+		float C = hr*dot(o_rotate,o_rotate) - pow(o_rotate[2],2.0);
+		float D4 = pow(B,2.0) - A*C;
 		if (D4 < 0.0) {
 			// 実数解がない場合不適
 			return i;
@@ -295,9 +293,11 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 				if (mi <= ma) {
 					if (mi > 0.0) {
 						i.t = mi;
-					} else {
+					} else if (ma > 0.0) {
 						i.t = ma;
-					}
+					} else {
+                        			return i;
+                    			}
 					vec3 p = o_rotate + d_rotate*i.t;
 					vec3 n;
 					// 底面と交わったか側面と交わったか判定
@@ -317,9 +317,8 @@ intersection intersect(vec3 o, vec3 d, polygon obj) {
 				return i;
 			}
 		}
-	} else {
-		return i;
 	}
+	return i;
 }
 
 // 点光源の個数
@@ -354,6 +353,7 @@ float film_h = film_w*resolution.y/resolution.x;
 // カメラ(ピンホール)位置を指定
 vec3 c_from =vec3(10,0,sin(time*0.1)*4.0); // 動くカメラ
 //const vec3 c_from = vec3(10,0,-3); // 水中カメラ
+//const vec3 c_from = vec3(10,0,-4); // ガラス中カメラ
 //const vec3 c_from =vec3(10,0,4.0); // 空中カメラ
 // カメラの方向を指定
 const vec3 c_to = vec3(0,0,0);
@@ -370,9 +370,11 @@ float shadow(intersection first_hit) {
 		int flag = 0;
 		// 光源との間に透明でない物体があるかどうか判定
 		for (int i = 0; i < OBJ_NUM; i++) {
-		    shadow = intersect(p,l,objects[i]);
-		    if (shadow.t > 0.0 && shadow.t < len && objects[i].refl == 0) {
-		    	flag = 1;
+		    if (flag == 0) {
+			    shadow = intersect(p,l,objects[i]);
+			    if (shadow.t > 0.0 && shadow.t < len && objects[i].refl == 0) {
+				flag = 1;
+			    }
 		    }
 		}
 		float tmp = (Kd/PI)*irradiance(phi,first_hit.n,first_hit.p,PLS[j]);
@@ -427,9 +429,9 @@ vec3 shade(vec3 o, vec3 d, polygon objects[OBJ_NUM]) {
 			}
 			// z座標が負のところで物体から外に出る時物体の屈折率はrefr_waterになり，正のところではrefr_airになり，(6,2,-2)を中心とする半径1の円上ならダイヤモンドとなる
 			if (hit_refr == refr) {
-				if (first_hit.p[2] > 0.0) {
+				if (first_hit.p[2] >= -0.0001) {
 					hit_refr = refr_air;
-				} else if (length(first_hit.p - vec3(6,2,-2)) < 1.0 && length(first_hit.p[2] + 2.0) < 0.01) {
+				} else if (length(first_hit.p - vec3(6,2,-2)) < 1.0 && length(first_hit.p[2] + 2.0) < 0.0001) {
 					hit_refr = refr_diamond;
 				} else {
 					hit_refr = refr_water;
@@ -463,7 +465,7 @@ vec3 shade(vec3 o, vec3 d, polygon objects[OBJ_NUM]) {
 							d = d_refl;
 							tmp_color *= Ks;
 						} else {
-							float R = fresnel(cos_a,refr_rate);
+							float R = fresnel(cos_a,refr_rate,tmp);
 							// 寄与が大きい方のみを計算
 							// 小さい方はスタックに溜まっているものよりも寄与が大きければスタックに入れ替える
 							if (R >= 0.5) {
