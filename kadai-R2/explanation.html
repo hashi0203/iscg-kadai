@@ -76,21 +76,42 @@
     </ul>
   </ul>
   
+  <h3>点光源の変更・追加・移動</h3>
+  <ol>
+    <li>const int PL_NUM を作成したい点光源の個数に変更する</li>
+    <li>main 関数内に PLS[i] = vec3(座標) のようにして点光源を作成</li>
+  </ol>
+  
   <h3>物体の変更・追加・移動:</h3>
   <ol>
     <li>const int OBJ_NUM を作成したいオブジェクトの個数に変更する</li>
-    <li>main 関数内に objects[i] = (物体) のようにして物体を生成(物体は以下のものを指定可能)</li>
+    <li>main 関数内に objects[i] = (物体) のようにして物体を作成(物体は以下のものを指定可能)</li>
     <ul>
       <li>球：create_sphere(vec3 中心座標, float 半径, vec3 色, int 反射屈折の種類, float 屈折率)</li>
       <li>三角形：create_triangle(vec3 点a, vec3 点b, vec3 点c, vec3 色, int 反射屈折の種類, float 屈折率)</li>
       <li>平面：create_plane(vec3 平面上の1点a, vec3 法線ベクトル, vec3 色, int 反射屈折の種類, float 屈折率)</li>
       <li>円錐：create_cone(vec3 底面の円の中心座標, vec3 底面の中心から頂点へのベクトル(大きさは不問), float 底面半径, float 高さ, vec3 色, int 反射屈折の種類, float 屈折率)</li>
       <ul>
-        <li>反射屈折の種類は 0ならどちらもなし，1なら反射，2なら屈折することを表している
+        <li>反射屈折の種類は 0ならどちらもなし，1なら反射，2なら屈折することを表している</li>
         <li>屈折率としては ,空気: refr_air，水: refr_water，氷: refr_ice，ガラス: refr_glass，ダイヤモンド: refr_diamond を設定可能だが，自由に1以上の浮動小数点数を入れてもよい</li>
         <li>色は反射屈折の種類が 1,2 の場合は関係ないので no_color と設定し，屈折率は屈折の場合以外は関係ないので no_refr と設定する</li>
       </ul>
     </ul>
+  </ol>
+  
+  <h3>カメラ設定の変更:</h3>
+  <ol>
+    <li>ピンホールとフィルムの距離：float l を変更</li>
+    <li>フィルムの横幅(縦幅は解像度に合わせて自動で指定)：float film_w を変更</li>
+    <li>カメラ(ピンホール)位置：vec3 c_from を変更</li>
+    <li>現在は動くカメラの vec3 c_from = vec3(10,0,sin(time*0.1)*4.0); に設定されているが，以下のものはコメントアウトを変更するだけで設定可能</li>
+    <ul>
+      <li>ガラス中カメラ：const vec3 c_from = vec3(10,0,-4);</li>
+      <li>水中カメラ：const vec3 c_from = vec3(10,0,-3);</li>
+      <li>空中カメラ：const vec3 c_from = vec3(10,0,4.0);</li>
+    </ul>
+    <li>カメラの向いている先：vec3 c_to を変更</li>
+    <li>カメラのUPベクトル：vec3 c_up を変更</li>
   </ol>
   
   <h3>その他設定の変更:</h3>

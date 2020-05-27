@@ -351,9 +351,9 @@ const float l = 2.0;
 const float film_w = 5.0;
 float film_h = film_w*resolution.y/resolution.x;
 // カメラ(ピンホール)位置を指定
-vec3 c_from =vec3(10,0,sin(time*0.1)*4.0); // 動くカメラ
-//const vec3 c_from = vec3(10,0,-3); // 水中カメラ
+vec3 c_from = vec3(10,0,sin(time*0.1)*4.0); // 動くカメラ
 //const vec3 c_from = vec3(10,0,-4); // ガラス中カメラ
+//const vec3 c_from = vec3(10,0,-3); // 水中カメラ
 //const vec3 c_from =vec3(10,0,4.0); // 空中カメラ
 // カメラの方向を指定
 const vec3 c_to = vec3(0,0,0);
