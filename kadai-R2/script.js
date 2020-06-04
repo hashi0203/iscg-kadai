@@ -78,7 +78,7 @@ polygon create_plane (vec3 a, vec3 n, vec3 color, int refl, float refr) {
 	polygon obj;
 	obj.flag = 2;
 	obj.p.a = a;
-	obj.p.n = normalize(n);
+	obj.p.n = n;
 	obj.color = color;
 	obj.refl = refl;
 	obj.refr = refr;
@@ -326,7 +326,7 @@ const int PL_NUM = 2;
 // 点光源の位置
 vec3 PLS[PL_NUM];
 // オブジェクトの個数
-const int OBJ_NUM = 18;
+const int OBJ_NUM = 17;
 // オブジェクトのプロパティ
 polygon objects[OBJ_NUM];
 // 点光源の放射束
@@ -546,17 +546,17 @@ void main( void ) {
 	objects[3] = create_plane(vec3(-10,0,0),vec3(1,0,0),no_color,1,no_refr); // 鏡
 	objects[4] = create_triangle(vec3(4,5,0),vec3(4,-3,2),vec3(0,0,-1.1),vec3(1,1,0),0,no_refr); // 黄色の三角
 	objects[5] = create_triangle(vec3(-1,-8,-1),vec3(-4,-6,-5),vec3(-1,-7,-3.5),vec3(1,0,0),0,no_refr); // 赤の三角
-	objects[7] = create_sphere(vec3(vec2(0.5-mouse.y,mouse.x-0.5)*10.0,-3.5),1.0,vec3(0.8,0.8,0.8),0,no_refr); // 動く球
-	objects[8] = create_sphere(vec3(2,3,-3),0.5,vec3(0,0,1),0,no_refr); // 青の球
-	objects[9] = create_sphere(vec3(1,-2,-0.5),1.0,no_color,1,no_refr); // 水面に浮かぶ鏡の球
-	objects[10] = create_sphere(vec3(1,-6,-1),2.0,no_color,2,refr_ice); // 水面に浮かぶ氷の球
-	objects[11] = create_sphere(vec3(2,3,-2.5),2.0,no_color,2,refr_glass); // 水中にあるガラスの球
-	objects[12] = create_sphere(vec3(9.134,0,-4),1.0,no_color,2,refr_glass); // カメラが通るガラスの球
-	objects[13] = create_cone(vec3(1,1,-0.5),vec3(0,2,4),3.0,4.0,vec3(0,1,0),0,no_refr); // 緑の円錐
-	objects[14] = create_cone(vec3(-9,0,0),vec3(0,0,-1),22.0,30.0,no_color,2,refr_water); // 水中
-	objects[15] = create_cone(vec3(5,-4,-5),vec3(0,-2,4),2.0,3.0,no_color,2,refr_air); // 水中の気泡
-	objects[16] = create_cone(vec3(6 ,2,-2),vec3(0,0,1),1.0,0.5,no_color,2,refr_diamond); // 水中のダイヤモンドの上側
-	objects[17] = create_cone(vec3(6 ,2,-2),vec3(0,0,-1),1.0,1.5,no_color,2,refr_diamond); // 水中のダイヤモンドも下側
+	objects[6] = create_sphere(vec3(vec2(0.5-mouse.y,mouse.x-0.5)*10.0,-3.5),1.0,vec3(0.8,0.8,0.8),0,no_refr); // 動く球
+	objects[7] = create_sphere(vec3(2,3,-3),0.5,vec3(0,0,1),0,no_refr); // 青の球
+	objects[8] = create_sphere(vec3(1,-2,-0.5),1.0,no_color,1,no_refr); // 水面に浮かぶ鏡の球
+	objects[9] = create_sphere(vec3(1,-6,-1),2.0,no_color,2,refr_ice); // 水面に浮かぶ氷の球
+	objects[10] = create_sphere(vec3(2,3,-2.5),2.0,no_color,2,refr_glass); // 水中にあるガラスの球
+	objects[11] = create_sphere(vec3(9.134,0,-4),1.0,no_color,2,refr_glass); // カメラが通るガラスの球
+	objects[12] = create_cone(vec3(1,1,-0.5),vec3(0,2,4),3.0,4.0,vec3(0,1,0),0,no_refr); // 緑の円錐
+	objects[13] = create_cone(vec3(-9,0,0),vec3(0,0,-1),22.0,30.0,no_color,2,refr_water); // 水中
+	objects[14] = create_cone(vec3(5,-4,-5),vec3(0,-2,4),2.0,3.0,no_color,2,refr_air); // 水中の気泡
+	objects[15] = create_cone(vec3(6 ,2,-2),vec3(0,0,1),1.0,0.5,no_color,2,refr_diamond); // 水中のダイヤモンドの上側
+	objects[16] = create_cone(vec3(6 ,2,-2),vec3(0,0,-1),1.0,1.5,no_color,2,refr_diamond); // 水中のダイヤモンドも下側
 	
 	// カメラレイを計算
 	vec3 w = normalize(c_from-c_to);
