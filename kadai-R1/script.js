@@ -70,7 +70,7 @@ polygon create_plane (vec3 a, vec3 n, vec4 color) {
 	polygon obj;
 	obj.flag = 2;
 	obj.p.a = a;
-	obj.p.n = n;
+	obj.p.n = normalize(n);
 	obj.color = color;
 	return obj;
 }
