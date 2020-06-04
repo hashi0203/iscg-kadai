@@ -78,7 +78,7 @@ polygon create_plane (vec3 a, vec3 n, vec3 color, int refl, float refr) {
 	polygon obj;
 	obj.flag = 2;
 	obj.p.a = a;
-	obj.p.n = n;
+	obj.p.n = normalize(n);
 	obj.color = color;
 	obj.refl = refl;
 	obj.refr = refr;
