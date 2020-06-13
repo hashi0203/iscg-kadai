@@ -51,7 +51,7 @@ function smooth_gaussian(width, height, original, smoothed, sigma) {
         smoothed[4 * idx0 + 3] = 255;
     }
 };
-function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_range) {
+function smooth_bilateral(width, height, original, aaa, smoothed, sigma_space, sigma_range) {
     var r = Math.ceil(sigma_space * 3);
     var r2 = 2 * r + 1;
     // precompute spatial stencil_space
@@ -91,6 +91,9 @@ function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_
                 var b_diff = b1 - b0;
                 var w_range = Math.exp(-(r_diff * r_diff + g_diff * g_diff + b_diff * b_diff)/ (2 * sigma_range * sigma_range));
                 var w = w_space * w_range;
+                var r1 = aaa[4 * idx1];
+                var g1 = aaa[4 * idx1 + 1];
+                var b1 = aaa[4 * idx1 + 2];
                 r_sum += w * r1;
                 g_sum += w * g1;
                 b_sum += w * b1;
@@ -120,23 +123,18 @@ function trilinear_interpolation(x, y, sigma_space, sigma_range, grid, px, py, p
     var c101 = grid[idxz + 1];
     var c110 = grid[idxz + x];
     var c111 = grid[idxz + 1 + x];
-    if (c000 == NaN || c001 == NaN || c010 == NaN || c011 == NaN || c100 == NaN || c101 == NaN || c101 == NaN || c111 == NaN) {
-        console.log(c000,c111);
-    }
     var px1 = px - x0;
     var px0 = 1 - px1;
     var py1 = py - y0;
     var py0 = 1 - py1;
     var pz1 = pz - z0;
     var pz0 = 1 - pz1;
-    if (isNaN(c000*pz0*py0*px0 + c001*pz0*py0*px1 + c010*pz0*py1*px0 + c011*pz0*py1*px1 + c100*pz1*py0*px0 + c101*pz1*py0*px1 + c110*pz1*py1*px0 + c111*pz1*py1*px1))
-        console.log(c000,c111);
     return c000*pz0*py0*px0 + c001*pz0*py0*px1 + c010*pz0*py1*px0 + c011*pz0*py1*px1 + c100*pz1*py0*px0 + c101*pz1*py0*px1 + c110*pz1*py1*px0 + c111*pz1*py1*px1;
 };
 function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, sigma_space, sigma_range) {
-    var x = Math.ceil(width/sigma_space);
-    var y = Math.ceil(height/sigma_space);
-    var z = Math.ceil(256/sigma_range);
+    var x = Math.ceil(width/sigma_space)+1;
+    var y = Math.ceil(height/sigma_space)+1;
+    var z = Math.ceil(256/sigma_range)+1;
   
     var bilateral_grid = new Float32Array(x * y * z).fill(0);
     var bilateral_grid_cnt = new Float32Array(x * y * z).fill(0);
@@ -235,14 +233,14 @@ function smooth_rolling(width, height, original, smoothed, sigma_space, sigma_ra
     smooth_gaussian(width, height, original, tmp_input, sigma_space);
     var i;
     for (i = 0; i < num-2; i++) {
-        smooth_bilateral_grid(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
-        smooth_bilateral_grid(width, height, original, tmp_output, tmp_input, sigma_space, sigma_range);
+        smooth_bilateral(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
+        smooth_bilateral(width, height, original, tmp_output, tmp_input, sigma_space, sigma_range);
     }
     if (i == num-2) {
-        smooth_bilateral_grid(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
-        smooth_bilateral_grid(width, height, original, tmp_output, smoothed, sigma_space, sigma_range);
+        smooth_bilateral(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
+        smooth_bilateral(width, height, original, tmp_output, smoothed, sigma_space, sigma_range);
     } else {
-        smooth_bilateral_grid(width, height, original, tmp_input, smoothed, sigma_space, sigma_range);
+        smooth_bilateral(width, height, original, tmp_input, smoothed, sigma_space, sigma_range);
     }
 };
 function neighbor_vector(width, height, image, r, cx, cy, nvec) {
