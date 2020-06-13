@@ -199,10 +199,11 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
         smoothed[4 * idx0 + 1] = Math.min(g * w, 255);
         smoothed[4 * idx0 + 2] = Math.min(b * w, 255);
       
-        // if (r*w > 100 && r*w < 150) {
-        //   smoothed[4 * idx0    ] = 0;
-        //   smoothed[4 * idx0 + 1] = 255;
-        //   smoothed[4 * idx0 + 2] = 0;
+        if (r*w > 80 && r*w < 120 && g < 20 && b < 20) {
+          smoothed[4 * idx0    ] = 0;
+          smoothed[4 * idx0 + 1] = 255;
+          smoothed[4 * idx0 + 2] = 0;
+          console.log(r,g,b,w);
         }
         smoothed[4 * idx0 + 3] = 255;
     }
