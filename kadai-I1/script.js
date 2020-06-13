@@ -96,10 +96,21 @@ function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_
         smoothed[4 * idx0 + 3] = 255;
     }
 };
+function trilinear_interpolation(x, y, grid, px, py, pz) {
+    var x0 = Math.floor(px);
+    var y0 = Math.floor(py);
+    var z0 = Math.floor(pz);
+    var idx = px + x * py + x * y * pz;
+    var c000 = grid[idx];
+    var c001 = grid[idx + 1];
+    var c010 = grid[idx + x];
+    var c011 = grid[idx + 1 + x];
+    var c100 = grid[idx + x * y]
+};
 function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, sigma_range) {
-    var x = Math.round(width/sigma_space);
-    var y = Math.round(height/sigma_space);
-    var z = Math.round(255/sigma_range);
+    var x = Math.ceil(width/sigma_space);
+    var y = Math.ceil(height/sigma_space);
+    var z = Math.ceil(255/sigma_range);
   
     var bilateral_grid = new Float32Array(x * y * z).fill(0);
     var bilateral_grid_cnt = new Float32Array(x * y * z).fill(0);
@@ -132,7 +143,7 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
     }
   
     // apply filter
-    var bilateral_grid_filtered = new Float32Array(x * y * z);
+    var bilateral_grid_filtered = new Float32Array(x * y * z).fill(0);
     for (var pz = 0; pz < z; pz++)
     for (var py = 0; py < y; py++)
     for (var px = 0; px < x; px++)
@@ -156,7 +167,8 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
                 w_sum += w * cnt1;
             }
         }
-        bilateral_grid_filtered[idx0] = l_sum / w_sum;
+        if (w_sum != 0)
+          bilateral_grid_filtered[idx0] = l_sum / w_sum;
     }
 };
 function subtract(width, height, original, smoothed, detail) {
