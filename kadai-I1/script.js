@@ -105,7 +105,18 @@ function trilinear_interpolation(x, y, grid, px, py, pz) {
     var c001 = grid[idx + 1];
     var c010 = grid[idx + x];
     var c011 = grid[idx + 1 + x];
-    var c100 = grid[idx + x * y]
+    var idxz = idx + x * y;
+    var c100 = grid[idxz];
+    var c101 = grid[idxz + 1];
+    var c110 = grid[idxz + x];
+    var c111 = grid[idxz + 1 + x];
+    var px1 = px - x0;
+    var px0 = 1 - px1;
+    var py1 = py - y0;
+    var py0 = 1 - py1;
+    var pz1 = pz - z0;
+    var pz0 = 1 - pz1;
+    return c000*pz0*py0*px0 + c001*pz0*py0*px1 + c010*pz0*py1*px0 + c011*pz0*py1*px1 + c100*pz1*py0*px0 + c101*pz1*py0*px1 + c110*pz1*py1*px0 + c111*pz1*py1*px1;
 };
 function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, sigma_range) {
     var x = Math.ceil(width/sigma_space);
@@ -170,6 +181,8 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
         if (w_sum != 0)
           bilateral_grid_filtered[idx0] = l_sum / w_sum;
     }
+    trilinear_interpolation(x, y, grid, px, py, pz)  
+  
 };
 function subtract(width, height, original, smoothed, detail) {
     for (var i = 0; i < width * height; ++i) {
