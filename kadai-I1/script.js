@@ -51,7 +51,7 @@ function smooth_gaussian(width, height, original, smoothed, sigma) {
         smoothed[4 * idx0 + 3] = 255;
     }
 };
-function smooth_bilateral(width, height, original, aaa, smoothed, sigma_space, sigma_range) {
+function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_range) {
     var r = Math.ceil(sigma_space * 3);
     var r2 = 2 * r + 1;
     // precompute spatial stencil_space
@@ -91,9 +91,6 @@ function smooth_bilateral(width, height, original, aaa, smoothed, sigma_space, s
                 var b_diff = b1 - b0;
                 var w_range = Math.exp(-(r_diff * r_diff + g_diff * g_diff + b_diff * b_diff)/ (2 * sigma_range * sigma_range));
                 var w = w_space * w_range;
-                var r1 = aaa[4 * idx1];
-                var g1 = aaa[4 * idx1 + 1];
-                var b1 = aaa[4 * idx1 + 2];
                 r_sum += w * r1;
                 g_sum += w * g1;
                 b_sum += w * b1;
@@ -233,14 +230,14 @@ function smooth_rolling(width, height, original, smoothed, sigma_space, sigma_ra
     smooth_gaussian(width, height, original, tmp_input, sigma_space);
     var i;
     for (i = 0; i < num-2; i++) {
-        smooth_bilateral(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
-        smooth_bilateral(width, height, original, tmp_output, tmp_input, sigma_space, sigma_range);
+        smooth_bilateral_grid(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
+        smooth_bilateral_grid(width, height, original, tmp_output, tmp_input, sigma_space, sigma_range);
     }
     if (i == num-2) {
-        smooth_bilateral(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
-        smooth_bilateral(width, height, original, tmp_output, smoothed, sigma_space, sigma_range);
+        smooth_bilateral_grid(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
+        smooth_bilateral_grid(width, height, original, tmp_output, smoothed, sigma_space, sigma_range);
     } else {
-        smooth_bilateral(width, height, original, tmp_input, smoothed, sigma_space, sigma_range);
+        smooth_bilateral_grid(width, height, original, tmp_input, smoothed, sigma_space, sigma_range);
     }
 };
 function neighbor_vector(width, height, image, r, cx, cy, nvec) {
