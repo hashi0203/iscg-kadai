@@ -1,5 +1,12 @@
 var canvas = document.createElement("canvas");
 var context = canvas.getContext("2d");
+function clamp(min,opt,max) {
+    if (opt < min)
+        return min;
+    if (opt > max)
+        return max;
+    return opt;
+};
 function smooth_gaussian(width, height, original, smoothed, sigma) {
     var r = Math.ceil(sigma * 3);
     var r2 = 2 * r + 1;
@@ -215,8 +222,8 @@ function neighbor_vector(width, height, image, r, cx, cy, nvec) {
     for (var dy = -r; dy <= r; ++dy)
     for (var dx = -r; dx <= r; ++dx)
     {
-        var px = Math.clamp(0,cx+dx,width);
-        var py = Math.clamp(0,cy+dy,height);
+        var px = clamp(0,cx+dx,width);
+        var py = clamp(0,cy+dy,height);
         var idx0 = px + width * py;
         var idx1 = (dx + r) + r2 * (dy + r);
         for (var i = 0; i < 3; i++)
@@ -318,13 +325,19 @@ function init() {
         var sigma_range = Number(document.getElementById("input_num_sigma_range").value);
       
         const startTime = performance.now();
-         if (document.getElementById("input_chk_use_bilateral").checked)
-            smooth_bilateral(width, height, original.data, smoothed.data, sigma_space, sigma_range);if (document.getElementById("input_chk_use_bilateral_grid").checked)
-            smooth_bilateral_grid(width, height, original.data, smoothed.data, sigma_space, sigma_range);
-        else if (document.getElementById("input_chk_use_bilateral").checked)
+        if (document.getElementById("input_chk_use_bilateral").checked) {
+            document.getElementById("elapsed_time").textContent = "Elapsed time: Executing Bilateral.";
             smooth_bilateral(width, height, original.data, smoothed.data, sigma_space, sigma_range);
-        else
+        } else if (document.getElementById("input_chk_use_bilateral_grid").checked) {
+            document.getElementById("elapsed_time").textContent = "Elapsed time: Executing Bilateral Grid.";
+            smooth_bilateral_grid(width, height, original.data, smoothed.data, sigma_space, sigma_range);
+        } else if (document.getElementById("input_chk_use_nlmf").checked) {
+            document.getElementById("elapsed_time").textContent = "Elapsed time: Executing Non Local Means.";
+            smooth_nlmf(width, height, original.data, smoothed.data, sigma_space);
+        } else {
+            document.getElementById("elapsed_time").textContent = "Elapsed time: Executing Gaussian.";
             smooth_gaussian(width, height, original.data, smoothed.data, sigma_space);
+        }
         const endTime = performance.now();
         const elapsed = Math.round(endTime - startTime)/1000;
         document.getElementById("elapsed_time").textContent = "Elapsed time: " + elapsed + " [s]";

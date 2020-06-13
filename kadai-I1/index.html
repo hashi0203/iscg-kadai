@@ -21,7 +21,7 @@
     <li><label><input type="radio" name="input_use_filter" id="input_chk_use_gaussian" onchange="disable_sigma_range();" checked>Gaussian</label>
         <label><input type="radio" name="input_use_filter" id="input_chk_use_bilateral" onchange="enable_sigma_range();">Bilateral</label>
         <label><input type="radio" name="input_use_filter" id="input_chk_use_bilateral_grid" onchange="enable_sigma_range();">Bilateral Grid</label>
-        <label><input type="radio" name="input_use_filter" id="input_chk_use_nlmf" onchange="enable_sigma_range();">Non Local Means</label></li>
+        <label><input type="radio" name="input_use_filter" id="input_chk_use_nlmf" onchange="disable_sigma_range();">Non Local Means</label></li>
     <li><button id="btn_do_smoothing">Do Smoothing</button></li>
     <li>Detail Scaling: <input type="number" id="input_num_detail_scaling" step="0.1" min="0" value="2"></li>
     <li><button id="btn_enhance_detail">Enhance Detail</button></li>
