@@ -221,8 +221,8 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
     }
 };
 function smooth_rolling(width, height, original, smoothed, sigma_space, sigma_range, num) {
-    var tmp_input = new Float32Array(width * height);
-    var tmp_output = new Float32Array(width * height);
+    var tmp_input = new Float32Array(4 * width * height);
+    var tmp_output = new Float32Array(4 * width * height);
     smooth_gaussian(width, height, original, tmp_input, sigma_space);
     var i;
     for (i = 0; i < num-2; i++) {
