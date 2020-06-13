@@ -103,7 +103,7 @@ function trilinear_interpolation(x, y, sigma_space, sigma_range, grid, px, py, p
     var x0 = Math.floor(px);
     var y0 = Math.floor(py);
     var z0 = Math.floor(pz);
-    var idx = px + x * py + x * y * pz;
+    var idx = x0 + x * y0 + x * y * z0;
     var c000 = grid[idx];
     var c001 = grid[idx + 1];
     var c010 = grid[idx + x];
@@ -137,8 +137,8 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
         var r = original[4 * idx0];
         var g = original[4 * idx0 + 1];
         var b = original[4 * idx0 + 2];
-        var l = (77*r+151*g+28*b)/(256*sigma_range);
-        var idx1 = Math.round(px) + x * Math.round(py) + x * y * Math.round(l);
+        var l = (77*r+151*g+28*b)/256;
+        var idx1 = Math.round(px) + x * Math.round(py) + x * y * Math.round(l/sigma_range);
         bilateral_grid[idx1] += l;
         bilateral_grid_cnt[idx1] += 1;
     }
@@ -195,6 +195,7 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
         var b = original[4 * idx0 + 2];
         var l = (77*r+151*g+28*b)/256;
         var w = trilinear_interpolation(x, y, sigma_space, sigma_range, bilateral_grid_filtered, px, py, l)/l;
+        //console.log(w);
         
         smoothed[4 * idx0    ] = r * w;
         smoothed[4 * idx0 + 1] = g * w;
@@ -252,13 +253,13 @@ function init() {
         const startTime = performance.now();
         if (document.getElementById("input_chk_use_bilateral_grid").checked)
             smooth_bilateral_grid(width, height, original.data, smoothed.data, sigma_space, sigma_range);
-        if (document.getElementById("input_chk_use_bilateral").checked)
+        else if (document.getElementById("input_chk_use_bilateral").checked)
             smooth_bilateral(width, height, original.data, smoothed.data, sigma_space, sigma_range);
         else
             smooth_gaussian(width, height, original.data, smoothed.data, sigma_space);
         const endTime = performance.now();
         const elapsed = Math.round(endTime - startTime)/1000;
-        document.getElementById("elapsed_time").textContent = "Elapsed time: " + elapsed;
+        document.getElementById("elapsed_time").textContent = "Elapsed time: " + elapsed + " [s]";
       
         context.putImageData(smoothed, 0, 0);
         document.getElementById("img_smoothed").src = canvas.toDataURL();
