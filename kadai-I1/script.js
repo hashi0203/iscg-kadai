@@ -47,15 +47,28 @@ function smooth_gaussian(width, height, original, smoothed, sigma) {
 function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_range) {
     var r = Math.ceil(sigma_space * 3);
     var r2 = 2 * r + 1;
-    // precompute spatial stencil
-    var stencil = new Float32Array(r2 * r2);
+    // precompute spatial stencil_space
+    var stencil_space = new Float32Array(r2 * r2);
     for (var dy = -r; dy <= r; ++dy)
     for (var dx = -r; dx <= r; ++dx)
     {
         var h = Math.sqrt(dx * dx + dy * dy);
         var idx = dx + r + r2 * (dy + r);
-        stencil[idx] = Math.exp(-h * h / (2 * sigma_space * sigma_space));
+        stencil_space[idx] = Math.exp(-h * h / (2 * sigma_space * sigma_space));
     }
+    // // precompute spatial stencil_range
+    // var stencil_range = new Float32Array(256*256*256);
+    // for (var dy = -r; dy <= r; ++dy)
+    // for (var dx = -r; dx <= r; ++dx)
+    // {
+    //     var idx0 = px + width * py;
+    //     var r0 = original[4 * idx0];
+    //     var g0 = original[4 * idx0 + 1];
+    //     var b0 = original[4 * idx0 + 2];
+    //     var h = Math.sqrt(dx * dx + dy * dy);
+    //     var idx = dx + r + r2 * (dy + r);
+    //     stencil_range[idx] = Math.exp(-h * h / (2 * sigma_range * sigma_range));
+    // }
     // apply filter
     for (var py = 0; py < height; py++)
     for (var px = 0; px < width;  px++)
@@ -71,16 +84,18 @@ function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_
             var px1 = px + dx;
             var py1 = py + dy;
             if (0 <= px1 && 0 <= py1 && px1 < width && py1 < height) {
-                var w_space = stencil[dx + r + r2 * (dy + r)];
+                var w_space = stencil_space[dx + r + r2 * (dy + r)];
                 var idx1 = px1 + width * py1;
                 var r1 = original[4 * idx1];
                 var g1 = original[4 * idx1 + 1];
                 var b1 = original[4 * idx1 + 2];
-                var w_range;                            // TODO: take distance between pixel colors at idx0 & idx1, plug it into Gaussian
+                var w_range;
+                
                 var w = w_space * w_range;
                 r_sum += w * r1;
                 g_sum += w * g1;
                 b_sum += w * b1;
+                console.log(r_sum);
                 w_sum += w;
             }
         }
