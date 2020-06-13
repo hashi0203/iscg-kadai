@@ -55,7 +55,18 @@ function smooth_gaussian(width, height, original, smoothed, sigma) {
     }
 };
 function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, sigma_range) {
-    var x = round(width/sigma_space)
+    var x = Math.round(width/sigma_space);
+    var y = Math.round(height/sigma_space);
+    var z = Math.round(255/sigma_range);
+  
+    var bilateral_grid = new Float32Array(x * y * z).fill(0);
+    var bilateral_grid_count = new Float32Array(x * y * z).fill(0);
+    // initialize grid
+    for (var py = 0; py < height; py++)
+    for (var px = 0; px < width;  px++)
+    {
+        
+  
     // apply filter
     for (var py = 0; py < height; py++)
     for (var px = 0; px < width;  px++)
