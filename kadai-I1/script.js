@@ -128,7 +128,7 @@ function trilinear_interpolation(x, y, sigma_space, sigma_range, grid, px, py, p
     var pz0 = 1 - pz1;
     return c000*pz0*py0*px0 + c001*pz0*py0*px1 + c010*pz0*py1*px0 + c011*pz0*py1*px1 + c100*pz1*py0*px0 + c101*pz1*py0*px1 + c110*pz1*py1*px0 + c111*pz1*py1*px1;
 };
-function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, sigma_range) {
+function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, sigma_space, sigma_range) {
     var x = Math.ceil(width/sigma_space);
     var y = Math.ceil(height/sigma_space);
     var z = Math.ceil(255/sigma_range);
@@ -141,9 +141,9 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
     for (var px = 0; px < width/sigma_space;  px+=step)
     {
         var idx0 = Math.round((px + width * py) * sigma_space);
-        var r = original[4 * idx0];
-        var g = original[4 * idx0 + 1];
-        var b = original[4 * idx0 + 2];
+        var r = color_img[4 * idx0];
+        var g = color_img[4 * idx0 + 1];
+        var b = color_img[4 * idx0 + 2];
         var l = (77*r+151*g+28*b)/256;
         var idx1 = Math.round(px) + x * Math.round(py) + x * y * Math.round(l/sigma_range);
         bilateral_grid[idx1] += l;
@@ -198,11 +198,14 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
     for (var px = 0; px < width;  px++)
     {
         var idx0 = px + width * py;
-        var r = original[4 * idx0];
-        var g = original[4 * idx0 + 1];
-        var b = original[4 * idx0 + 2];
+        var r = color_img[4 * idx0];
+        var g = color_img[4 * idx0 + 1];
+        var b = color_img[4 * idx0 + 2];
         var l = (77*r+151*g+28*b)/256;
         var w = trilinear_interpolation(x, y, sigma_space, sigma_range, bilateral_grid_filtered, px, py, l)/l;
+        var r = texture_img[4 * idx0];
+        var g = texture_img[4 * idx0 + 1];
+        var b = texture_img[4 * idx0 + 2];
         smoothed[4 * idx0    ] = Math.min(r * w, 255);
         smoothed[4 * idx0 + 1] = Math.min(g * w, 255);
         smoothed[4 * idx0 + 2] = Math.min(b * w, 255);
@@ -323,14 +326,15 @@ function init() {
         var smoothed = context.createImageData(width, height);
         var sigma_space = Number(document.getElementById("input_num_sigma_space").value);
         var sigma_range = Number(document.getElementById("input_num_sigma_range").value);
+        var num = Number(document.getElementById("input_num_iteration").value);
       
         const startTime = performance.now();
         if (document.getElementById("input_chk_use_bilateral").checked) {
             smooth_bilateral(width, height, original.data, smoothed.data, sigma_space, sigma_range);
         } else if (document.getElementById("input_chk_use_bilateral_grid").checked) {
-            smooth_bilateral_grid(width, height, original.data, smoothed.data, sigma_space, sigma_range);
+            smooth_bilateral_grid(width, height, original.data, original.data, smoothed.data, sigma_space, sigma_range);
         } else if (document.getElementById("input_chk_use_rolling").checked) {
-            smooth_bilateral_grid(width, height, original.data, smoothed.data, sigma_space, sigma_range);
+            // smooth_rolling(width, height, original.data, smoothed.data, sigma_space, sigma_range, num);
         } else if (document.getElementById("input_chk_use_nlmf").checked) {
             smooth_nlmf(width, height, original.data, smoothed.data, sigma_space);
         } else {
@@ -366,10 +370,15 @@ function init() {
     document.getElementById("img_original").src = "https://cdn.glitch.com/1214143e-0c44-41fb-b1ad-e9aa3347cdaa%2Frock.png?v=1562148154890";
 };
 
-function disable_sigma_range() {
-    document.getElementById("input_num_sigma_range").disabled = true;
-};
-
-function enable_sigma_range() {
-    document.getElementById("input_num_sigma_range").disabled = false;
+function toggle_items(self) {
+    if (self.id == "input_chk_use_bilateral" || self.id == "input_chk_use_bilateral_grid")
+        document.getElementById("input_num_sigma_range").disabled = false;
+    else
+        document.getElementById("input_num_sigma_range").disabled = true;
+  
+    if (self.id == "input_chk_use_rolling")
+        document.getElementById("input_num_iteration").disabled = false;
+    else
+        document.getElementById("input_num_iteration").disabled = true;
+  
 };
