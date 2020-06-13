@@ -120,18 +120,23 @@ function trilinear_interpolation(x, y, sigma_space, sigma_range, grid, px, py, p
     var c101 = grid[idxz + 1];
     var c110 = grid[idxz + x];
     var c111 = grid[idxz + 1 + x];
+    if (c000 == NaN || c001 == NaN || c010 == NaN || c011 == NaN || c100 == NaN || c101 == NaN || c101 == NaN || c111 == NaN) {
+        console.log(c000,c111);
+    }
     var px1 = px - x0;
     var px0 = 1 - px1;
     var py1 = py - y0;
     var py0 = 1 - py1;
     var pz1 = pz - z0;
     var pz0 = 1 - pz1;
+    if (isNaN(c000*pz0*py0*px0 + c001*pz0*py0*px1 + c010*pz0*py1*px0 + c011*pz0*py1*px1 + c100*pz1*py0*px0 + c101*pz1*py0*px1 + c110*pz1*py1*px0 + c111*pz1*py1*px1))
+        console.log(c000,c111);
     return c000*pz0*py0*px0 + c001*pz0*py0*px1 + c010*pz0*py1*px0 + c011*pz0*py1*px1 + c100*pz1*py0*px0 + c101*pz1*py0*px1 + c110*pz1*py1*px0 + c111*pz1*py1*px1;
 };
 function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, sigma_space, sigma_range) {
     var x = Math.ceil(width/sigma_space);
     var y = Math.ceil(height/sigma_space);
-    var z = Math.ceil(255/sigma_range);
+    var z = Math.ceil(256/sigma_range);
   
     var bilateral_grid = new Float32Array(x * y * z).fill(0);
     var bilateral_grid_cnt = new Float32Array(x * y * z).fill(0);
@@ -211,6 +216,9 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
         smoothed[4 * idx0 + 1] = Math.min(g * w, 255);
         smoothed[4 * idx0 + 2] = Math.min(b * w, 255);
       
+        // if (bilateral_grid[idx0] == 6375) {
+        //   console.log(l, w, trilinear_interpolation(x, y, sigma_space, sigma_range, bilateral_grid_filtered, px, py, l));
+        // }
         // if (r*w > 80 && r*w < 120 && g < 20 && b < 20) {
         //   smoothed[4 * idx0    ] = 0;
         //   smoothed[4 * idx0 + 1] = 255;
