@@ -55,17 +55,7 @@ function smooth_gaussian(width, height, original, smoothed, sigma) {
     }
 };
 function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, sigma_range) {
-    var r = Math.ceil(sigma_space * 3);
-    var r2 = 2 * r + 1;
-    // precompute spatial stencil_space
-    // var stencil_space = new Float32Array(r2 * r2);
-    // for (var dy = -r; dy <= r; ++dy)
-    // for (var dx = -r; dx <= r; ++dx)
-    // {
-    //     var h = Math.sqrt(dx * dx + dy * dy);
-    //     var idx = dx + r + r2 * (dy + r);
-    //     stencil_space[idx] = Math.exp(-h * h / (2 * sigma_space * sigma_space));
-    // }  
+    var x = round(width/sigma_space)
     // apply filter
     for (var py = 0; py < height; py++)
     for (var px = 0; px < width;  px++)
