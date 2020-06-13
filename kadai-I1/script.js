@@ -210,6 +210,50 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
         smoothed[4 * idx0 + 3] = 255;
     }
 };
+function neighbor_vector(witdh, height, original, cx, cy) {
+    
+};
+function smooth_nlmf(width, height, original, smoothed, sigma) {
+    // apply filter
+    for (var py = 0; py < height; py++)
+    for (var px = 0; px < width;  px++)
+    {
+        var idx0 = px + width * py;
+        var r0 = original[4 * idx0];
+        var g0 = original[4 * idx0 + 1];
+        var b0 = original[4 * idx0 + 2];
+        var r_sum = 0;
+        var g_sum = 0;
+        var b_sum = 0;
+        var w_sum = 0;
+        for (var dy = -r; dy <= r; ++dy)
+        for (var dx = -r; dx <= r; ++dx)
+        {
+            var px1 = px + dx;
+            var py1 = py + dy;
+            if (0 <= px1 && 0 <= py1 && px1 < width && py1 < height) {
+                var w_space = stencil_space[dx + r + r2 * (dy + r)];
+                var idx1 = px1 + width * py1;
+                var r1 = original[4 * idx1];
+                var g1 = original[4 * idx1 + 1];
+                var b1 = original[4 * idx1 + 2];
+                var r_diff = r1 - r0;
+                var g_diff = g1 - g0;
+                var b_diff = b1 - b0;
+                var w_range = Math.exp(-(r_diff * r_diff + g_diff * g_diff + b_diff * b_diff)/ (2 * sigma_range * sigma_range));
+                var w = w_space * w_range;
+                r_sum += w * r1;
+                g_sum += w * g1;
+                b_sum += w * b1;
+                w_sum += w;
+            }
+        }
+        smoothed[4 * idx0    ] = r_sum / w_sum;
+        smoothed[4 * idx0 + 1] = g_sum / w_sum;
+        smoothed[4 * idx0 + 2] = b_sum / w_sum;
+        smoothed[4 * idx0 + 3] = 255;
+    }
+};
 function subtract(width, height, original, smoothed, detail) {
     for (var i = 0; i < width * height; ++i) {
         for (var j = 0; j < 3; ++j) {
