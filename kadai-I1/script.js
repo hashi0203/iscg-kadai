@@ -375,3 +375,7 @@ function disable_sigma_range() {
 function enable_sigma_range() {
     document.getElementById("input_num_sigma_range").disabled = false;
 };
+
+function toggle_sigma_range(self) {
+    document.getElementById("input_num_sigma_range").disabled = self.checked;
+};
