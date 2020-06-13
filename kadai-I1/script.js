@@ -44,20 +44,18 @@ function smooth_gaussian(width, height, original, smoothed, sigma) {
         smoothed[4 * idx0 + 3] = 255;
     }
 };
-function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, sigma_range) {
-    var x = Math.round(width/sigma_space);
-    var y = Math.round(height/sigma_space);
-    var z = Math.round(255/sigma_range);
-  
-    var bilateral_grid = new Float32Array(x * y * z).fill(0);
-    var bilateral_grid_count = new Float32Array(x * y * z).fill(0);
-    // initialize grid
-    var step = 1/sigma_space;
-    for (var py = 0; py < height/sigma_space; py+=step)
-    for (var px = 0; px < width/sigma_space;  px+=step)
+function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_range) {
+    var r = Math.ceil(sigma_space * 3);
+    var r2 = 2 * r + 1;
+    // precompute spatial stencil_space
+    var stencil_space = new Float32Array(r2 * r2);
+    for (var dy = -r; dy <= r; ++dy)
+    for (var dx = -r; dx <= r; ++dx)
     {
-        bilateral_grid[Math.round(px) + x * Math.round(py) + x * y * Math.round((77*r+151*g+28*b)/(256*sigma_space))]
-  
+        var h = Math.sqrt(dx * dx + dy * dy);
+        var idx = dx + r + r2 * (dy + r);
+        stencil_space[idx] = Math.exp(-h * h / (2 * sigma_space * sigma_space));
+    }  
     // apply filter
     for (var py = 0; py < height; py++)
     for (var px = 0; px < width;  px++)
@@ -98,21 +96,45 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
         smoothed[4 * idx0 + 3] = 255;
     }
 };
-function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_range) {
-    var r = Math.ceil(sigma_space * 3);
+function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, sigma_range) {
+    var x = Math.round(width/sigma_space);
+    var y = Math.round(height/sigma_space);
+    var z = Math.round(255/sigma_range);
+  
+    var bilateral_grid = new Float32Array(x * y * z).fill(0);
+    var bilateral_grid_count = new Float32Array(x * y * z).fill(0);
+    // initialize grid
+    var step = 1/sigma_space;
+    for (var py = 0; py < height/sigma_space; py+=step)
+    for (var px = 0; px < width/sigma_space;  px+=step)
+    {
+        var idx0 = Math.round((px + width * py) * sigma_space);
+        var r = original[4 * idx0];
+        var g = original[4 * idx0 + 1];
+        var b = original[4 * idx0 + 2];
+        var l = (77*r+151*g+28*b)/(256*sigma_space);
+        var idx1 = Math.round(px) + x * Math.round(py) + x * y * Math.round(l);
+        bilateral_grid[idx1] += l;
+        bilateral_grid_count[idx1] += 1;
+    }
+  
+    var r = 2;
     var r2 = 2 * r + 1;
-    // precompute spatial stencil_space
-    var stencil_space = new Float32Array(r2 * r2);
+    // precompute spatial stencil
+    var stencil = new Float32Array(r2 * r2 * r2);
+    for (var dz = -r; dz <= r; ++dz)
     for (var dy = -r; dy <= r; ++dy)
     for (var dx = -r; dx <= r; ++dx)
     {
-        var h = Math.sqrt(dx * dx + dy * dy);
-        var idx = dx + r + r2 * (dy + r);
-        stencil_space[idx] = Math.exp(-h * h / (2 * sigma_space * sigma_space));
-    }  
+        var h = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        var idx = dx + r + r2 * (dy + r) + r2 * r2 * (dz + r);
+        stencil[idx] = Math.exp(-h * h / 2);
+    }
+  
     // apply filter
-    for (var py = 0; py < height; py++)
-    for (var px = 0; px < width;  px++)
+    for (var pz = 0; pz < z; pz++)
+    for (var py = 0; py < y; py++)
+    for (var px = 0; px < x; px++)
     {
         var idx0 = px + width * py;
         var r0 = original[4 * idx0];
