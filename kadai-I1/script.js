@@ -56,19 +56,19 @@ function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_
         var idx = dx + r + r2 * (dy + r);
         stencil_space[idx] = Math.exp(-h * h / (2 * sigma_space * sigma_space));
     }
-    // // precompute spatial stencil_range
-    // var stencil_range = new Float32Array(256*256*256);
-    // for (var dy = -r; dy <= r; ++dy)
-    // for (var dx = -r; dx <= r; ++dx)
-    // {
-    //     var idx0 = px + width * py;
-    //     var r0 = original[4 * idx0];
-    //     var g0 = original[4 * idx0 + 1];
-    //     var b0 = original[4 * idx0 + 2];
-    //     var h = Math.sqrt(dx * dx + dy * dy);
-    //     var idx = dx + r + r2 * (dy + r);
-    //     stencil_range[idx] = Math.exp(-h * h / (2 * sigma_range * sigma_range));
-    // }
+  
+    // precompute spatial stencil_range
+    var col = 256;
+    var stencil_range = new Float32Array(col*col*col);
+    for (var db = 0; db < col; ++db)
+    for (var dg = 0; dg <= db; ++dg)
+    for (var dr = 0; dr <= dg; ++dr)
+    {
+        var h = Math.sqrt(dr * dr + dg * dg + db * db);
+        var idx = dr + col * dg + col * col * db;
+        stencil_range[idx] = Math.exp(-h * h / (2 * sigma_range * sigma_range));
+    }
+  
     // apply filter
     for (var py = 0; py < height; py++)
     for (var px = 0; px < width;  px++)
@@ -95,7 +95,6 @@ function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_
                 r_sum += w * r1;
                 g_sum += w * g1;
                 b_sum += w * b1;
-                console.log(r_sum);
                 w_sum += w;
             }
         }
