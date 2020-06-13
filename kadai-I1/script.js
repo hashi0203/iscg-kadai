@@ -1,5 +1,15 @@
 var canvas = document.createElement("canvas");
 var context = canvas.getContext("2d");
+
+function comb(n,r) {
+  var ret = 1;
+  for (var i = 1; i <= r; i++) {
+    ret *= n--;
+    ret /= i;
+  }
+  return ret;
+};
+
 function smooth_gaussian(width, height, original, smoothed, sigma) {
     var r = Math.ceil(sigma * 3);
     var r2 = 2 * r + 1;
@@ -57,23 +67,27 @@ function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_
         stencil_space[idx] = Math.exp(-h * h / (2 * sigma_space * sigma_space));
     }
   
-    // precompute spatial stencil_range
-    var col = 256;
-    var stencil_range = new Float32Array(col*col*col);
-    for (var db = 0; db < col; ++db)
-    for (var dg = 0; dg <= db; ++dg)
-    for (var dr = 0; dr <= dg; ++dr)
-    {
-        var h = Math.sqrt(dr * dr + dg * dg + db * db);
-        var idx = dr + col * dg + col * col * db;
-        stencil_range[idx] = Math.exp(-h * h / (2 * sigma_range * sigma_range));
-    }
+//     // precompute spatial stencil_range
+//     var col = 256;
+//     var stencil_range = new Float32Array(comb(col,3)+comb(col,2)+col);
+//     for (var db = 0; db < col; ++db)
+//     for (var dg = 0; dg <= db; ++dg)
+//     for (var dr = 0; dr <= dg; ++dr)
+//     {
+//         var h = Math.sqrt(dr * dr + dg * dg + db * db);
+//         var idx = comb(db,3)+comb(db,2)+db+comb(dg,2)+dg+dr;
+//         console.log(idx);
+//         stencil_range[idx] = Math.exp(-h * h / (2 * sigma_range * sigma_range));
+//     }
   
     // apply filter
     for (var py = 0; py < height; py++)
     for (var px = 0; px < width;  px++)
     {
         var idx0 = px + width * py;
+                var r1 = original[4 * idx1];
+                var g1 = original[4 * idx1 + 1];
+                var b1 = original[4 * idx1 + 2];
         var r_sum = 0;
         var g_sum = 0;
         var b_sum = 0;
@@ -89,8 +103,7 @@ function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_
                 var r1 = original[4 * idx1];
                 var g1 = original[4 * idx1 + 1];
                 var b1 = original[4 * idx1 + 2];
-                var w_range;
-                
+                var w_range = Math.exp(-h * h / (2 * sigma_space * sigma_space));
                 var w = w_space * w_range;
                 r_sum += w * r1;
                 g_sum += w * g1;
