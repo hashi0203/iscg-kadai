@@ -96,7 +96,10 @@ function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_
         smoothed[4 * idx0 + 3] = 255;
     }
 };
-function trilinear_interpolation(x, y, grid, px, py, pz) {
+function trilinear_interpolation(x, y, sigma_space, sigma_range, grid, px, py, pz) {
+    px /= sigma_space;
+    py /= sigma_space;
+    pz /= sigma_range;
     var x0 = Math.floor(px);
     var y0 = Math.floor(py);
     var z0 = Math.floor(pz);
@@ -134,7 +137,7 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
         var r = original[4 * idx0];
         var g = original[4 * idx0 + 1];
         var b = original[4 * idx0 + 2];
-        var l = (77*r+151*g+28*b)/(256*sigma_space);
+        var l = (77*r+151*g+28*b)/(256*sigma_range);
         var idx1 = Math.round(px) + x * Math.round(py) + x * y * Math.round(l);
         bilateral_grid[idx1] += l;
         bilateral_grid_cnt[idx1] += 1;
@@ -153,7 +156,7 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
         stencil[idx] = Math.exp(-h * h / 2);
     }
   
-    // apply filter
+    // apply filter to bilateral grid
     var bilateral_grid_filtered = new Float32Array(x * y * z).fill(0);
     for (var pz = 0; pz < z; pz++)
     for (var py = 0; py < y; py++)
@@ -178,11 +181,29 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
                 w_sum += w * cnt1;
             }
         }
+        print
         if (w_sum != 0)
-          bilateral_grid_filtered[idx0] = l_sum / w_sum;
+            bilateral_grid_filtered[idx0] = l_sum / w_sum;
     }
-    trilinear_interpolation(x, y, grid, px, py, pz)  
   
+    console.log(bilateral_grid_filtered);
+  
+    // apply bilateral grid to original image
+    for (var py = 0; py < height; py++)
+    for (var px = 0; px < width;  px++)
+    {
+        var idx0 = px + py * width;
+        var r = original[4 * idx0];
+        var g = original[4 * idx0 + 1];
+        var b = original[4 * idx0 + 2];
+        var l = (77*r+151*g+28*b)/256;
+        var w = trilinear_interpolation(x, y, sigma_space, sigma_range, bilateral_grid_filtered, px, py, l)/l;
+        
+        smoothed[4 * idx0    ] = r * w;
+        smoothed[4 * idx0 + 1] = g * w;
+        smoothed[4 * idx0 + 2] = b * w;
+        smoothed[4 * idx0 + 3] = 255;
+    }
 };
 function subtract(width, height, original, smoothed, detail) {
     for (var i = 0; i < width * height; ++i) {
