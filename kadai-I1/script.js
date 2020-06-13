@@ -102,7 +102,7 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
     var z = Math.round(255/sigma_range);
   
     var bilateral_grid = new Float32Array(x * y * z).fill(0);
-    var bilateral_grid_count = new Float32Array(x * y * z).fill(0);
+    var bilateral_grid_cnt = new Float32Array(x * y * z).fill(0);
     // initialize grid
     var step = 1/sigma_space;
     for (var py = 0; py < height/sigma_space; py+=step)
@@ -115,7 +115,7 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
         var l = (77*r+151*g+28*b)/(256*sigma_space);
         var idx1 = Math.round(px) + x * Math.round(py) + x * y * Math.round(l);
         bilateral_grid[idx1] += l;
-        bilateral_grid_count[idx1] += 1;
+        bilateral_grid_cnt[idx1] += 1;
     }
   
     var r = 2;
@@ -132,44 +132,31 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
     }
   
     // apply filter
+    var bilateral_grid_filtered = new Float32Array(x * y * z);
     for (var pz = 0; pz < z; pz++)
     for (var py = 0; py < y; py++)
     for (var px = 0; px < x; px++)
     {
-        var idx0 = px + width * py;
-        var r0 = original[4 * idx0];
-        var g0 = original[4 * idx0 + 1];
-        var b0 = original[4 * idx0 + 2];
-        var r_sum = 0;
-        var g_sum = 0;
-        var b_sum = 0;
+        var idx0 = px + x * py + x * y * pz;
+        var l_sum = 0;
         var w_sum = 0;
+        for (var dz = -r; dz <= r; ++dz)
         for (var dy = -r; dy <= r; ++dy)
         for (var dx = -r; dx <= r; ++dx)
         {
             var px1 = px + dx;
             var py1 = py + dy;
-            if (0 <= px1 && 0 <= py1 && px1 < width && py1 < height) {
-                var w_space = stencil_space[dx + r + r2 * (dy + r)];
-                var idx1 = px1 + width * py1;
-                var r1 = original[4 * idx1];
-                var g1 = original[4 * idx1 + 1];
-                var b1 = original[4 * idx1 + 2];
-                var r_diff = r1 - r0;
-                var g_diff = g1 - g0;
-                var b_diff = b1 - b0;
-                var w_range = Math.exp(-(r_diff * r_diff + g_diff * g_diff + b_diff * b_diff)/ (2 * sigma_range * sigma_range));
-                var w = w_space * w_range;
-                r_sum += w * r1;
-                g_sum += w * g1;
-                b_sum += w * b1;
-                w_sum += w;
+            var pz1 = pz + dz;
+            if (0 <= px1 && 0 <= py1&& 0 <= pz1 && px1 < x && py1 < y && pz1 < z) {
+                var w = stencil[dx + r + r2 * (dy + r) + r2 * r2 * (dz + r)];
+                var idx1 = px1 + x * py1 + x * y * pz1;
+                var l1 = bilateral_grid[idx1];
+                var cnt1 = bilateral_grid_cnt[idx1];
+                l_sum += w * l1;
+                w_sum += w * cnt1;
             }
         }
-        smoothed[4 * idx0    ] = r_sum / w_sum;
-        smoothed[4 * idx0 + 1] = g_sum / w_sum;
-        smoothed[4 * idx0 + 2] = b_sum / w_sum;
-        smoothed[4 * idx0 + 3] = 255;
+        bilateral_grid_filtered[idx0] = l_sum / w_sum;
     }
 };
 function subtract(width, height, original, smoothed, detail) {
