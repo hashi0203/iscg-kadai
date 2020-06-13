@@ -326,16 +326,14 @@ function init() {
       
         const startTime = performance.now();
         if (document.getElementById("input_chk_use_bilateral").checked) {
-            document.getElementById("elapsed_time").textContent = "Elapsed time: Executing Bilateral.";
             smooth_bilateral(width, height, original.data, smoothed.data, sigma_space, sigma_range);
         } else if (document.getElementById("input_chk_use_bilateral_grid").checked) {
-            document.getElementById("elapsed_time").textContent = "Elapsed time: Executing Bilateral Grid.";
+            smooth_bilateral_grid(width, height, original.data, smoothed.data, sigma_space, sigma_range);
+        } else if (document.getElementById("input_chk_use_rolling").checked) {
             smooth_bilateral_grid(width, height, original.data, smoothed.data, sigma_space, sigma_range);
         } else if (document.getElementById("input_chk_use_nlmf").checked) {
-            document.getElementById("elapsed_time").textContent = "Elapsed time: Executing Non Local Means.";
             smooth_nlmf(width, height, original.data, smoothed.data, sigma_space);
         } else {
-            document.getElementById("elapsed_time").textContent = "Elapsed time: Executing Gaussian.";
             smooth_gaussian(width, height, original.data, smoothed.data, sigma_space);
         }
         const endTime = performance.now();
@@ -374,8 +372,4 @@ function disable_sigma_range() {
 
 function enable_sigma_range() {
     document.getElementById("input_num_sigma_range").disabled = false;
-};
-
-function toggle_sigma_range(self) {
-    document.getElementById("input_num_sigma_range").disabled = self.checked;
 };
