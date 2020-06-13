@@ -142,6 +142,7 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
         bilateral_grid[idx1] += l;
         bilateral_grid_cnt[idx1] += 1;
     }
+    // console.log(bilateral_grid_cnt);
   
     var r = 2;
     var r2 = 2 * r + 1;
@@ -203,7 +204,8 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
           smoothed[4 * idx0    ] = 0;
           smoothed[4 * idx0 + 1] = 255;
           smoothed[4 * idx0 + 2] = 0;
-          console.log(r,g,b,w);
+          var idx = Math.round(px/sigma_space) + x * Math.round(py/sigma_space) + x * y * Math.round(l/sigma_range);
+          console.log(r,g,b,w,bilateral_grid[idx],bilateral_grid_cnt[idx],bilateral_grid_filtered[idx]);
         }
         smoothed[4 * idx0 + 3] = 255;
     }
