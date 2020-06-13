@@ -210,8 +210,17 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
         smoothed[4 * idx0 + 3] = 255;
     }
 };
-function neighbor_vector(witdh, height, original, cx, cy) {
-    
+function neighbor_vector(width, height, original, cx, cy, nvec) {
+    var r = 3;
+    var r2 = 7;
+    for (var dy = -r; dy <= r; ++dy)
+    for (var dx = -r; dx <= r; ++dx)
+    {
+        var px = Math.clamp(0,cx+dx,width);
+        var py = Math.clamp(0,cy+dy,height);
+        var idx1 = 4 * ((dx + r) + r2 * (dy + r));
+        nvec[idx1] = 
+    }
 };
 function smooth_nlmf(width, height, original, smoothed, sigma) {
     // apply filter
