@@ -222,8 +222,8 @@ function neighbor_vector(width, height, image, r, cx, cy, nvec) {
     for (var dy = -r; dy <= r; ++dy)
     for (var dx = -r; dx <= r; ++dx)
     {
-        var px = clamp(0,cx+dx,width);
-        var py = clamp(0,cy+dy,height);
+        var px = clamp(0,cx+dx,width-1);
+        var py = clamp(0,cy+dy,height-1);
         var idx0 = px + width * py;
         var idx1 = (dx + r) + r2 * (dy + r);
         for (var i = 0; i < 3; i++)
