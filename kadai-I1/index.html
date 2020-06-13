@@ -17,9 +17,10 @@
   <ul>
     <li>Load Image: <input type="file" id="input_file_original" accept="image/*"></li>
     <li>Sigma_Space: <input type="number" id="input_num_sigma_space" step="1" min="1" value="5"></li>
-    <li>Sigma_Range: <input type="number" id="input_num_sigma_range" step="1" min="1" value="25"></li>
-    <li><input type="checkbox" id="input_chk_use_bilateral" checked> Use Bilateral</li>
-    <li><input type="checkbox" id="input_chk_use_bilateral_grid" checked> Use Bilateral Grid</li>
+    <li>Sigma_Range: <input type="number" id="input_num_sigma_range" step="1" min="1" value="25" disabled></li>
+    <li><label><input type="radio" name="input_use_filter" id="input_chk_use_gaussian" onchange="disable_sigma_range();" checked>Gaussian</label>
+        <label><input type="radio" name="input_use_filter" id="input_chk_use_bilateral" onchange="enable_sigma_range();">Bilateral</label>
+        <label><input type="radio" name="input_use_filter" id="input_chk_use_bilateral_grid" onchange="enable_sigma_range();">Bilateral Grid</label></li>
     <li><button id="btn_do_smoothing">Do Smoothing</button></li>
     <li>Detail Scaling: <input type="number" id="input_num_detail_scaling" step="0.1" min="0" value="2"></li>
     <li><button id="btn_enhance_detail">Enhance Detail</button></li>

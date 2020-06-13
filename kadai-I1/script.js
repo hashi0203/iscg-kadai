@@ -293,3 +293,11 @@ function init() {
     };
     document.getElementById("img_original").src = "https://cdn.glitch.com/1214143e-0c44-41fb-b1ad-e9aa3347cdaa%2Frock.png?v=1562148154890";
 };
+
+function disable_sigma_range() {
+    document.getElementById("input_num_sigma_range").disabled = true;
+};
+
+function enable_sigma_range() {
+    document.getElementById("input_num_sigma_range").disabled = false;
+};
