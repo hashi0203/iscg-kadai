@@ -189,13 +189,12 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
     for (var py = 0; py < height; py++)
     for (var px = 0; px < width;  px++)
     {
-        var idx0 = px + py * width;
+        var idx0 = px + width * py;
         var r = original[4 * idx0];
         var g = original[4 * idx0 + 1];
         var b = original[4 * idx0 + 2];
         var l = (77*r+151*g+28*b)/256;
         var w = trilinear_interpolation(x, y, sigma_space, sigma_range, bilateral_grid_filtered, px, py, l)/l;
-        //console.log(w);
         
         smoothed[4 * idx0    ] = r * w;
         smoothed[4 * idx0 + 1] = g * w;
