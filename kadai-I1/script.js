@@ -1,15 +1,5 @@
 var canvas = document.createElement("canvas");
 var context = canvas.getContext("2d");
-
-function comb(n,r) {
-  var ret = 1;
-  for (var i = 1; i <= r; i++) {
-    ret *= n--;
-    ret /= i;
-  }
-  return ret;
-};
-
 function smooth_gaussian(width, height, original, smoothed, sigma) {
     var r = Math.ceil(sigma * 3);
     var r2 = 2 * r + 1;
@@ -62,10 +52,11 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
     var bilateral_grid = new Float32Array(x * y * z).fill(0);
     var bilateral_grid_count = new Float32Array(x * y * z).fill(0);
     // initialize grid
-    for (var py = 0; py < height; py++)
-    for (var px = 0; px < width;  px++)
+    var step = 1/sigma_space;
+    for (var py = 0; py < height/sigma_space; py+=step)
+    for (var px = 0; px < width/sigma_space;  px+=step)
     {
-        
+        bilateral_grid[Math.round(px) + x * Math.round(py) + x * y * Math.round((77*r+151*g+28*b)/(256*sigma_space))]
   
     // apply filter
     for (var py = 0; py < height; py++)
