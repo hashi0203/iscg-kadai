@@ -85,9 +85,9 @@ function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_
     for (var px = 0; px < width;  px++)
     {
         var idx0 = px + width * py;
-                var r1 = original[4 * idx1];
-                var g1 = original[4 * idx1 + 1];
-                var b1 = original[4 * idx1 + 2];
+        var r0 = original[4 * idx0];
+        var g0 = original[4 * idx0 + 1];
+        var b0 = original[4 * idx0 + 2];
         var r_sum = 0;
         var g_sum = 0;
         var b_sum = 0;
@@ -103,7 +103,10 @@ function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_
                 var r1 = original[4 * idx1];
                 var g1 = original[4 * idx1 + 1];
                 var b1 = original[4 * idx1 + 2];
-                var w_range = Math.exp(-h * h / (2 * sigma_space * sigma_space));
+                var r_diff = r1 - r0;
+                var g_diff = g1 - g0;
+                var b_diff = b1 - b0;
+                var w_range = Math.exp(-(r_diff * r_diff + g_diff * g_diff + b_diff * b_diff)/ (2 * sigma_range * sigma_range));
                 var w = w_space * w_range;
                 r_sum += w * r1;
                 g_sum += w * g1;
