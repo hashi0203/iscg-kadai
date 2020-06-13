@@ -141,15 +141,16 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
     for (var px = 0; px < width/sigma_space;  px+=step)
     {
         var idx0 = Math.round((px + width * py) * sigma_space);
-        var r = color_img[4 * idx0];
-        var g = color_img[4 * idx0 + 1];
-        var b = color_img[4 * idx0 + 2];
+        var r = texture_img[4 * idx0];
+        var g = texture_img[4 * idx0 + 1];
+        var b = texture_img[4 * idx0 + 2];
         var l = (77*r+151*g+28*b)/256;
         var idx1 = Math.round(px) + x * Math.round(py) + x * y * Math.round(l/sigma_range);
         bilateral_grid[idx1] += l;
         bilateral_grid_cnt[idx1] += 1;
     }
     // console.log(bilateral_grid_cnt);
+    // console.log(bilateral_grid);
   
     var r = 2;
     var r2 = 2 * r + 1;
@@ -188,7 +189,7 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
                 l_sum += w * l1;
                 w_sum += w * cnt1;
             }
-        }
+        }      
         if (w_sum != 0)
             bilateral_grid_filtered[idx0] = l_sum / w_sum;
     }
@@ -198,14 +199,14 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
     for (var px = 0; px < width;  px++)
     {
         var idx0 = px + width * py;
-        var r = color_img[4 * idx0];
-        var g = color_img[4 * idx0 + 1];
-        var b = color_img[4 * idx0 + 2];
-        var l = (77*r+151*g+28*b)/256;
-        var w = trilinear_interpolation(x, y, sigma_space, sigma_range, bilateral_grid_filtered, px, py, l)/l;
         var r = texture_img[4 * idx0];
         var g = texture_img[4 * idx0 + 1];
         var b = texture_img[4 * idx0 + 2];
+        var l = (77*r+151*g+28*b)/256;
+        var w = trilinear_interpolation(x, y, sigma_space, sigma_range, bilateral_grid_filtered, px, py, l)/l;
+        var r = color_img[4 * idx0];
+        var g = color_img[4 * idx0 + 1];
+        var b = color_img[4 * idx0 + 2];
         smoothed[4 * idx0    ] = Math.min(r * w, 255);
         smoothed[4 * idx0 + 1] = Math.min(g * w, 255);
         smoothed[4 * idx0 + 2] = Math.min(b * w, 255);
