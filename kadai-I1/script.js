@@ -210,27 +210,30 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
         smoothed[4 * idx0 + 3] = 255;
     }
 };
-function neighbor_vector(width, height, original, cx, cy, nvec) {
-    var r = 3;
-    var r2 = 7;
+function neighbor_vector(width, height, image, r, cx, cy, nvec) {
+    var r2 = 2 * r + 1;
     for (var dy = -r; dy <= r; ++dy)
     for (var dx = -r; dx <= r; ++dx)
     {
         var px = Math.clamp(0,cx+dx,width);
         var py = Math.clamp(0,cy+dy,height);
-        var idx1 = 4 * ((dx + r) + r2 * (dy + r));
-        nvec[idx1] = 
+        var idx0 = px + width * py;
+        var idx1 = (dx + r) + r2 * (dy + r);
+        for (var i = 0; i < 3; i++)
+          nvec[3 * idx1 + i] = image[4 * idx0 + i];
     }
 };
 function smooth_nlmf(width, height, original, smoothed, sigma) {
+    var r = 3;
+    var r2 = 2 * r + 1;
+    var vec_size = r2 * r2 * 3;
     // apply filter
     for (var py = 0; py < height; py++)
     for (var px = 0; px < width;  px++)
     {
         var idx0 = px + width * py;
-        var r0 = original[4 * idx0];
-        var g0 = original[4 * idx0 + 1];
-        var b0 = original[4 * idx0 + 2];
+        var nvec0 = new Float32Array(vec_size).fill(0);
+        neighbor_vector(width, height, original, r, px, py, nvec0);
         var r_sum = 0;
         var g_sum = 0;
         var b_sum = 0;
@@ -241,16 +244,20 @@ function smooth_nlmf(width, height, original, smoothed, sigma) {
             var px1 = px + dx;
             var py1 = py + dy;
             if (0 <= px1 && 0 <= py1 && px1 < width && py1 < height) {
-                var w_space = stencil_space[dx + r + r2 * (dy + r)];
+                var nvec1 = new Float32Array(vec_size).fill(0);
+                neighbor_vector(width, height, original, r, px1, py1, nvec1);
+                
+                var norm = 0;
+                for (var i = 0; i < vec_size; i++) {
+                    var tmp = nvec0[i] - nvec1[i]
+                    norm += tmp * tmp;
+                }
+              
+                var w = Math.exp(-norm/ (2 * sigma * sigma));
                 var idx1 = px1 + width * py1;
                 var r1 = original[4 * idx1];
                 var g1 = original[4 * idx1 + 1];
                 var b1 = original[4 * idx1 + 2];
-                var r_diff = r1 - r0;
-                var g_diff = g1 - g0;
-                var b_diff = b1 - b0;
-                var w_range = Math.exp(-(r_diff * r_diff + g_diff * g_diff + b_diff * b_diff)/ (2 * sigma_range * sigma_range));
-                var w = w_space * w_range;
                 r_sum += w * r1;
                 g_sum += w * g1;
                 b_sum += w * b1;
@@ -311,7 +318,8 @@ function init() {
         var sigma_range = Number(document.getElementById("input_num_sigma_range").value);
       
         const startTime = performance.now();
-        if (document.getElementById("input_chk_use_bilateral_grid").checked)
+         if (document.getElementById("input_chk_use_bilateral").checked)
+            smooth_bilateral(width, height, original.data, smoothed.data, sigma_space, sigma_range);if (document.getElementById("input_chk_use_bilateral_grid").checked)
             smooth_bilateral_grid(width, height, original.data, smoothed.data, sigma_space, sigma_range);
         else if (document.getElementById("input_chk_use_bilateral").checked)
             smooth_bilateral(width, height, original.data, smoothed.data, sigma_space, sigma_range);
