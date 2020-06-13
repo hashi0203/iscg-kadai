@@ -195,11 +195,15 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
         var b = original[4 * idx0 + 2];
         var l = (77*r+151*g+28*b)/256;
         var w = trilinear_interpolation(x, y, sigma_space, sigma_range, bilateral_grid_filtered, px, py, l)/l;
-        if (Math.abs(w-1) > 0.2)
-          console.log(w);
         smoothed[4 * idx0    ] = Math.min(r * w, 255);
         smoothed[4 * idx0 + 1] = Math.min(g * w, 255);
         smoothed[4 * idx0 + 2] = Math.min(b * w, 255);
+      
+        // if (r*w > 100 && r*w < 150) {
+        //   smoothed[4 * idx0    ] = 0;
+        //   smoothed[4 * idx0 + 1] = 255;
+        //   smoothed[4 * idx0 + 2] = 0;
+        }
         smoothed[4 * idx0 + 3] = 255;
     }
 };
