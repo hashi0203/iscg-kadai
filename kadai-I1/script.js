@@ -181,12 +181,9 @@ function smooth_bilateral_grid(width, height, original, smoothed, sigma_space, s
                 w_sum += w * cnt1;
             }
         }
-        print
         if (w_sum != 0)
             bilateral_grid_filtered[idx0] = l_sum / w_sum;
     }
-  
-    console.log(bilateral_grid_filtered);
   
     // apply bilateral grid to original image
     for (var py = 0; py < height; py++)
@@ -251,12 +248,18 @@ function init() {
         var smoothed = context.createImageData(width, height);
         var sigma_space = Number(document.getElementById("input_num_sigma_space").value);
         var sigma_range = Number(document.getElementById("input_num_sigma_range").value);
+      
+        const startTime = performance.now();
         if (document.getElementById("input_chk_use_bilateral_grid").checked)
             smooth_bilateral_grid(width, height, original.data, smoothed.data, sigma_space, sigma_range);
         if (document.getElementById("input_chk_use_bilateral").checked)
             smooth_bilateral(width, height, original.data, smoothed.data, sigma_space, sigma_range);
         else
             smooth_gaussian(width, height, original.data, smoothed.data, sigma_space);
+        const endTime = performance.now();
+        const elapsed = Math.round(endTime - startTime)/1000;
+        document.getElementById("elapsed_time").textContent = "Elapsed time: " + elapsed;
+      
         context.putImageData(smoothed, 0, 0);
         document.getElementById("img_smoothed").src = canvas.toDataURL();
         // detail = original - smoothed
