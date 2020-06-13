@@ -220,6 +220,22 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
         smoothed[4 * idx0 + 3] = 255;
     }
 };
+function smooth_rolling(width, height, original, smoothed, sigma_space, sigma_range, num) {
+    var tmp_input = new Float32Array(width * height);
+    var tmp_output = new Float32Array(width * height);
+    smooth_gaussian(width, height, original, tmp_input, sigma_space);
+    var i;
+    for (i = 0; i < num-2; i++) {
+        smooth_bilateral_grid(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
+        smooth_bilateral_grid(width, height, original, tmp_output, tmp_input, sigma_space, sigma_range);
+    }
+    if (i == num-2) {
+        smooth_bilateral_grid(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
+        smooth_bilateral_grid(width, height, original, tmp_output, smoothed, sigma_space, sigma_range);
+    } else {
+        smooth_bilateral_grid(width, height, original, tmp_input, smoothed, sigma_space, sigma_range);
+    }
+};
 function neighbor_vector(width, height, image, r, cx, cy, nvec) {
     var r2 = 2 * r + 1;
     for (var dy = -r; dy <= r; ++dy)
@@ -334,7 +350,7 @@ function init() {
         } else if (document.getElementById("input_chk_use_bilateral_grid").checked) {
             smooth_bilateral_grid(width, height, original.data, original.data, smoothed.data, sigma_space, sigma_range);
         } else if (document.getElementById("input_chk_use_rolling").checked) {
-            // smooth_rolling(width, height, original.data, smoothed.data, sigma_space, sigma_range, num);
+            smooth_rolling(width, height, original.data, smoothed.data, sigma_space, sigma_range, num);
         } else if (document.getElementById("input_chk_use_nlmf").checked) {
             smooth_nlmf(width, height, original.data, smoothed.data, sigma_space);
         } else {
@@ -371,7 +387,7 @@ function init() {
 };
 
 function toggle_items(self) {
-    if (self.id == "input_chk_use_bilateral" || self.id == "input_chk_use_bilateral_grid")
+    if (self.id == "input_chk_use_bilateral" || self.id == "input_chk_use_bilateral_grid" || self.id == "input_chk_use_rolling")
         document.getElementById("input_num_sigma_range").disabled = false;
     else
         document.getElementById("input_num_sigma_range").disabled = true;
