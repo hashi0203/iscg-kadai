@@ -315,13 +315,12 @@ function edge_detection(width, height, original, smoothed, sigma_edge) {
         // smoothed[4 * idx0    ] = S * 255;
         // smoothed[4 * idx0 + 1] = S * 255;
         // smoothed[4 * idx0 + 2] = S * 255;
-        if (S <= 0) {
+        if (S >= 0) {
             smoothed[4 * idx0    ] = r0;
             smoothed[4 * idx0 + 1] = g0;
             smoothed[4 * idx0 + 2] = b0;
         } else {
-            console.log(S);
-            var D = 1 + Math.tanh(- S);
+            var D = 1 + Math.tanh(- S * 2);
             smoothed[4 * idx0    ] = r0 * D;
             smoothed[4 * idx0 + 1] = g0 * D;
             smoothed[4 * idx0 + 2] = b0 * D;
@@ -394,7 +393,7 @@ function smooth_stylization(width, height, original, smoothed, sigma_space, sigm
 //     //     smoothed[4 * idx0 + 3] = 255;
 //     // }
   
-    edge_detection(width, height, original, smoothed, sigma_edge);
+    edge_detection(width, height, tmp_bilateral, smoothed, sigma_edge);
 };
 function smooth_rolling(width, height, original, smoothed, sigma_space, sigma_range, num) {
     var tmp_input = new Float32Array(4 * width * height);
