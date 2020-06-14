@@ -288,9 +288,6 @@ function edge_detection(width, height, original, smoothed, sigma_edge, phi) {
         s_r /= w_r_sum;
       
         var S = s_e - s_r;
-        // smoothed[4 * idx0    ] = S * 255;
-        // smoothed[4 * idx0 + 1] = S * 255;
-        // smoothed[4 * idx0 + 2] = S * 255;
         if (S <= 0) {
             smoothed[4 * idx0    ] = r0;
             smoothed[4 * idx0 + 1] = g0;
@@ -303,7 +300,6 @@ function edge_detection(width, height, original, smoothed, sigma_edge, phi) {
         }    
         smoothed[4 * idx0 + 3] = 255;
     }
-  
 };
 function smooth_stylization(width, height, original, smoothed, sigma_space, sigma_range, sigma_edge, phi) {
     var tmp_bilateral = new Float32Array(4 * width * height);
