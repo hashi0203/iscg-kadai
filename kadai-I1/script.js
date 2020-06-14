@@ -236,7 +236,7 @@ function smooth_rolling(width, height, original, smoothed, sigma_space, sigma_ra
     smooth_gaussian(width, height, original, tmp_input, sigma_space);
     var i;
     // choose the faster between bilateral and bilateral grid
-    if (sigma_space * sigma_space * sigma_range <= 255) {
+    if (sigma_space * sigma_space * sigma_range <= 255 || true) {
         for (i = 0; i < num-2; i++) {
             smooth_bilateral(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
             smooth_bilateral(width, height, original, tmp_output, tmp_input, sigma_space, sigma_range);
