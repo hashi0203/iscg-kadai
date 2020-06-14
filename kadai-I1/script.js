@@ -229,7 +229,7 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
         smoothed[4 * idx0 + 3] = 255;
     }
 };
-function edge_detection(width, height, original, smoothed, sigma_edge) {
+function edge_detection(width, height, original, smoothed, sigma_edge, phi) {
     var r = 2;
     var r2 = 2 * r + 1;
     // precompute spatial stencil_edge_e
@@ -311,16 +311,16 @@ function edge_detection(width, height, original, smoothed, sigma_edge) {
         // s_r /= (2*Math.PI*sigma_edge_r*sigma_edge_r);
         s_r /= w_r_sum;
       
-        var S = s_e - 0.98 * s_r;
-        smoothed[4 * idx0    ] = S * 255;
-        smoothed[4 * idx0 + 1] = S * 255;
-        smoothed[4 * idx0 + 2] = S * 255;
+        var S = s_e - s_r;
+        // smoothed[4 * idx0    ] = S * 255;
+        // smoothed[4 * idx0 + 1] = S * 255;
+        // smoothed[4 * idx0 + 2] = S * 255;
         if (S <= 0) {
             smoothed[4 * idx0    ] = r0;
             smoothed[4 * idx0 + 1] = g0;
             smoothed[4 * idx0 + 2] = b0;
         } else {
-            var D = 1 + Math.tanh(- S * 4);
+            var D = 1 + Math.tanh(- S * phi);
             smoothed[4 * idx0    ] = r0 * D;
             smoothed[4 * idx0 + 1] = g0 * D;
             smoothed[4 * idx0 + 2] = b0 * D;
@@ -329,7 +329,7 @@ function edge_detection(width, height, original, smoothed, sigma_edge) {
     }
   
 };
-function smooth_stylization(width, height, original, smoothed, sigma_space, sigma_range, sigma_edge) {
+function smooth_stylization(width, height, original, smoothed, sigma_space, sigma_range, sigma_edge, phi) {
     var tmp_bilateral = new Float32Array(4 * width * height);
     var tmp_gaussian_e = new Float32Array(4 * width * height);
     var tmp_gaussian_r = new Float32Array(4 * width * height);
@@ -393,7 +393,7 @@ function smooth_stylization(width, height, original, smoothed, sigma_space, sigm
 //     //     smoothed[4 * idx0 + 3] = 255;
 //     // }
   
-    edge_detection(width, height, tmp_bilateral, smoothed, sigma_edge);
+    edge_detection(width, height, tmp_bilateral, smoothed, sigma_edge, phi);
 };
 function smooth_rolling(width, height, original, smoothed, sigma_space, sigma_range, num) {
     var tmp_input = new Float32Array(4 * width * height);
@@ -533,6 +533,7 @@ function init() {
         var sigma_space = Number(document.getElementById("input_num_sigma_space").value);
         var sigma_range = Number(document.getElementById("input_num_sigma_range").value);
         var sigma_edge = Number(document.getElementById("input_num_sigma_edge").value);
+        var phi = Number(document.getElementById("input_num_falloff").value);
         var num = Number(document.getElementById("input_num_iteration").value);
       
         const startTime = performance.now();
@@ -541,7 +542,7 @@ function init() {
         } else if (document.getElementById("input_chk_use_bilateral_grid").checked) {
             smooth_bilateral_grid(width, height, original.data, original.data, smoothed.data, sigma_space, sigma_range);
         } else if (document.getElementById("input_chk_use_stylization").checked) {
-            smooth_stylization(width, height, original.data, smoothed.data, sigma_space, sigma_range, sigma_edge);
+            smooth_stylization(width, height, original.data, smoothed.data, sigma_space, sigma_range, sigma_edge, phi);
         } else if (document.getElementById("input_chk_use_rolling").checked) {
             smooth_rolling(width, height, original.data, smoothed.data, sigma_space, sigma_range, num);
         } else if (document.getElementById("input_chk_use_nlmf").checked) {
