@@ -321,7 +321,7 @@ function smooth_stylization(width, height, original, smoothed, sigma_space, sigm
     var tmp_gaussian_r = new Float32Array(4 * width * height);
     smooth_bilateral(width, height, original, original, tmp_bilateral, sigma_space, sigma_range);
     smooth_gaussian(width, height, tmp_bilateral, tmp_gaussian_e, sigma_edge);
-    smooth_gaussian(width, height, tmp_bilateral, tmp_gaussian_r, sigma_edge * Math.sqrt(3));
+    smooth_gaussian(width, height, tmp_bilateral, tmp_gaussian_r, sigma_edge * Math.sqrt(1.6));
     
     var tau = 0.98;
     var phi = 2;
