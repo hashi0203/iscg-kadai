@@ -1,6 +1,7 @@
 var canvas = document.createElement("canvas");
 var context = canvas.getContext("2d");
 var rock_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Frock.png?v=1592128589573";
+var man_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fman.png?v=1592149019291";
 var dog_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fdog.png?v=1592128589634";
 var house_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fhouse.png?v=1592128943149";
 function clamp(min,opt,max) {
@@ -585,8 +586,10 @@ function toggle_imgs(self) {
     if (self.id == "input_chk_default1")
         document.getElementById("img_original").src = rock_url;
     else if (self.id == "input_chk_default2")
-        document.getElementById("img_original").src = dog_url;
+        document.getElementById("img_original").src = man_url;
     else if (self.id == "input_chk_default3")
+        document.getElementById("img_original").src = dog_url;
+    else if (self.id == "input_chk_default4")
         document.getElementById("img_original").src = house_url;
 }
 
@@ -600,6 +603,11 @@ function toggle_items(self) {
         document.getElementById("input_num_sigma_edge").disabled = false;
     else
         document.getElementById("input_num_sigma_edge").disabled = true;
+  
+    if (self.id == "input_chk_use_stylization")
+        document.getElementById("input_num_falloff").disabled = false;
+    else
+        document.getElementById("input_num_falloff").disabled = true;
   
     if (self.id == "input_chk_use_rolling")
         document.getElementById("input_num_iteration").disabled = false;
