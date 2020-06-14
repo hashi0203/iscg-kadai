@@ -142,16 +142,15 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
     var bilateral_grid = new Float32Array(x * y * z).fill(0);
     var bilateral_grid_cnt = new Float32Array(x * y * z).fill(0);
     // initialize grid
-    var step = 1/sigma_space;
-    for (var py = 0; py < height/sigma_space; py+=step)
-    for (var px = 0; px < width/sigma_space;  px+=step)
+    for (var py = 0; py < height; py++)
+    for (var px = 0; px < width;  px++)
     {
-        var idx0 = Math.round((px + width * py) * sigma_space);
+        var idx0 = px + width * py;
         var r = texture_img[4 * idx0];
         var g = texture_img[4 * idx0 + 1];
         var b = texture_img[4 * idx0 + 2];
         var l = (77*r+151*g+28*b)/256;
-        var idx1 = Math.round(px) + x * Math.round(py) + x * y * Math.round(l/sigma_range);
+        var idx1 = Math.round(px/sigma_space) + x * Math.round(py/sigma_space) + x * y * Math.round(l/sigma_range);
         bilateral_grid[idx1] += l;
         bilateral_grid_cnt[idx1] += 1;
     }
@@ -187,7 +186,7 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
             var px1 = px + dx;
             var py1 = py + dy;
             var pz1 = pz + dz;
-            if (0 <= px1 && 0 <= py1&& 0 <= pz1 && px1 < x && py1 < y && pz1 < z) {
+            if (0 <= px1 && 0 <= py1 && 0 <= pz1 && px1 < x && py1 < y && pz1 < z) {
                 var w = stencil[dx + r + r2 * (dy + r) + r2 * r2 * (dz + r)];
                 var idx1 = px1 + x * py1 + x * y * pz1;
                 var l1 = bilateral_grid[idx1];
