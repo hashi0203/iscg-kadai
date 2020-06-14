@@ -311,16 +311,16 @@ function edge_detection(width, height, original, smoothed, sigma_edge) {
         // s_r /= (2*Math.PI*sigma_edge_r*sigma_edge_r);
         s_r /= w_r_sum;
       
-        var S = s_e - tau * s_r;
-        // smoothed[4 * idx0    ] = S * 255;
-        // smoothed[4 * idx0 + 1] = S * 255;
-        // smoothed[4 * idx0 + 2] = S * 255;
-        if (S >= 0) {
+        var S = s_e - 0.98 * s_r;
+        smoothed[4 * idx0    ] = S * 255;
+        smoothed[4 * idx0 + 1] = S * 255;
+        smoothed[4 * idx0 + 2] = S * 255;
+        if (S <= 0) {
             smoothed[4 * idx0    ] = r0;
             smoothed[4 * idx0 + 1] = g0;
             smoothed[4 * idx0 + 2] = b0;
         } else {
-            var D = 1 + Math.tanh(- S * 2);
+            var D = 1 + Math.tanh(- S * 4);
             smoothed[4 * idx0    ] = r0 * D;
             smoothed[4 * idx0 + 1] = g0 * D;
             smoothed[4 * idx0 + 2] = b0 * D;
