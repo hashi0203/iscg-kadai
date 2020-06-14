@@ -342,23 +342,26 @@ function smooth_stylization(width, height, original, smoothed, sigma_space, sigm
         var g = tmp_gaussian_r[4 * idx0 + 1];
         var b = tmp_gaussian_r[4 * idx0 + 2];
         var l_r = (77*r+151*g+28*b)/256;
-        var S = l_e - tau * l_r;
-        if (S >= 0) {
-            // smoothed[4 * idx0    ] = r0;
-            // smoothed[4 * idx0 + 1] = g0;
-            // smoothed[4 * idx0 + 2] = b0;
-            smoothed[4 * idx0    ] = 255;
-            smoothed[4 * idx0 + 1] = 255;
-            smoothed[4 * idx0 + 2] = 255;
-        } else {
-            var D = 1 + Math.tanh(phi * S);
-            smoothed[4 * idx0    ] = 255 * D;
-            smoothed[4 * idx0 + 1] = 255 * D;
-            smoothed[4 * idx0 + 2] = 255 * D;
-            // smoothed[4 * idx0    ] = r0 * D;
-            // smoothed[4 * idx0 + 1] = g0 * D;
-            // smoothed[4 * idx0 + 2] = b0 * D;
-        }    
+        var S = -l_e + l_r;
+        smoothed[4 * idx0    ] = S;
+        smoothed[4 * idx0 + 1] = S;
+        smoothed[4 * idx0 + 2] = S;
+        // if (S >= 0) {
+        //     // smoothed[4 * idx0    ] = r0;
+        //     // smoothed[4 * idx0 + 1] = g0;
+        //     // smoothed[4 * idx0 + 2] = b0;
+        //     smoothed[4 * idx0    ] = 255;
+        //     smoothed[4 * idx0 + 1] = 255;
+        //     smoothed[4 * idx0 + 2] = 255;
+        // } else {
+        //     var D = 1 + Math.tanh(phi * S);
+        //     smoothed[4 * idx0    ] = 255 * D;
+        //     smoothed[4 * idx0 + 1] = 255 * D;
+        //     smoothed[4 * idx0 + 2] = 255 * D;
+        //     // smoothed[4 * idx0    ] = r0 * D;
+        //     // smoothed[4 * idx0 + 1] = g0 * D;
+        //     // smoothed[4 * idx0 + 2] = b0 * D;
+        // }    
         smoothed[4 * idx0 + 3] = 255;
     }
         
