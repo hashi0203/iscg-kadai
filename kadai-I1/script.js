@@ -54,7 +54,7 @@ function smooth_gaussian(width, height, original, smoothed, sigma) {
         smoothed[4 * idx0 + 3] = 255;
     }
 };
-function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_range) {
+function smooth_bilateral(width, height, color_img, texture_img, smoothed, sigma_space, sigma_range) {
     var r = Math.ceil(sigma_space * 3);
     var r2 = 2 * r + 1;
     // precompute spatial stencil_space
@@ -71,9 +71,9 @@ function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_
     for (var px = 0; px < width;  px++)
     {
         var idx0 = px + width * py;
-        var r0 = original[4 * idx0];
-        var g0 = original[4 * idx0 + 1];
-        var b0 = original[4 * idx0 + 2];
+        var r0 = texture_img[4 * idx0];
+        var g0 = texture_img[4 * idx0 + 1];
+        var b0 = texture_img[4 * idx0 + 2];
         var r_sum = 0;
         var g_sum = 0;
         var b_sum = 0;
@@ -86,14 +86,17 @@ function smooth_bilateral(width, height, original, smoothed, sigma_space, sigma_
             if (0 <= px1 && 0 <= py1 && px1 < width && py1 < height) {
                 var w_space = stencil_space[dx + r + r2 * (dy + r)];
                 var idx1 = px1 + width * py1;
-                var r1 = original[4 * idx1];
-                var g1 = original[4 * idx1 + 1];
-                var b1 = original[4 * idx1 + 2];
+                var r1 = texture_img[4 * idx1];
+                var g1 = texture_img[4 * idx1 + 1];
+                var b1 = texture_img[4 * idx1 + 2];
                 var r_diff = r1 - r0;
                 var g_diff = g1 - g0;
                 var b_diff = b1 - b0;
                 var w_range = Math.exp(-(r_diff * r_diff + g_diff * g_diff + b_diff * b_diff)/ (2 * sigma_range * sigma_range));
                 var w = w_space * w_range;
+                var r1 = color_img[4 * idx1];
+                var g1 = color_img[4 * idx1 + 1];
+                var b1 = color_img[4 * idx1 + 2];
                 r_sum += w * r1;
                 g_sum += w * g1;
                 b_sum += w * b1;
@@ -132,9 +135,9 @@ function trilinear_interpolation(x, y, sigma_space, sigma_range, grid, px, py, p
     return c000*pz0*py0*px0 + c001*pz0*py0*px1 + c010*pz0*py1*px0 + c011*pz0*py1*px1 + c100*pz1*py0*px0 + c101*pz1*py0*px1 + c110*pz1*py1*px0 + c111*pz1*py1*px1;
 };
 function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, sigma_space, sigma_range) {
-    var x = Math.ceil(width/sigma_space)+1;
-    var y = Math.ceil(height/sigma_space)+1;
-    var z = Math.ceil(256/sigma_range)+1;
+    var x = Math.ceil((width-1)/sigma_space)+1;
+    var y = Math.ceil((height-1)/sigma_space)+1;
+    var z = Math.ceil(255/sigma_range)+1;
   
     var bilateral_grid = new Float32Array(x * y * z).fill(0);
     var bilateral_grid_cnt = new Float32Array(x * y * z).fill(0);
@@ -232,16 +235,31 @@ function smooth_rolling(width, height, original, smoothed, sigma_space, sigma_ra
     var tmp_output = new Float32Array(4 * width * height);
     smooth_gaussian(width, height, original, tmp_input, sigma_space);
     var i;
-    for (i = 0; i < num-2; i++) {
-        smooth_bilateral_grid(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
-        smooth_bilateral_grid(width, height, original, tmp_output, tmp_input, sigma_space, sigma_range);
-    }
-    if (i == num-2) {
-        smooth_bilateral_grid(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
-        smooth_bilateral_grid(width, height, original, tmp_output, smoothed, sigma_space, sigma_range);
+    // choose the faster between bilateral and bilateral grid
+    if (sigma_space * sigma_space * sigma_range <= 255) {
+        for (i = 0; i < num-2; i++) {
+            smooth_bilateral(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
+            smooth_bilateral(width, height, original, tmp_output, tmp_input, sigma_space, sigma_range);
+        }
+        if (i == num-2) {
+            smooth_bilateral(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
+            smooth_bilateral(width, height, original, tmp_output, smoothed, sigma_space, sigma_range);
+        } else {
+            smooth_bilateral(width, height, original, tmp_input, smoothed, sigma_space, sigma_range);
+        }
     } else {
-        smooth_bilateral_grid(width, height, original, tmp_input, smoothed, sigma_space, sigma_range);
+        for (i = 0; i < num-2; i++) {
+            smooth_bilateral_grid(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
+            smooth_bilateral_grid(width, height, original, tmp_output, tmp_input, sigma_space, sigma_range);
+        }
+        if (i == num-2) {
+            smooth_bilateral_grid(width, height, original, tmp_input, tmp_output, sigma_space, sigma_range);
+            smooth_bilateral_grid(width, height, original, tmp_output, smoothed, sigma_space, sigma_range);
+        } else {
+            smooth_bilateral_grid(width, height, original, tmp_input, smoothed, sigma_space, sigma_range);
+        }
     }
+    
 };
 function neighbor_vector(width, height, image, r, cx, cy, nvec) {
     var r2 = 2 * r + 1;
@@ -353,7 +371,7 @@ function init() {
       
         const startTime = performance.now();
         if (document.getElementById("input_chk_use_bilateral").checked) {
-            smooth_bilateral(width, height, original.data, smoothed.data, sigma_space, sigma_range);
+            smooth_bilateral(width, height, original.data, original.data, smoothed.data, sigma_space, sigma_range);
         } else if (document.getElementById("input_chk_use_bilateral_grid").checked) {
             smooth_bilateral_grid(width, height, original.data, original.data, smoothed.data, sigma_space, sigma_range);
         } else if (document.getElementById("input_chk_use_rolling").checked) {
