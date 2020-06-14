@@ -232,70 +232,85 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
 function edge_detection(width, height, original, smoothed, sigma_edge) {
     var re = Math.ceil(sigma_edge * 3);
     var re2 = 2 * re + 1;
-    // precompute spatial stencil_space
-    var stencil_space_e = new Float32Array(re2 * re2);
+    // precompute spatial stencil_edge_e
+    var stencil_edge_e = new Float32Array(re2 * re2);
     for (var dy = -re; dy <= re; ++dy)
     for (var dx = -re; dx <= re; ++dx)
     {
         var h = Math.sqrt(dx * dx + dy * dy);
         var idx = dx + re + re2 * (dy + re);
-        stencil_space_e[idx] = Math.exp(-h * h / (2 * sigma_edge * sigma_edge));
+        stencil_edge_e[idx] = Math.exp(-h * h / (2 * sigma_edge * sigma_edge));
     }
     
-    var tau = 0.98;
     var sigma_edge_r = Math.sqrt(1.6) * sigma_edge;
     var rr = Math.ceil(sigma_edge_r * 3);
     var rr2 = 2 * rr + 1;
-    // precompute spatial stencil_space_r
-    var stencil_space_r = new Float32Array(rr2 * rr2);
+    // precompute spatial stencil_edge_r
+    var stencil_edge_r = new Float32Array(rr2 * rr2);
     for (var dy = -rr; dy <= rr; ++dy)
     for (var dx = -rr; dx <= rr; ++dx)
     {
         var h = Math.sqrt(dx * dx + dy * dy);
         var idx = dx + rr + rr2 * (dy + rr);
-        stencil_space_r[idx] = tau * Math.exp(-h * h / (2 * sigma_edge_r * sigma_edge_r));
+        stencil_edge_r[idx] = Math.exp(-h * h / (2 * sigma_edge_r * sigma_edge_r));
     }
     
+    var tau = 0.98;
     // apply filter
     for (var py = 0; py < height; py++)
     for (var px = 0; px < width;  px++)
     {
         var idx0 = px + width * py;
-        var r0 = texture_img[4 * idx0];
-        var g0 = texture_img[4 * idx0 + 1];
-        var b0 = texture_img[4 * idx0 + 2];
-        var r_sum = 0;
-        var g_sum = 0;
-        var b_sum = 0;
-        var w_sum = 0;
-        for (var dy = -r; dy <= r; ++dy)
-        for (var dx = -r; dx <= r; ++dx)
+        var r0 = original[4 * idx0];
+        var g0 = original[4 * idx0 + 1];
+        var b0 = original[4 * idx0 + 2];
+        var s_e = 0;
+        var s_r = 0;
+        for (var dy = -re; dy <= re; ++dy)
+        for (var dx = -re; dx <= re; ++dx)
         {
             var px1 = px + dx;
             var py1 = py + dy;
             if (0 <= px1 && 0 <= py1 && px1 < width && py1 < height) {
-                var w_space = stencil_space[dx + r + r2 * (dy + r)];
+                var w = stencil_edge_e[dx + re + re2 * (dy + re)];
                 var idx1 = px1 + width * py1;
-                var r1 = texture_img[4 * idx1];
-                var g1 = texture_img[4 * idx1 + 1];
-                var b1 = texture_img[4 * idx1 + 2];
-                var r_diff = r1 - r0;
-                var g_diff = g1 - g0;
-                var b_diff = b1 - b0;
-                var w_range = Math.exp(-(r_diff * r_diff + g_diff * g_diff + b_diff * b_diff)/ (2 * sigma_range * sigma_range));
-                var w = w_space * w_range;
-                var r1 = color_img[4 * idx1];
-                var g1 = color_img[4 * idx1 + 1];
-                var b1 = color_img[4 * idx1 + 2];
-                r_sum += w * r1;
-                g_sum += w * g1;
-                b_sum += w * b1;
-                w_sum += w;
+                var r1 = original[4 * idx1];
+                var g1 = original[4 * idx1 + 1];
+                var b1 = original[4 * idx1 + 2];
+                var l = (77*r1+151*g1+28*b1)/256;
+                s_e += l * w;
             }
         }
-        smoothed[4 * idx0    ] = r_sum / w_sum;
-        smoothed[4 * idx0 + 1] = g_sum / w_sum;
-        smoothed[4 * idx0 + 2] = b_sum / w_sum;
+        s_e /= (2*Math.PI*sigma_edge*sigma_edge);
+        
+        for (var dy = -rr; dy <= rr; ++dy)
+        for (var dx = -rr; dx <= rr; ++dx)
+        {
+            var px1 = px + dx;
+            var py1 = py + dy;
+            if (0 <= px1 && 0 <= py1 && px1 < width && py1 < height) {
+                var w = stencil_edge_r[dx + rr + rr2 * (dy + rr)];
+                var idx1 = px1 + width * py1;
+                var r1 = original[4 * idx1];
+                var g1 = original[4 * idx1 + 1];
+                var b1 = original[4 * idx1 + 2];
+                var l = (77*r1+151*g1+28*b1)/256;
+                s_r += l * w;
+            }
+        }
+        s_r /= (2*Math.PI*sigma_edge_r*sigma_edge_r);
+      
+        var S = s_e - tau * s_r;
+        if (S >= 0) {
+            smoothed[4 * idx0    ] = r0;
+            smoothed[4 * idx0 + 1] = g0;
+            smoothed[4 * idx0 + 2] = b0;
+        } else {
+            var D = 1 + Math.tanh(2 * S / 256);
+            smoothed[4 * idx0    ] = r0 * D;
+            smoothed[4 * idx0 + 1] = g0 * D;
+            smoothed[4 * idx0 + 2] = b0 * D;
+        }    
         smoothed[4 * idx0 + 3] = 255;
     }
   
@@ -500,7 +515,7 @@ function toggle_imgs(self) {
 }
 
 function toggle_items(self) {
-    if (self.id == "input_chk_use_bilateral" || self.id == "input_chk_use_bilateral_grid" || self.id == "input_chk_use_rolling")
+    if (self.id == "input_chk_use_bilateral" || self.id == "input_chk_use_bilateral_grid" || self.id == "input_chk_use_stylization" || self.id == "input_chk_use_rolling")
         document.getElementById("input_num_sigma_range").disabled = false;
     else
         document.getElementById("input_num_sigma_range").disabled = true;
