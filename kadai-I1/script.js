@@ -1,5 +1,7 @@
 var canvas = document.createElement("canvas");
 var context = canvas.getContext("2d");
+var rock_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Frock.png?v=1592128589573";
+var dog_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fdog.png?v=1592128589634";
 function clamp(min,opt,max) {
     if (opt < min)
         return min;
@@ -387,8 +389,16 @@ function init() {
         context.putImageData(enhanced, 0, 0);
         document.getElementById("img_enhanced").src = canvas.toDataURL();
     };
-    document.getElementById("img_original").src = "https://cdn.glitch.com/1214143e-0c44-41fb-b1ad-e9aa3347cdaa%2Frock.png?v=1562148154890";
+    // document.getElementById("img_original").src = "https://cdn.glitch.com/1214143e-0c44-41fb-b1ad-e9aa3347cdaa%2Frock.png?v=1562148154890";
+    document.getElementById("img_original").src = rock_url;
 };
+
+function toggle_imgs(self) {
+    if (self.id == "input_chk_default1")
+        document.getElementById("img_original").src = rock_url;
+    else if (self.id == "input_chk_default2")
+        document.getElementById("img_original").src = dog_url;
+}
 
 function toggle_items(self) {
     if (self.id == "input_chk_use_bilateral" || self.id == "input_chk_use_bilateral_grid" || self.id == "input_chk_use_rolling")
@@ -400,5 +410,4 @@ function toggle_items(self) {
         document.getElementById("input_num_iteration").disabled = false;
     else
         document.getElementById("input_num_iteration").disabled = true;
-  
 };
