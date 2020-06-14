@@ -11,6 +11,17 @@ function clamp(min,opt,max) {
         return max;
     return opt;
 };
+function grayscale(width, height, original, gray) {
+    for (var py = 0; py < height; py++)
+    for (var px = 0; px < width;  px++)
+    {
+        var idx0 = px + width * py;
+        var r = original[4 * idx0];
+        var g = original[4 * idx0 + 1];
+        var b = original[4 * idx0 + 2];
+        gray[idx0] = (77*r+151*g+28*b)/256;
+    }
+};
 function smooth_gaussian(width, height, original, smoothed, sigma) {
     var r = Math.ceil(sigma * 3);
     var r2 = 2 * r + 1;
@@ -136,6 +147,9 @@ function trilinear_interpolation(x, y, sigma_space, sigma_range, grid, px, py, p
     return c000*pz0*py0*px0 + c001*pz0*py0*px1 + c010*pz0*py1*px0 + c011*pz0*py1*px1 + c100*pz1*py0*px0 + c101*pz1*py0*px1 + c110*pz1*py1*px0 + c111*pz1*py1*px1;
 };
 function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, sigma_space, sigma_range) {
+    var texture_gray = new Float32Array(width * height);
+    grayscale(width, height, texture_img, texture_gray);
+  
     var x = Math.ceil((width-1)/sigma_space)+1;
     var y = Math.ceil((height-1)/sigma_space)+1;
     var z = Math.ceil(255/sigma_range)+1;
@@ -147,10 +161,7 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
     for (var px = 0; px < width;  px++)
     {
         var idx0 = px + width * py;
-        var r = texture_img[4 * idx0];
-        var g = texture_img[4 * idx0 + 1];
-        var b = texture_img[4 * idx0 + 2];
-        var l = (77*r+151*g+28*b)/256;
+        var l = texture_gray[idx0];
         var idx1 = Math.round(px/sigma_space) + x * Math.round(py/sigma_space) + x * y * Math.round(l/sigma_range);
         bilateral_grid[idx1] += l;
         bilateral_grid_cnt[idx1] += 1;
@@ -205,10 +216,7 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
     for (var px = 0; px < width;  px++)
     {
         var idx0 = px + width * py;
-        var r = texture_img[4 * idx0];
-        var g = texture_img[4 * idx0 + 1];
-        var b = texture_img[4 * idx0 + 2];
-        var l = (77*r+151*g+28*b)/256;
+        var l = texture_gray[idx0];
         var w = trilinear_interpolation(x, y, sigma_space, sigma_range, bilateral_grid_filtered, px, py, l)/l;
         var r = color_img[4 * idx0];
         var g = color_img[4 * idx0 + 1];
@@ -231,9 +239,12 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
     }
 };
 function edge_detection(width, height, original, smoothed, sigma_edge, phi) {
+    var original_gray = new Float32Array(width * height);
+    grayscale(width, height, original, original_gray);
+  
     var r = 2;
     var r2 = 2 * r + 1;
-    // precompute spatial stencil_edge_e
+    // precompute spatial stencil_edge_e and stencil_edge_r
     var stencil_edge_e = new Float32Array(r2 * r2);
     var sigma_edge_r = Math.sqrt(1.6) * sigma_edge;
     var stencil_edge_r = new Float32Array(r2 * r2);
@@ -245,21 +256,6 @@ function edge_detection(width, height, original, smoothed, sigma_edge, phi) {
         stencil_edge_e[idx] = Math.exp(-h * h / (2 * sigma_edge * sigma_edge));
         stencil_edge_r[idx] = Math.exp(-h * h / (2 * sigma_edge_r * sigma_edge_r));
     }
-    
-    // var sigma_edge_r = Math.sqrt(1.6) * sigma_edge;
-    // var rr = Math.ceil(sigma_edge_r * 3);
-    // var rr2 = 2 * rr + 1;
-    // // precompute spatial stencil_edge_r
-    // var stencil_edge_r = new Float32Array(rr2 * rr2);
-    // for (var dy = -rr; dy <= rr; ++dy)
-    // for (var dx = -rr; dx <= rr; ++dx)
-    // {
-    //     var h = Math.sqrt(dx * dx + dy * dy);
-    //     var idx = dx + rr + rr2 * (dy + rr);
-    //     stencil_edge_r[idx] = Math.exp(-h * h / (2 * sigma_edge_r * sigma_edge_r));
-    // }
-    
-    var tau = 0.98;
     // apply filter
     for (var py = 0; py < height; py++)
     for (var px = 0; px < width;  px++)
@@ -269,8 +265,8 @@ function edge_detection(width, height, original, smoothed, sigma_edge, phi) {
         var g0 = original[4 * idx0 + 1];
         var b0 = original[4 * idx0 + 2];
         var s_e = 0;
-        var s_r = 0;
         var w_e_sum = 0;
+        var s_r = 0;
         var w_r_sum = 0;
         for (var dy = -r; dy <= r; ++dy)
         for (var dx = -r; dx <= r; ++dx)
@@ -281,10 +277,7 @@ function edge_detection(width, height, original, smoothed, sigma_edge, phi) {
                 var w_e = stencil_edge_e[dx + r + r2 * (dy + r)];
                 var w_r = stencil_edge_r[dx + r + r2 * (dy + r)];
                 var idx1 = px1 + width * py1;
-                var r1 = original[4 * idx1];
-                var g1 = original[4 * idx1 + 1];
-                var b1 = original[4 * idx1 + 2];
-                var l = (77*r1+151*g1+28*b1)/256;
+                var l = original_gray[idx1];
                 s_e += l * w_e;
                 w_e_sum += w_e;
                 s_r += l * w_r;
@@ -292,24 +285,6 @@ function edge_detection(width, height, original, smoothed, sigma_edge, phi) {
             }
         }
         s_e /= w_e_sum;
-        // s_e /= (2*Math.PI*sigma_edge*sigma_edge);
-        
-        // for (var dy = -rr; dy <= rr; ++dy)
-        // for (var dx = -rr; dx <= rr; ++dx)
-        // {
-        //     var px1 = px + dx;
-        //     var py1 = py + dy;
-        //     if (0 <= px1 && 0 <= py1 && px1 < width && py1 < height) {
-        //         var w = stencil_edge_r[dx + rr + rr2 * (dy + rr)];
-        //         var idx1 = px1 + width * py1;
-        //         var r1 = original[4 * idx1];
-        //         var g1 = original[4 * idx1 + 1];
-        //         var b1 = original[4 * idx1 + 2];
-        //         var l = (77*r1+151*g1+28*b1)/256;
-        //         s_r += l * w;
-        //     }
-        // }
-        // s_r /= (2*Math.PI*sigma_edge_r*sigma_edge_r);
         s_r /= w_r_sum;
       
         var S = s_e - s_r;
@@ -332,68 +307,7 @@ function edge_detection(width, height, original, smoothed, sigma_edge, phi) {
 };
 function smooth_stylization(width, height, original, smoothed, sigma_space, sigma_range, sigma_edge, phi) {
     var tmp_bilateral = new Float32Array(4 * width * height);
-    var tmp_gaussian_e = new Float32Array(4 * width * height);
-    var tmp_gaussian_r = new Float32Array(4 * width * height);
     smooth_bilateral(width, height, original, original, tmp_bilateral, sigma_space, sigma_range);
-//     smooth_gaussian(width, height, tmp_bilateral, tmp_gaussian_e, sigma_edge);
-//     smooth_gaussian(width, height, tmp_bilateral, tmp_gaussian_r, sigma_edge * Math.sqrt(1.6));
-    
-//     var tau = 0.98;
-//     var phi = 2;
-//     // apply filter
-//     for (var py = 0; py < height; py++)
-//     for (var px = 0; px < width;  px++)
-//     {
-//         var idx0 = px + width * py;
-//         var r0 = tmp_bilateral[4 * idx0];
-//         var g0 = tmp_bilateral[4 * idx0 + 1];
-//         var b0 = tmp_bilateral[4 * idx0 + 2];
-      
-//         var r = tmp_gaussian_e[4 * idx0];
-//         var g = tmp_gaussian_e[4 * idx0 + 1];
-//         var b = tmp_gaussian_e[4 * idx0 + 2];
-//         var l_e = (77*r+151*g+28*b)/256;
-//         var r = tmp_gaussian_r[4 * idx0];
-//         var g = tmp_gaussian_r[4 * idx0 + 1];
-//         var b = tmp_gaussian_r[4 * idx0 + 2];
-//         var l_r = (77*r+151*g+28*b)/256;
-//         var S = l_e - tau * l_r;
-//         smoothed[4 * idx0    ] = S;
-//         smoothed[4 * idx0 + 1] = S;
-//         smoothed[4 * idx0 + 2] = S;
-//         // if (S >= 0) {
-//         //     // smoothed[4 * idx0    ] = r0;
-//         //     // smoothed[4 * idx0 + 1] = g0;
-//         //     // smoothed[4 * idx0 + 2] = b0;
-//         //     smoothed[4 * idx0    ] = 255;
-//         //     smoothed[4 * idx0 + 1] = 255;
-//         //     smoothed[4 * idx0 + 2] = 255;
-//         // } else {
-//         //     var D = 1 + Math.tanh(phi * S);
-//         //     smoothed[4 * idx0    ] = 255 * D;
-//         //     smoothed[4 * idx0 + 1] = 255 * D;
-//         //     smoothed[4 * idx0 + 2] = 255 * D;
-//         //     // smoothed[4 * idx0    ] = r0 * D;
-//         //     // smoothed[4 * idx0 + 1] = g0 * D;
-//         //     // smoothed[4 * idx0 + 2] = b0 * D;
-//         // }    
-//         smoothed[4 * idx0 + 3] = 255;
-//     }
-        
-//     // for (var py = 0; py < height; py++)
-//     // for (var px = 0; px < width;  px++)
-//     // {
-//     //     var idx0 = px + width * py;
-//     //     var r0 = original[4 * idx0];
-//     //     var g0 = original[4 * idx0 + 1];
-//     //     var b0 = original[4 * idx0 + 2];
-//     //     var l = (77*r0+151*g0+28*b0)/256;
-//     //     smoothed[4 * idx0    ] = l;
-//     //     smoothed[4 * idx0 + 1] = l;
-//     //     smoothed[4 * idx0 + 2] = l;
-//     //     smoothed[4 * idx0 + 3] = 255;
-//     // }
-  
     edge_detection(width, height, tmp_bilateral, smoothed, sigma_edge, phi);
 };
 function smooth_rolling(width, height, original, smoothed, sigma_space, sigma_range, num) {
