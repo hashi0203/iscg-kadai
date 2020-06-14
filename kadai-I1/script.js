@@ -230,30 +230,33 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
     }
 };
 function edge_detection(width, height, original, smoothed, sigma_edge) {
-    var re = Math.ceil(sigma_edge * 3);
-    var re2 = 2 * re + 1;
+    var r = 5;
+    var r2 = 2 * r + 1;
     // precompute spatial stencil_edge_e
-    var stencil_edge_e = new Float32Array(re2 * re2);
-    for (var dy = -re; dy <= re; ++dy)
-    for (var dx = -re; dx <= re; ++dx)
-    {
-        var h = Math.sqrt(dx * dx + dy * dy);
-        var idx = dx + re + re2 * (dy + re);
-        stencil_edge_e[idx] = Math.exp(-h * h / (2 * sigma_edge * sigma_edge));
-    }
-    
+    var stencil_edge_e = new Float32Array(r2 * r2);
     var sigma_edge_r = Math.sqrt(1.6) * sigma_edge;
-    var rr = Math.ceil(sigma_edge_r * 3);
-    var rr2 = 2 * rr + 1;
-    // precompute spatial stencil_edge_r
-    var stencil_edge_r = new Float32Array(rr2 * rr2);
-    for (var dy = -rr; dy <= rr; ++dy)
-    for (var dx = -rr; dx <= rr; ++dx)
+    var stencil_edge_r = new Float32Array(r2 * r2);
+    for (var dy = -r; dy <= r; ++dy)
+    for (var dx = -r; dx <= r; ++dx)
     {
         var h = Math.sqrt(dx * dx + dy * dy);
-        var idx = dx + rr + rr2 * (dy + rr);
+        var idx = dx + r + r2 * (dy + r);
+        stencil_edge_e[idx] = Math.exp(-h * h / (2 * sigma_edge * sigma_edge));
         stencil_edge_r[idx] = Math.exp(-h * h / (2 * sigma_edge_r * sigma_edge_r));
     }
+    
+    // var sigma_edge_r = Math.sqrt(1.6) * sigma_edge;
+    // var rr = Math.ceil(sigma_edge_r * 3);
+    // var rr2 = 2 * rr + 1;
+    // // precompute spatial stencil_edge_r
+    // var stencil_edge_r = new Float32Array(rr2 * rr2);
+    // for (var dy = -rr; dy <= rr; ++dy)
+    // for (var dx = -rr; dx <= rr; ++dx)
+    // {
+    //     var h = Math.sqrt(dx * dx + dy * dy);
+    //     var idx = dx + rr + rr2 * (dy + rr);
+    //     stencil_edge_r[idx] = Math.exp(-h * h / (2 * sigma_edge_r * sigma_edge_r));
+    // }
     
     var tau = 0.98;
     // apply filter
@@ -266,51 +269,56 @@ function edge_detection(width, height, original, smoothed, sigma_edge) {
         var b0 = original[4 * idx0 + 2];
         var s_e = 0;
         var s_r = 0;
-        for (var dy = -re; dy <= re; ++dy)
-        for (var dx = -re; dx <= re; ++dx)
+        for (var dy = -r; dy <= r; ++dy)
+        for (var dx = -r; dx <= r; ++dx)
         {
             var px1 = px + dx;
             var py1 = py + dy;
             if (0 <= px1 && 0 <= py1 && px1 < width && py1 < height) {
-                var w = stencil_edge_e[dx + re + re2 * (dy + re)];
+                var w_e = stencil_edge_e[dx + r + r2 * (dy + r)];
+                var w_r = stencil_edge_r[dx + r + r2 * (dy + r)];
                 var idx1 = px1 + width * py1;
                 var r1 = original[4 * idx1];
                 var g1 = original[4 * idx1 + 1];
                 var b1 = original[4 * idx1 + 2];
                 var l = (77*r1+151*g1+28*b1)/256;
-                s_e += l * w;
+                s_e += l * w_e;
+                s_r += l * w_r;
             }
         }
         s_e /= (2*Math.PI*sigma_edge*sigma_edge);
         
-        for (var dy = -rr; dy <= rr; ++dy)
-        for (var dx = -rr; dx <= rr; ++dx)
-        {
-            var px1 = px + dx;
-            var py1 = py + dy;
-            if (0 <= px1 && 0 <= py1 && px1 < width && py1 < height) {
-                var w = stencil_edge_r[dx + rr + rr2 * (dy + rr)];
-                var idx1 = px1 + width * py1;
-                var r1 = original[4 * idx1];
-                var g1 = original[4 * idx1 + 1];
-                var b1 = original[4 * idx1 + 2];
-                var l = (77*r1+151*g1+28*b1)/256;
-                s_r += l * w;
-            }
-        }
+        // for (var dy = -rr; dy <= rr; ++dy)
+        // for (var dx = -rr; dx <= rr; ++dx)
+        // {
+        //     var px1 = px + dx;
+        //     var py1 = py + dy;
+        //     if (0 <= px1 && 0 <= py1 && px1 < width && py1 < height) {
+        //         var w = stencil_edge_r[dx + rr + rr2 * (dy + rr)];
+        //         var idx1 = px1 + width * py1;
+        //         var r1 = original[4 * idx1];
+        //         var g1 = original[4 * idx1 + 1];
+        //         var b1 = original[4 * idx1 + 2];
+        //         var l = (77*r1+151*g1+28*b1)/256;
+        //         s_r += l * w;
+        //     }
+        // }
         s_r /= (2*Math.PI*sigma_edge_r*sigma_edge_r);
       
         var S = s_e - tau * s_r;
-        if (S >= 0) {
-            smoothed[4 * idx0    ] = r0;
-            smoothed[4 * idx0 + 1] = g0;
-            smoothed[4 * idx0 + 2] = b0;
-        } else {
-            var D = 1 + Math.tanh(2 * S / 256);
-            smoothed[4 * idx0    ] = r0 * D;
-            smoothed[4 * idx0 + 1] = g0 * D;
-            smoothed[4 * idx0 + 2] = b0 * D;
-        }    
+        smoothed[4 * idx0    ] = S;
+        smoothed[4 * idx0 + 1] = S;
+        smoothed[4 * idx0 + 2] = S;
+        // if (S >= 0) {
+        //     smoothed[4 * idx0    ] = r0;
+        //     smoothed[4 * idx0 + 1] = g0;
+        //     smoothed[4 * idx0 + 2] = b0;
+        // } else {
+        //     var D = 1 + Math.tanh(2 * S / 256);
+        //     smoothed[4 * idx0    ] = r0 * D;
+        //     smoothed[4 * idx0 + 1] = g0 * D;
+        //     smoothed[4 * idx0 + 2] = b0 * D;
+        // }    
         smoothed[4 * idx0 + 3] = 255;
     }
   
@@ -320,66 +328,66 @@ function smooth_stylization(width, height, original, smoothed, sigma_space, sigm
     var tmp_gaussian_e = new Float32Array(4 * width * height);
     var tmp_gaussian_r = new Float32Array(4 * width * height);
     smooth_bilateral(width, height, original, original, tmp_bilateral, sigma_space, sigma_range);
-    smooth_gaussian(width, height, tmp_bilateral, tmp_gaussian_e, sigma_edge);
-    smooth_gaussian(width, height, tmp_bilateral, tmp_gaussian_r, sigma_edge * Math.sqrt(1.6));
+//     smooth_gaussian(width, height, tmp_bilateral, tmp_gaussian_e, sigma_edge);
+//     smooth_gaussian(width, height, tmp_bilateral, tmp_gaussian_r, sigma_edge * Math.sqrt(1.6));
     
-    var tau = 0.98;
-    var phi = 2;
-    // apply filter
-    for (var py = 0; py < height; py++)
-    for (var px = 0; px < width;  px++)
-    {
-        var idx0 = px + width * py;
-        var r0 = tmp_bilateral[4 * idx0];
-        var g0 = tmp_bilateral[4 * idx0 + 1];
-        var b0 = tmp_bilateral[4 * idx0 + 2];
+//     var tau = 0.98;
+//     var phi = 2;
+//     // apply filter
+//     for (var py = 0; py < height; py++)
+//     for (var px = 0; px < width;  px++)
+//     {
+//         var idx0 = px + width * py;
+//         var r0 = tmp_bilateral[4 * idx0];
+//         var g0 = tmp_bilateral[4 * idx0 + 1];
+//         var b0 = tmp_bilateral[4 * idx0 + 2];
       
-        var r = tmp_gaussian_e[4 * idx0];
-        var g = tmp_gaussian_e[4 * idx0 + 1];
-        var b = tmp_gaussian_e[4 * idx0 + 2];
-        var l_e = (77*r+151*g+28*b)/256;
-        var r = tmp_gaussian_r[4 * idx0];
-        var g = tmp_gaussian_r[4 * idx0 + 1];
-        var b = tmp_gaussian_r[4 * idx0 + 2];
-        var l_r = (77*r+151*g+28*b)/256;
-        var S = -l_e + l_r;
-        smoothed[4 * idx0    ] = S;
-        smoothed[4 * idx0 + 1] = S;
-        smoothed[4 * idx0 + 2] = S;
-        // if (S >= 0) {
-        //     // smoothed[4 * idx0    ] = r0;
-        //     // smoothed[4 * idx0 + 1] = g0;
-        //     // smoothed[4 * idx0 + 2] = b0;
-        //     smoothed[4 * idx0    ] = 255;
-        //     smoothed[4 * idx0 + 1] = 255;
-        //     smoothed[4 * idx0 + 2] = 255;
-        // } else {
-        //     var D = 1 + Math.tanh(phi * S);
-        //     smoothed[4 * idx0    ] = 255 * D;
-        //     smoothed[4 * idx0 + 1] = 255 * D;
-        //     smoothed[4 * idx0 + 2] = 255 * D;
-        //     // smoothed[4 * idx0    ] = r0 * D;
-        //     // smoothed[4 * idx0 + 1] = g0 * D;
-        //     // smoothed[4 * idx0 + 2] = b0 * D;
-        // }    
-        smoothed[4 * idx0 + 3] = 255;
-    }
+//         var r = tmp_gaussian_e[4 * idx0];
+//         var g = tmp_gaussian_e[4 * idx0 + 1];
+//         var b = tmp_gaussian_e[4 * idx0 + 2];
+//         var l_e = (77*r+151*g+28*b)/256;
+//         var r = tmp_gaussian_r[4 * idx0];
+//         var g = tmp_gaussian_r[4 * idx0 + 1];
+//         var b = tmp_gaussian_r[4 * idx0 + 2];
+//         var l_r = (77*r+151*g+28*b)/256;
+//         var S = l_e - tau * l_r;
+//         smoothed[4 * idx0    ] = S;
+//         smoothed[4 * idx0 + 1] = S;
+//         smoothed[4 * idx0 + 2] = S;
+//         // if (S >= 0) {
+//         //     // smoothed[4 * idx0    ] = r0;
+//         //     // smoothed[4 * idx0 + 1] = g0;
+//         //     // smoothed[4 * idx0 + 2] = b0;
+//         //     smoothed[4 * idx0    ] = 255;
+//         //     smoothed[4 * idx0 + 1] = 255;
+//         //     smoothed[4 * idx0 + 2] = 255;
+//         // } else {
+//         //     var D = 1 + Math.tanh(phi * S);
+//         //     smoothed[4 * idx0    ] = 255 * D;
+//         //     smoothed[4 * idx0 + 1] = 255 * D;
+//         //     smoothed[4 * idx0 + 2] = 255 * D;
+//         //     // smoothed[4 * idx0    ] = r0 * D;
+//         //     // smoothed[4 * idx0 + 1] = g0 * D;
+//         //     // smoothed[4 * idx0 + 2] = b0 * D;
+//         // }    
+//         smoothed[4 * idx0 + 3] = 255;
+//     }
         
-    // for (var py = 0; py < height; py++)
-    // for (var px = 0; px < width;  px++)
-    // {
-    //     var idx0 = px + width * py;
-    //     var r0 = original[4 * idx0];
-    //     var g0 = original[4 * idx0 + 1];
-    //     var b0 = original[4 * idx0 + 2];
-    //     var l = (77*r0+151*g0+28*b0)/256;
-    //     smoothed[4 * idx0    ] = l;
-    //     smoothed[4 * idx0 + 1] = l;
-    //     smoothed[4 * idx0 + 2] = l;
-    //     smoothed[4 * idx0 + 3] = 255;
-    // }
+//     // for (var py = 0; py < height; py++)
+//     // for (var px = 0; px < width;  px++)
+//     // {
+//     //     var idx0 = px + width * py;
+//     //     var r0 = original[4 * idx0];
+//     //     var g0 = original[4 * idx0 + 1];
+//     //     var b0 = original[4 * idx0 + 2];
+//     //     var l = (77*r0+151*g0+28*b0)/256;
+//     //     smoothed[4 * idx0    ] = l;
+//     //     smoothed[4 * idx0 + 1] = l;
+//     //     smoothed[4 * idx0 + 2] = l;
+//     //     smoothed[4 * idx0 + 3] = 255;
+//     // }
   
-    // edge_detection(width, height, tmp_output, smoothed, sigma_edge);
+    edge_detection(width, height, tmp_bilateral, smoothed, sigma_edge);
 };
 function smooth_rolling(width, height, original, smoothed, sigma_space, sigma_range, num) {
     var tmp_input = new Float32Array(4 * width * height);
