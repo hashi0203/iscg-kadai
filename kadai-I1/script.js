@@ -229,6 +229,82 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
         smoothed[4 * idx0 + 3] = 255;
     }
 };
+function edge_detection(width, height, original, smoothed, sigma_edge) {
+    var re = Math.ceil(sigma_edge * 3);
+    var re2 = 2 * re + 1;
+    // precompute spatial stencil_space
+    var stencil_space_e = new Float32Array(re2 * re2);
+    for (var dy = -re; dy <= re; ++dy)
+    for (var dx = -re; dx <= re; ++dx)
+    {
+        var h = Math.sqrt(dx * dx + dy * dy);
+        var idx = dx + re + re2 * (dy + re);
+        stencil_space_e[idx] = Math.exp(-h * h / (2 * sigma_edge * sigma_edge));
+    }
+    
+    var tau = 0.98;
+    var sigma_edge_r = Math.sqrt(1.6) * sigma_edge;
+    var rr = Math.ceil(sigma_edge_r * 3);
+    var rr2 = 2 * rr + 1;
+    // precompute spatial stencil_space_r
+    var stencil_space_r = new Float32Array(rr2 * rr2);
+    for (var dy = -rr; dy <= rr; ++dy)
+    for (var dx = -rr; dx <= rr; ++dx)
+    {
+        var h = Math.sqrt(dx * dx + dy * dy);
+        var idx = dx + rr + rr2 * (dy + rr);
+        stencil_space_r[idx] = tau * Math.exp(-h * h / (2 * sigma_edge_r * sigma_edge_r));
+    }
+    
+    // apply filter
+    for (var py = 0; py < height; py++)
+    for (var px = 0; px < width;  px++)
+    {
+        var idx0 = px + width * py;
+        var r0 = texture_img[4 * idx0];
+        var g0 = texture_img[4 * idx0 + 1];
+        var b0 = texture_img[4 * idx0 + 2];
+        var r_sum = 0;
+        var g_sum = 0;
+        var b_sum = 0;
+        var w_sum = 0;
+        for (var dy = -r; dy <= r; ++dy)
+        for (var dx = -r; dx <= r; ++dx)
+        {
+            var px1 = px + dx;
+            var py1 = py + dy;
+            if (0 <= px1 && 0 <= py1 && px1 < width && py1 < height) {
+                var w_space = stencil_space[dx + r + r2 * (dy + r)];
+                var idx1 = px1 + width * py1;
+                var r1 = texture_img[4 * idx1];
+                var g1 = texture_img[4 * idx1 + 1];
+                var b1 = texture_img[4 * idx1 + 2];
+                var r_diff = r1 - r0;
+                var g_diff = g1 - g0;
+                var b_diff = b1 - b0;
+                var w_range = Math.exp(-(r_diff * r_diff + g_diff * g_diff + b_diff * b_diff)/ (2 * sigma_range * sigma_range));
+                var w = w_space * w_range;
+                var r1 = color_img[4 * idx1];
+                var g1 = color_img[4 * idx1 + 1];
+                var b1 = color_img[4 * idx1 + 2];
+                r_sum += w * r1;
+                g_sum += w * g1;
+                b_sum += w * b1;
+                w_sum += w;
+            }
+        }
+        smoothed[4 * idx0    ] = r_sum / w_sum;
+        smoothed[4 * idx0 + 1] = g_sum / w_sum;
+        smoothed[4 * idx0 + 2] = b_sum / w_sum;
+        smoothed[4 * idx0 + 3] = 255;
+    }
+  
+};
+function smooth_stylization(width, height, original, smoothed, sigma_space, sigma_range, sigma_edge) {
+    var tmp_output = new Float32Array(4 * width * height);
+    smooth_bilateral(width, height, original, original, tmp_output, sigma_space, sigma_range);
+    edge_detection(width, height, tmp_output, smoothed, sigma_edge);
+};
 function smooth_rolling(width, height, original, smoothed, sigma_space, sigma_range, num) {
     var tmp_input = new Float32Array(4 * width * height);
     var tmp_output = new Float32Array(4 * width * height);
@@ -366,6 +442,7 @@ function init() {
         var smoothed = context.createImageData(width, height);
         var sigma_space = Number(document.getElementById("input_num_sigma_space").value);
         var sigma_range = Number(document.getElementById("input_num_sigma_range").value);
+        var sigma_edge = Number(document.getElementById("input_num_sigma_edge").value);
         var num = Number(document.getElementById("input_num_iteration").value);
       
         const startTime = performance.now();
@@ -373,6 +450,8 @@ function init() {
             smooth_bilateral(width, height, original.data, original.data, smoothed.data, sigma_space, sigma_range);
         } else if (document.getElementById("input_chk_use_bilateral_grid").checked) {
             smooth_bilateral_grid(width, height, original.data, original.data, smoothed.data, sigma_space, sigma_range);
+        } else if (document.getElementById("input_chk_use_stylization").checked) {
+            smooth_stylization(width, height, original.data, smoothed.data, sigma_space, sigma_range, sigma_edge);
         } else if (document.getElementById("input_chk_use_rolling").checked) {
             smooth_rolling(width, height, original.data, smoothed.data, sigma_space, sigma_range, num);
         } else if (document.getElementById("input_chk_use_nlmf").checked) {
@@ -425,6 +504,11 @@ function toggle_items(self) {
         document.getElementById("input_num_sigma_range").disabled = false;
     else
         document.getElementById("input_num_sigma_range").disabled = true;
+  
+    if (self.id == "input_chk_use_stylization")
+        document.getElementById("input_num_sigma_edge").disabled = false;
+    else
+        document.getElementById("input_num_sigma_edge").disabled = true;
   
     if (self.id == "input_chk_use_rolling")
         document.getElementById("input_num_iteration").disabled = false;
