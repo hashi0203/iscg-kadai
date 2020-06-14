@@ -2,6 +2,7 @@ var canvas = document.createElement("canvas");
 var context = canvas.getContext("2d");
 var rock_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Frock.png?v=1592128589573";
 var dog_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fdog.png?v=1592128589634";
+var house_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fhouse.png?v=1592128943149";
 function clamp(min,opt,max) {
     if (opt < min)
         return min;
@@ -398,6 +399,8 @@ function toggle_imgs(self) {
         document.getElementById("img_original").src = rock_url;
     else if (self.id == "input_chk_default2")
         document.getElementById("img_original").src = dog_url;
+    else if (self.id == "input_chk_default3")
+        document.getElementById("img_original").src = house_url;
 }
 
 function toggle_items(self) {
