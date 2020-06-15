@@ -2,6 +2,7 @@ var canvas = document.createElement("canvas");
 var context = canvas.getContext("2d");
 var rock_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Frock.png?v=1592128589573";
 var man_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fman.png?v=1592149019291";
+var hdr_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fhdr.png?v=1592210449566";
 var dog_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fdog.png?v=1592128589634";
 var house_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fhouse.png?v=1592128943149";
 function clamp(min,opt,max) {
@@ -535,13 +536,15 @@ function init() {
 };
 
 function toggle_imgs(self) {
-    if (self.id == "input_chk_default1")
+    if (self.id == "input_chk_rock")
         document.getElementById("img_original").src = rock_url;
-    else if (self.id == "input_chk_default2")
+    else if (self.id == "input_chk_man")
         document.getElementById("img_original").src = man_url;
-    else if (self.id == "input_chk_default3")
+    else if (self.id == "input_chk_hdr")
+        document.getElementById("img_original").src = hdr_url;
+    else if (self.id == "input_chk_dog")
         document.getElementById("img_original").src = dog_url;
-    else if (self.id == "input_chk_default4")
+    else if (self.id == "input_chk_house")
         document.getElementById("img_original").src = house_url;
 }
 

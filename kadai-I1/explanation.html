@@ -12,6 +12,9 @@
   <h3>実装内容:</h3>
   <ul>
     <li>Bilateral Filter</li>
+    <ul>
+      <li>ピクセルの位置と色の両方に関して平滑化</li>
+    </ul>
     <li>Bilateral Grid を使用した Bilateral Filter の高速化</li>
     <ul>
       <li>元の画像の各座標とその座標における輝度の3次元からなる Bilateral Grid を構成</li>
@@ -25,10 +28,9 @@
     </ul>
     <li>Bilateral Filter を使用した Stylization</li>
     <ul>
-      <li>Bilateral Filter を適用し，得られた画像に DoG (Difference of Gauusian) で検出したエッジを追加/li>
-で   </ul>
+      <li>Bilateral Filter を適用し，得られた画像に DoG (Difference of Gauusian) で検出したエッジを追加</li>
+    </ul>
     <li>Bilateral Filter を使用した Tone Mapping</li>
-
     <ul>
       <li>HDR 画像を入力として受け取る</li>
       <ul>
@@ -37,132 +39,23 @@
       </ul>
       <li>入力画像に Bilateral Filter をかけて smooth 画像を求め，それを元の画像から引いて detail 画像を得る</li>
       <li>smooth 画像にガンマ補正を適用し，detail 画像と足し合わせて出力</li>
-    </ul>    <li>Rolling Guidance Filter</li>
-
+    </ul>
+    <li>Rolling Guidance Filter</li>
     <ul>
       <li>元の画像に Gaussian Filter を適用</li>
       <li>元の画像の色調とぼかした画像の模様を Joint Bilateral Filter で合成</li>
-      <li>それで得られたｇ</li>
-    </ul>    <li>Non-Local Means Filter</li>
-  </ul>
-  
-  <h3>CGの内容:</h3>
-  <ul>
-    <li>水中と空中にある物体をカメラが上下しながら移しているシーンをイメージ</li>
-    <li>物体としては反射も屈折もしない物体，反射する物体，屈折する物体のすべてを用意</li>
+      <li>繰り返し元の画像と合成された画像を Joint Bilateral Filter で合成</li>
+    </ul>
+    <li>Non-Local Means Filter</li>
     <ul>
-      <li>屈折する物体に関しては空気，水，氷，ガラス，ダイヤモンドの4つを用意</li>
-      <li>詳細は main 関数内の polygon objects 変数の定義のコメント(以下にコピーしたもの)を参照</li>
-      <div class="theme__preview">
-        <pre class="prettyprint linenums lang-html prettyprinted" style=""><code>  // 球(中心,半径,色, 反射屈折の種類, 屈折率) OR 三角形(点a,点b,点c,色, 反射屈折の種類, 屈折率) OR 平面(平面上の任意の1点a,法線ベクトル,色, 反射屈折の種類, 屈折率) OR 円錐(底面の円の中心,法線ベクトル,底面半径,高さ,色, 反射屈折の種類, 屈折率) のオブジェクトを作成
-  // 反射屈折の種類は 0ならどちらもなし，1なら反射，2なら屈折することを表している
-  // 屈折率としては ,空気: refr_air，水: refr_water，氷: refr_ice，ガラス: refr_glass，ダイヤモンド: refr_diamond を設定可能だが，自由に1以上の浮動小数点数を入れてもよい
-  // 色は反射屈折の種類が 1,2 の場合は関係ないので no_color と設定し，屈折率は屈折の場合以外は関係ないので no_refr と設定する
-  objects[0] = create_plane(vec3(0,0,-5),vec3(0,0,1),vec3(0.7,0.5,0.4),0,no_refr); // 地面
-  objects[1] = create_plane(vec3(20,0,-5),vec3(-1,0,1),vec3(0.7,0.5,0.4),0,no_refr); // 地面の延長
-  objects[2] = create_plane(vec3(-10,0,0),vec3(3,0,-1),background_color,0,no_refr); // 空の背景
-  objects[3] = create_plane(vec3(-10,0,0),vec3(1,0,0),no_color,1,no_refr); // 鏡
-  objects[4] = create_triangle(vec3(4,5,0),vec3(4,-3,2),vec3(0,0,-1.1),vec3(1,1,0),0,no_refr); // 黄色の三角
-  objects[5] = create_triangle(vec3(-1,-8,-1),vec3(-4,-6,-5),vec3(-1,-7,-3.5),vec3(1,0,0),0,no_refr); // 赤の三角
-  objects[6] = create_sphere(vec3(vec2(0.5-mouse.y,mouse.x-0.5)*10.0,-3.5),1.0,vec3(0.8,0.8,0.8),0,no_refr); // 動く球
-  objects[7] = create_sphere(vec3(2,3,-3),0.5,vec3(0,0,1),0,no_refr); // 青の球
-  objects[8] = create_sphere(vec3(1,-2,-0.5),1.0,no_color,1,no_refr); // 水面に浮かぶ鏡の球
-  objects[9] = create_sphere(vec3(1,-6,-1),2.0,no_color,2,refr_ice); // 水面に浮かぶ氷の球
-  objects[10] = create_sphere(vec3(2,3,-2.5),2.0,no_color,2,refr_glass); // 水中にあるガラスの球
-  objects[11] = create_sphere(vec3(9.134,0,-4),1.0,no_color,2,refr_glass); // カメラが通るガラスの球
-  objects[12] = create_cone(vec3(1,1,-0.5),vec3(0,2,4),3.0,4.0,vec3(0,1,0),0,no_refr); // 緑の円錐
-  objects[13] = create_cone(vec3(-9,0,0),vec3(0,0,-1),22.0,30.0,no_color,2,refr_water); // 水中
-  objects[14] = create_cone(vec3(5,-4,-5),vec3(0,-2,4),2.0,3.0,no_color,2,refr_air); // 水中の気泡
-  objects[15] = create_cone(vec3(6 ,2,-2),vec3(0,0,1),1.0,0.5,no_color,2,refr_diamond); // 水中のダイヤモンドの上側
-  objects[16] = create_cone(vec3(6 ,2,-2),vec3(0,0,-1),1.0,1.5,no_color,2,refr_diamond); // 水中のダイヤモンドも下側</code></pre>
-      </div>
-      <ul>
-        <li>動作を軽くした方では青の球，水面に浮かぶ鏡の球，水中のダイヤモンドの上側，水中のダイヤモンドの下側の4つの物体を減らした</li>
-      </ul>
-      <li>鏡面反射に関しては奥の鏡や水面の鏡の球で確認可能</li>
-      <li>屈折は水面や水中の様々な物体で確認可能</li>
-      <li>フレネル反射と全反射は水面やダイヤモンド内部，水中の円錐型の気泡などで確認可能</li>
-      <li>カメラの位置は下からガラス中，水中，空中と移動</li>
+      <li>注目画素の周囲 \(7 \times 7\) の領域の画素値を並べた35次元の特徴ベクトルを定義</li>
+      <li>この特徴ベクトルの差の2ノルムの大きさに応じて重み付けをして畳み込む</li>
     </ul>
   </ul>
-  
-  <h3>点光源の変更・追加・移動</h3>
-  <ol>
-    <li>const int PL_NUM を作成したい点光源の個数に変更する</li>
-    <li>main 関数内に PLS[i] = vec3(座標) のようにして点光源を作成</li>
-  </ol>
-  
-  <h3>物体の変更・追加・移動:</h3>
-  <ol>
-    <li>const int OBJ_NUM を作成したいオブジェクトの個数に変更する</li>
-    <li>main 関数内に objects[i] = (物体) のようにして物体を作成(物体は以下のものを指定可能)</li>
-    <ul>
-      <li>球：create_sphere(vec3 中心座標, float 半径, vec3 色, int 反射屈折の種類, float 屈折率)</li>
-      <li>三角形：create_triangle(vec3 点a, vec3 点b, vec3 点c, vec3 色, int 反射屈折の種類, float 屈折率)</li>
-      <li>平面：create_plane(vec3 平面上の1点a, vec3 法線ベクトル(大きさは不問), vec3 色, int 反射屈折の種類, float 屈折率)</li>
-      <li>円錐：create_cone(vec3 底面の円の中心座標, vec3 底面の中心から頂点へのベクトル(大きさは不問), float 底面半径, float 高さ, vec3 色, int 反射屈折の種類, float 屈折率)</li>
-      <ul>
-        <li>反射屈折の種類は 0ならどちらもなし，1なら反射，2なら屈折することを表している</li>
-        <li>屈折率としては ,空気: refr_air，水: refr_water，氷: refr_ice，ガラス: refr_glass，ダイヤモンド: refr_diamond を設定可能だが，自由に1以上の浮動小数点数を入れてもよい</li>
-        <li>色は反射屈折の種類が 1,2 の場合は関係ないので no_color と設定し，屈折率は屈折の場合以外は関係ないので no_refr と設定する</li>
-      </ul>
-    </ul>
-    <li>物体の中から外に出る際の外側の物質の屈折率変更</li>
-    <ul>
-      <li>shade 関数内の以下の部分を変更</li>
-      <li>物体の中から外に出るときは外の物質との交差判定がされないので，次にどの物質を進んでいるのかわからなくなるため各自設定が必要になる</li>
-      <li>判定プログラムを組むことも可能だが，これ以上動作が重くなるのを避けるため手動で設定することにした</li>
-    </ul>
-    <div class="theme_preview">
-        <pre class="prettyprint linenums lang-html prettyprinted" style=""><code>  if (first_hit.p[2] >= -0.0001) {
-    hit_refr = refr_air;
-  } else if (length(first_hit.p - vec3(6,2,-2)) < 1.0 && length(first_hit.p[2] + 2.0) < 0.0001) {
-    hit_refr = refr_diamond;
-  } else {
-    hit_refr = refr_water;
-  }</code></pre></div>
-  </ol>
-  
-  <h3>カメラ設定の変更:</h3>
-  <ol>
-    <li>ピンホールとフィルムの距離：float l を変更</li>
-    <li>フィルムの横幅(縦幅は解像度に合わせて自動で指定)：float film_w を変更</li>
-    <li>カメラ(ピンホール)位置：vec3 c_from を変更</li>
-    <li>現在は動くカメラの vec3 c_from = vec3(10,0,sin(time*0.1)*4.0); に設定されているが，以下のものはコメントアウトを変更するだけで設定可能</li>
-    <ul>
-      <li>ガラス中カメラ：const vec3 c_from = vec3(10,0,-4);</li>
-      <li>水中カメラ：const vec3 c_from = vec3(10,0,-3);</li>
-      <li>空中カメラ：const vec3 c_from = vec3(10,0,4.0);</li>
-    </ul>
-    <li>カメラの向いている先：vec3 c_to を変更</li>
-    <li>カメラのUPベクトル：vec3 c_up を変更</li>
-    <li>カメラの位置に応じた屈折率：shade 関数内の以下の部分を変更</li>
-    <div class="theme_preview">
-        <pre class="prettyprint linenums lang-html prettyprinted" style=""><code>  // カメラがある位置に応じて屈折率を変更
-  float refr;
-  if (c_from[2] > 0.0) {
-    refr = refr_air;
-  } else if (c_from[2] < -3.5) {
-    refr = refr_glass;
-  } else {
-    refr = refr_water;
-  }</code></pre></div>
-  </ol>
-  
-  <h3>その他設定の変更:</h3>
-  <ol>
-    <li>点光源の放射束：const float phi を変更</li>
-    <li>反射回数：const int REFL_NUM を変更</li>
-    <li>反射能：const float Kd を変更</li>
-    <li>正反射率：const float Ks を変更</li>
-    <li>背景色：const vec3 background_color を変更</li>
-  </ol>
   
   <input type="button" onclick="location.href='../'" value="課題一覧へ">
-  <input type="button" onclick="window.open('http://glslsandbox.com/e#64393.21')" target="_blank" value="課題へ">
+  <input type="button" onclick="location.href='./'" value="課題へ">
   <div class="glitchButton" style="position:fixed;top:20px;right:20px;"></div>
   <script src="https://button.glitch.me/button.js"></script>
 </body>
 </html>
-
-ｄ
