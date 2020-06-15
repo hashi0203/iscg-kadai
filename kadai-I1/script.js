@@ -411,7 +411,7 @@ function smooth_nlmf(width, height, original, smoothed, sigma) {
                     norm += tmp * tmp;
                 }
               
-                var w = Math.exp(-norm/ (2 * sigma * sigma * ));
+                var w = Math.exp(-norm/ (2 * sigma * sigma * vec_size * vec_size));
                 var idx1 = px1 + width * py1;
                 var r1 = original[4 * idx1];
                 var g1 = original[4 * idx1 + 1];
