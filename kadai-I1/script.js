@@ -312,21 +312,19 @@ function gamma_correction(width, height, original, corrected, gamma) {
     {
         stencil[dr] = Math.round(Math.pow(dr/255, 1/gamma) * 255);
     }
-    console.log(original);
     // apply filter
     for (var py = 0; py < height; py++)
     for (var px = 0; px < width;  px++)
     {
         var idx0 = px + width * py;
-        var r0 = original[4 * idx0];
-        var g0 = original[4 * idx0 + 1];
-        var b0 = original[4 * idx0 + 2];
+        var r0 = Math.round(original[4 * idx0]);
+        var g0 = Math.round(original[4 * idx0 + 1]);
+        var b0 = Math.round(original[4 * idx0 + 2]);
         corrected[4 * idx0    ] = stencil[r0];
         corrected[4 * idx0 + 1] = stencil[g0];
         corrected[4 * idx0 + 2] = stencil[b0];
         corrected[4 * idx0 + 3] = 255;
     }
-    console.log(corrected);
   
 };
 function smooth_tone_mapping(width, height, original, smoothed, sigma_space, sigma_range, gamma) {
@@ -335,8 +333,8 @@ function smooth_tone_mapping(width, height, original, smoothed, sigma_space, sig
     var tmp_gamma = new Float32Array(4 * width * height);
     smooth_bilateral(width, height, original, original, tmp_large, sigma_space, sigma_range);
     subtract(width, height, original, tmp_large, tmp_detail);
-    gamma_correction(width, height, tmp_large, smoothed, gamma);
-    // merge(width, height, tmp_gamma, tmp_detail, smoothed);
+    gamma_correction(width, height, tmp_large, tmp_gamma, gamma);
+    merge(width, height, tmp_gamma, tmp_detail, smoothed);
 };
 function smooth_rolling(width, height, original, smoothed, sigma_space, sigma_range, num) {
     var tmp_input = new Float32Array(4 * width * height);
