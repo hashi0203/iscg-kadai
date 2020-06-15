@@ -1,5 +1,6 @@
 "use strict";
 
+// compute gradient of the source image
 function compute_laplacian(source, delta) {
     var width  = source.width;
     var height = source.height;
