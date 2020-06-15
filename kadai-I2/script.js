@@ -85,8 +85,9 @@ function write_img(context, img, data) {
 window.onload = function() {
     // img elements
     var img_source = document.getElementById("img_source");
-    var img_delta  = document.getElementById("img_delta" );
+    var img_source_delta  = document.getElementById("img_source_delta" );
     var img_target = document.getElementById("img_target");
+    var img_target_delta  = document.getElementById("img_target_delta" );
     var img_result = document.getElementById("img_result");
 
     // canvas for painting mask
@@ -111,15 +112,15 @@ window.onload = function() {
     var result;
     
     img_source.onload = function(){
-        src_width  = canvas_mask.width  = img_delta.width  = this.width;
-        src_height = canvas_mask.height = img_delta.height = this.height;
+        src_width  = canvas_mask.width  = img_source_delta.width  = this.width;
+        src_height = canvas_mask.height = img_source_delta.height = this.height;
         source = read_img(context_hidden, img_source);
         context_mask.clearRect(0, 0, src_width, src_height);
         mask = context_mask.getImageData(0, 0, src_width, src_height);
         delta = context_hidden.createImageData(src_width, src_height);
         augment_fdata(delta);
         compute_laplacian(source, delta);
-        write_img(context_hidden, img_delta, delta);
+        write_img(context_hidden, img_source_delta, delta);
     };
     document.getElementById("input_file_source").onchange = function(evt) {
         var reader = new FileReader();
@@ -133,6 +134,10 @@ window.onload = function() {
         tgt_width  = img_result.width  = this.width;
         tgt_height = img_result.height = this.height;
         target = read_img(context_hidden, img_target);
+        delta = context_hidden.createImageData(src_width, src_height);
+        augment_fdata(delta);
+        compute_laplacian(target, delta);
+        write_img(context_hidden, img_target_delta, delta);
         init_result();
     };
     document.getElementById("input_file_target").onchange = function(evt) {
@@ -186,8 +191,12 @@ window.onload = function() {
         var offset_x = Number(document.getElementById("input_num_offset_x").value);
         var offset_y = Number(document.getElementById("input_num_offset_y").value);
         var numiter  = Number(document.getElementById("input_num_numiter" ).value);
-        for (var i = 0; i < numiter; ++i)
-            poisson_jacobi(mask, delta, offset_x, offset_y, result);
+        if (document.getElementById("input_chk_normal").checked)
+            for (var i = 0; i < numiter; ++i)  
+                poisson_jacobi(mask, delta, offset_x, offset_y, result);
+        else if (document.getElementById("input_chk_mixing").checked)
+            for (var i = 0; i < numiter; ++i)
+                mixing
         write_img(context_hidden, img_result, result);
     };
     document.getElementById("btn_clear").onclick = function() {
@@ -220,7 +229,13 @@ window.onload = function() {
     img_target.src = "https://cdn.glitch.com/dd1057e3-9b69-4706-a8c9-e7f207f3d7cb%2Fpoisson_target.png?v=1562149016454";
 };
 function toggle_opts(self) {
-    if (self.id = "input_chk_normal") {
-      
-    }
+    if (self.id == "input_chk_normal")
+        document.getElementById("mask").style.display = "table-cell";
+    else
+        document.getElementById("mask").style.display = "none";
+        
+    if (self.id == "input_chk_mixing")
+        document.getElementById("target_delta").style.display = "table-cell";
+    else
+        document.getElementById("target_delta").style.display = "none";
 };

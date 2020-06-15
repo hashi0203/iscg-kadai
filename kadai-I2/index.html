@@ -15,15 +15,15 @@ canvas { border: 1px solid #000000; background-color: black }
   <h2><a target="_blank" href="http://research.nii.ac.jp/~takayama/teaching/utokyo-iscg-2020/assignments/iscg-2020-assignment-i2-poisson.pdf"><script type="text/javascript">document.write(document.getElementById("title").innerHTML);</script></a></h2>
   <table><tr valign="top">
     <td align="center"><img id="img_source" crossorigin="anonymous">             <br>Source</td>
-    <td align="center"><canvas id="canvas_mask"></canvas><br>Mask</td>
-    <td align="center"><img id="source_delta" >             <br>Source Laplacian</td>
+    <td align="center" id="mask"><canvas id="canvas_mask"></canvas><br>Mask</td>
+    <td align="center"><img id="img_source_delta" >             <br>Source Laplacian</td>
     <td align="center"><img id="img_target" crossorigin="anonymous">             <br>Target</td>
-    <td align="center"><img id="target_delta" >             <br>Target Laplacian</td>
+    <td align="center" id="target_delta" style="display: none;"><img id="img_target_delta" >             <br>Target Laplacian</td>
     <td align="center"><img id="img_result">             <br>Result</td>
   </tr></table>
   <ul>
     <li>Option: 
-        <label><input type="radio" name="input_choose_opt" id="input_chk_normal" onchange="toggle_opts(this);">Normal Cloning</label>
+        <label><input type="radio" name="input_choose_opt" id="input_chk_normal" onchange="toggle_opts(this);" checked>Normal Cloning</label>
         <label><input type="radio" name="input_choose_opt" id="input_chk_mixing" onchange="toggle_opts(this);">Mixing Gradient</label></li>
     <li>Source Image: <input type="file" id="input_file_source" accept="image/*"></li>
     <li>Target Image: <input type="file" id="input_file_target" accept="image/*"></li>
