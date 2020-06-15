@@ -19,12 +19,31 @@
       <li>座標を sigma_space で割り，輝度を sigma_range で割った座標が Bilateral Grid 上での座標に対応</li>
       <li>Bilateral Grid 上で最も近い格子点に輝度の値を足し合わせ，いくつの点が足し合わされたのかも記録</li>
       <li>こうしてできた Bilateral Grid 上でいくつの点が足し合わされているのかも考慮して，半径1の Gaussian Filter を適用</li>
-      <li>元の画像の各座標に対応する Bilateral Grid 上の座標の値を周囲8つの格子点の trilinear interpolation して求める</li>
+      <li>元の画像の各座標に対応する Bilateral Grid 上の座標の値を周囲8つの格子点の trilinear interpolation により求める</li>
+      <li>輝度が何倍になったかを計算し，元の座標の RGB それぞれに掛ける</li>
+      <li>(20,0,0)のような画素値のときに輝度が5倍されたりすると，(100,0,0)になって元とかなり違う色が表示されてしまうことがある</li>
     </ul>
     <li>Bilateral Filter を使用した Stylization</li>
+    <ul>
+      <li>Bilateral Filter を適用し，得られた画像に DoG (Difference of Gauusian) で検出したエッジを追加/li>
+で   </ul>
     <li>Bilateral Filter を使用した Tone Mapping</li>
-    <li>Rolling Guidance Filter</li>
-    <li>Non-Local Means Filter</li>
+
+    <ul>
+      <li>HDR 画像を入力として受け取る</li>
+      <ul>
+        <li>複数の画像から合成するわけではないので，すでに情報は失われてしまっている</li>
+        <li>本当は露光時間のわかる複数の画像から Debevec 法や Robertson 法を用いて合成し，浮動小数点で表された HDR 画像を使用するべきだが，それらの手法の実装が難しく断念した</li>
+      </ul>
+      <li>入力画像に Bilateral Filter をかけて smooth 画像を求め，それを元の画像から引いて detail 画像を得る</li>
+      <li>smooth 画像にガンマ補正を適用し，detail 画像と足し合わせて出力</li>
+    </ul>    <li>Rolling Guidance Filter</li>
+
+    <ul>
+      <li>元の画像に Gaussian Filter を適用</li>
+      <li>元の画像の色調とぼかした画像の模様を Joint Bilateral Filter で合成</li>
+      <li>それで得られたｇ</li>
+    </ul>    <li>Non-Local Means Filter</li>
   </ul>
   
   <h3>CGの内容:</h3>
@@ -146,3 +165,4 @@
 </body>
 </html>
 
+ｄ
