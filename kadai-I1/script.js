@@ -310,6 +310,7 @@ function gamma_correction(width, height, original, corrected, gamma) {
     var stencil = new Float32Array(256);
     for (var dr = 0; dr < 256; ++dr)
     {
+        console.log(gamma, 1/gamma);
         stencil[dr] = Math.round(Math.pow(dr/255, 1/gamma) * 255);
     }
     // apply filter
@@ -480,7 +481,7 @@ function init() {
         } else if (document.getElementById("input_chk_use_stylization").checked) {
             smooth_stylization(width, height, original.data, smoothed.data, sigma_space, sigma_range, sigma_edge, phi);
         } else if (document.getElementById("input_chk_use_tone_mapping").checked) {
-            smooth_tone_mapping(width, height, original.data, smoothed.data, sigma_space, sigma_range, sigma_edge, gamma);
+            smooth_tone_mapping(width, height, original.data, smoothed.data, sigma_space, sigma_range, gamma);
         } else if (document.getElementById("input_chk_use_rolling").checked) {
             smooth_rolling(width, height, original.data, smoothed.data, sigma_space, sigma_range, num);
         } else if (document.getElementById("input_chk_use_nlmf").checked) {
