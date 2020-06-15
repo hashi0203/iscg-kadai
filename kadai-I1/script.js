@@ -310,9 +310,9 @@ function gamma_correction(width, height, original, corrected, gamma) {
     var stencil = new Float32Array(256);
     for (var dr = 0; dr < 256; ++dr)
     {
-        console.log(gamma, 1/gamma);
         stencil[dr] = Math.round(Math.pow(dr/255, 1/gamma) * 255);
     }
+    console.log(original);
     // apply filter
     for (var py = 0; py < height; py++)
     for (var px = 0; px < width;  px++)
@@ -326,6 +326,7 @@ function gamma_correction(width, height, original, corrected, gamma) {
         corrected[4 * idx0 + 2] = stencil[b0];
         corrected[4 * idx0 + 3] = 255;
     }
+    console.log(corrected);
   
 };
 function smooth_tone_mapping(width, height, original, smoothed, sigma_space, sigma_range, gamma) {
@@ -334,8 +335,8 @@ function smooth_tone_mapping(width, height, original, smoothed, sigma_space, sig
     var tmp_gamma = new Float32Array(4 * width * height);
     smooth_bilateral(width, height, original, original, tmp_large, sigma_space, sigma_range);
     subtract(width, height, original, tmp_large, tmp_detail);
-    gamma_correction(width, height, tmp_large, tmp_gamma, gamma);
-    merge(width, height, tmp_gamma, tmp_detail, smoothed);
+    gamma_correction(width, height, tmp_large, smoothed, gamma);
+    // merge(width, height, tmp_gamma, tmp_detail, smoothed);
 };
 function smooth_rolling(width, height, original, smoothed, sigma_space, sigma_range, num) {
     var tmp_input = new Float32Array(4 * width * height);
@@ -432,9 +433,9 @@ function merge(width, height, large, detail, merged) {
     for (var i = 0; i < width * height; ++i) {
         for (var j = 0; j < 3; ++j) {
             var ij = 4 * i + j;
-            detail[ij] = large[ij] + detail[ij] - 128;
+            merged[ij] = large[ij] + detail[ij] - 128;
         }
-        detail[4 * i + 3] = 255;
+        merged[4 * i + 3] = 255;
     }
 };
 function subtract(width, height, original, smoothed, detail) {
