@@ -308,16 +308,27 @@ function smooth_stylization(width, height, original, smoothed, sigma_space, sigm
 };
 function gamma_correction(width, height, original, corrected, gamma) {
     var stencil = new Float32Array(256);
-    for (var dr = 0; dr <= 256; ++dr)
+    for (var dr = 0; dr < 256; ++dr)
     {
-        var h = Math.sqrt(dx * dx + dy * dy);
-        var idx = dx + r + r2 * (dy + r);
-        stencil_edge_e[idx] = Math.exp(-h * h / (2 * sigma_edge * sigma_edge));
-        stencil_edge_r[idx] = Math.exp(-h * h / (2 * sigma_edge_r * sigma_edge_r));
+        stencil[dr] = Math.round(Math.pow(dr/255, 1/gamma) * 255);
     }
+    // apply filter
+    for (var py = 0; py < height; py++)
+    for (var px = 0; px < width;  px++)
+    {
+        var idx0 = px + width * py;
+        var r0 = original[4 * idx0];
+        var g0 = original[4 * idx0 + 1];
+        var b0 = original[4 * idx0 + 2];
+        corrected[4 * idx0    ] = stencil[r0];
+        corrected[4 * idx0 + 1] = stencil[g0];
+        corrected[4 * idx0 + 2] = stencil[b0];
+        corrected[4 * idx0 + 3] = 255;
+    }
+  
 };
 function smooth_tone_mapping(width, height, original, smoothed, sigma_space, sigma_range, gamma) {
-    
+    gamma_correction(width, height, original, smoothed, gamma);
 };
 function smooth_rolling(width, height, original, smoothed, sigma_space, sigma_range, num) {
     var tmp_input = new Float32Array(4 * width * height);
@@ -458,6 +469,7 @@ function init() {
         var sigma_range = Number(document.getElementById("input_num_sigma_range").value);
         var sigma_edge = Number(document.getElementById("input_num_sigma_edge").value);
         var phi = Number(document.getElementById("input_num_falloff").value);
+        var gamma = Number(document.getElementById("input_num_gamma").value);
         var num = Number(document.getElementById("input_num_iteration").value);
       
         const startTime = performance.now();
@@ -468,7 +480,7 @@ function init() {
         } else if (document.getElementById("input_chk_use_stylization").checked) {
             smooth_stylization(width, height, original.data, smoothed.data, sigma_space, sigma_range, sigma_edge, phi);
         } else if (document.getElementById("input_chk_use_tone_mapping").checked) {
-            smooth_stylization(width, height, original.data, smoothed.data, sigma_space, sigma_range, sigma_edge, phi);
+            smooth_tone_mapping(width, height, original.data, smoothed.data, sigma_space, sigma_range, sigma_edge, gamma);
         } else if (document.getElementById("input_chk_use_rolling").checked) {
             smooth_rolling(width, height, original.data, smoothed.data, sigma_space, sigma_range, num);
         } else if (document.getElementById("input_chk_use_nlmf").checked) {
