@@ -24,11 +24,13 @@
     <li>Sigma_Range: <input type="number" id="input_num_sigma_range" step="1" min="1" value="25" disabled></li>
     <li>Sigma_Edge: <input type="number" id="input_num_sigma_edge" step="1" min="1" value="3" disabled></li>
     <li>Falloff Param: <input type="number" id="input_num_falloff" step="1" min="0" value="2" disabled></li>
+    <li>Gamma: <input type="number" id="input_num_gamma" step="1" min="0" value="2" disabled></li>
     <li>Iteration Number: <input type="number" id="input_num_iteration" step="1" min="1" value="1" disabled></li>
     <li><label><input type="radio" name="input_use_filter" id="input_chk_use_gaussian" onchange="toggle_items(this);" checked>Gaussian</label>
         <label><input type="radio" name="input_use_filter" id="input_chk_use_bilateral" onchange="toggle_items(this);">Bilateral</label>
         <label><input type="radio" name="input_use_filter" id="input_chk_use_bilateral_grid" onchange="toggle_items(this);">Bilateral Grid</label>
         <label><input type="radio" name="input_use_filter" id="input_chk_use_stylization" onchange="toggle_items(this);">Stylization</label>
+        <label><input type="radio" name="input_use_filter" id="input_chk_use_tone_mapping" onchange="toggle_items(this);">Tone-mapping</label>
         <label><input type="radio" name="input_use_filter" id="input_chk_use_rolling" onchange="toggle_items(this);">Rolling Guidance</label>
         <label><input type="radio" name="input_use_filter" id="input_chk_use_nlmf" onchange="toggle_items(this);">Non-Local Means</label></li>
 <!--     <li><label><input type="checkbox" id="input_chk_use_bilateral_grid" onchange="toggle_sigma_range(this);" checked>Bilateral Grid</label></li> -->

@@ -306,6 +306,19 @@ function smooth_stylization(width, height, original, smoothed, sigma_space, sigm
     smooth_bilateral(width, height, original, original, tmp_bilateral, sigma_space, sigma_range);
     edge_detection(width, height, tmp_bilateral, smoothed, sigma_edge, phi);
 };
+function gamma_correction(width, height, original, corrected, gamma) {
+    var stencil = new Float32Array(256);
+    for (var dr = 0; dr <= 256; ++dr)
+    {
+        var h = Math.sqrt(dx * dx + dy * dy);
+        var idx = dx + r + r2 * (dy + r);
+        stencil_edge_e[idx] = Math.exp(-h * h / (2 * sigma_edge * sigma_edge));
+        stencil_edge_r[idx] = Math.exp(-h * h / (2 * sigma_edge_r * sigma_edge_r));
+    }
+};
+function smooth_tone_mapping(width, height, original, smoothed, sigma_space, sigma_range, gamma) {
+    
+};
 function smooth_rolling(width, height, original, smoothed, sigma_space, sigma_range, num) {
     var tmp_input = new Float32Array(4 * width * height);
     var tmp_output = new Float32Array(4 * width * height);
@@ -454,6 +467,8 @@ function init() {
             smooth_bilateral_grid(width, height, original.data, original.data, smoothed.data, sigma_space, sigma_range);
         } else if (document.getElementById("input_chk_use_stylization").checked) {
             smooth_stylization(width, height, original.data, smoothed.data, sigma_space, sigma_range, sigma_edge, phi);
+        } else if (document.getElementById("input_chk_use_tone_mapping").checked) {
+            smooth_stylization(width, height, original.data, smoothed.data, sigma_space, sigma_range, sigma_edge, phi);
         } else if (document.getElementById("input_chk_use_rolling").checked) {
             smooth_rolling(width, height, original.data, smoothed.data, sigma_space, sigma_range, num);
         } else if (document.getElementById("input_chk_use_nlmf").checked) {
@@ -504,7 +519,7 @@ function toggle_imgs(self) {
 }
 
 function toggle_items(self) {
-    if (self.id == "input_chk_use_bilateral" || self.id == "input_chk_use_bilateral_grid" || self.id == "input_chk_use_stylization" || self.id == "input_chk_use_rolling")
+    if (self.id == "input_chk_use_bilateral" || self.id == "input_chk_use_bilateral_grid" || self.id == "input_chk_use_stylization" || self.id == "input_chk_use_tone_mapping" || self.id == "input_chk_use_rolling")
         document.getElementById("input_num_sigma_range").disabled = false;
     else
         document.getElementById("input_num_sigma_range").disabled = true;
@@ -518,6 +533,11 @@ function toggle_items(self) {
         document.getElementById("input_num_falloff").disabled = false;
     else
         document.getElementById("input_num_falloff").disabled = true;
+  
+    if (self.id == "input_chk_use_tone_mapping")
+        document.getElementById("input_num_gamma").disabled = false;
+    else
+        document.getElementById("input_num_gamma").disabled = true;
   
     if (self.id == "input_chk_use_rolling")
         document.getElementById("input_num_iteration").disabled = false;
