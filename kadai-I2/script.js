@@ -219,3 +219,8 @@ window.onload = function() {
     img_source.src = "https://cdn.glitch.com/dd1057e3-9b69-4706-a8c9-e7f207f3d7cb%2Fpoisson_source.png?v=1562149016431";
     img_target.src = "https://cdn.glitch.com/dd1057e3-9b69-4706-a8c9-e7f207f3d7cb%2Fpoisson_target.png?v=1562149016454";
 };
+function toggle_opts(self) {
+    if (self.id = "input_chk_normal") {
+      
+    }
+};
