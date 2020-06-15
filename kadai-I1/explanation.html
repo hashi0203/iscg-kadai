@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title id="title">[utokyo-iscg-2020] Basic Assignment R2 (Shading Models)</title>
+<title id="title">[utokyo-iscg-2020] Basic Assignment I1 (Image filtering)</title>
 <script src="script.js"></script>
 <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML"></script>
 <link rel="stylesheet" href="../style.css">
@@ -51,6 +51,13 @@
       <li>注目画素の周囲 \(7 \times 7\) の領域の画素値を並べた \(7 \times 7 \times 3 = 147\) 次元の特徴ベクトルを定義</li>
       <li>この特徴ベクトルの差の2ノルムの大きさに応じて重み付けをして畳み込む</li>
     </ul>
+  </ul>
+  
+  <h3>備考:</h3>
+  <ul>
+    <li>パラメータは基本的にいじらない状態である程度 "いい" 画像が生成可能</li>
+    <li>処理にかかった時間が下に表示されるので，特に Bilateral Grid を使用した Bilateral Filter の処理時間確認などに使用可能</li>
+    <li>デフォルトの画像は授業に従い，Man は Stylization，HDR は Tone Mapping，Dog と House は Rolling Guidance Filter，Rock はその他で使用すると良い</li>
   </ul>
   
   <input type="button" onclick="location.href='../'" value="課題一覧へ">
