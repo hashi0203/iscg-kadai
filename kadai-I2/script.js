@@ -98,22 +98,23 @@ function mixing_gradients(source, src_delta, tgt_delta, result, offset_x, offset
         if (src_i < 0 || src_j < 0 || src_width <= src_i || src_height <= src_j) continue;
         var src_idx = src_i + src_width * src_j;
         if (Math.abs(src_delta_gray[src_idx] - 128) < Math.abs(tgt_delta_gray[tgt_idx] - 128)) continue;
-        var di = [1, -1, 0, 0];
-        var dj = [0, 0, 1, -1];
-        var cnt = 0;
-        var sum = [0, 0, 0];
-        for (var k = 0; k < 4; ++k) {
-            var tgt_i2 = tgt_i + di[k];
-            var tgt_j2 = tgt_j + dj[k];
-            if (tgt_i2 < 0 || tgt_j2 < 0 || tgt_width <= tgt_i2 || tgt_height <= tgt_j2) continue;
-            ++cnt;
-            var tgt_idx2 = tgt_i2 + tgt_width * tgt_j2;
-            for (var c = 0; c < 3; ++c)
-                sum[c] += result.fdata[4 * tgt_idx2 + c];
-        }
+        // var di = [1, -1, 0, 0];
+        // var dj = [0, 0, 1, -1];
+        // var cnt = 0;
+        // var sum = [0, 0, 0];
+        // for (var k = 0; k < 4; ++k) {
+        //     var tgt_i2 = tgt_i + di[k];
+        //     var tgt_j2 = tgt_j + dj[k];
+        //     if (tgt_i2 < 0 || tgt_j2 < 0 || tgt_width <= tgt_i2 || tgt_height <= tgt_j2) continue;
+        //     ++cnt;
+        //     var tgt_idx2 = tgt_i2 + tgt_width * tgt_j2;
+        //     for (var c = 0; c < 3; ++c)
+        //         sum[c] += result.fdata[4 * tgt_idx2 + c];
+        // }
         for (var c = 0; c < 3; ++c)
             result.data [4 * tgt_idx + c] =
-            result.fdata[4 * tgt_idx + c] = (src_delta.fdata[4 * src_idx + c] - 135) + sum[c] / cnt;
+            result.fdata[4 * tgt_idx + c] = (src_delta.fdata[4 * src_idx + c] - 128) + result.fdata[4 * tgt_idx + c];
+            // result.fdata[4 * tgt_idx + c] = (src_delta.fdata[4 * src_idx + c] - 128) + sum[c] / cnt;
     }
 };
 
@@ -190,7 +191,7 @@ window.onload = function() {
         tgt_width  = img_result.width  = this.width;
         tgt_height = img_result.height = this.height;
         target = read_img(context_hidden, img_target);
-        target_delta = context_hidden.createImageData(src_width, src_height);
+        target_delta = context_hidden.createImageData(tgt_width, tgt_height);
         augment_fdata(target_delta);
         compute_laplacian(target, target_delta);
         write_img(context_hidden, img_target_delta, target_delta);
