@@ -1,5 +1,21 @@
 "use strict";
+var poisson_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fpoisson.png?v=1592230134224";
+var monalisa_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fmonalisa.png?v=1592230138550";
+var nabla_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fnabla.png?v=1592230004791";
+var wall_url = "https://cdn.glitch.com/d7a5350c-2fd9-452d-8711-e051480a63a6%2Fwall.png?v=1592230008820";
 
+function grayscale(width, height, original, gray) {
+    for (var py = 0; py < height; py++)
+    for (var px = 0; px < width;  px++)
+    {
+        var idx0 = px + width * py;
+        var r = original[4 * idx0];
+        var g = original[4 * idx0 + 1];
+        var b = original[4 * idx0 + 2];
+        gray[idx0] = (77*r+151*g+28*b)/256;
+        // gray[idx0] = (r+g+b)/3;
+    }
+};
 // compute gradient of the source image
 function compute_laplacian(source, delta) {
     var width  = source.width;
@@ -62,6 +78,45 @@ function poisson_jacobi(mask, delta, offset_x, offset_y, result) {
     }
 };
 
+function mixing_gradients(source, src_delta, tgt_delta, result, offset_x, offset_y) {
+    var src_width  = source.width;
+    var src_height = source.height;
+    var src_delta_gray = new Float32Array(src_width * src_height);
+    grayscale(src_width, src_height, src_delta.fdata, src_delta_gray);
+  
+    var tgt_width  = result.width;
+    var tgt_height = result.height;
+    var tgt_delta_gray = new Float32Array(tgt_width * tgt_height);
+    grayscale(tgt_width, tgt_height, tgt_delta.fdata, tgt_delta_gray);
+  
+    for (var tgt_j = 0; tgt_j < tgt_height; ++tgt_j)
+    for (var tgt_i = 0; tgt_i < tgt_width ; ++tgt_i)
+    {
+        var tgt_idx = tgt_i + tgt_width * tgt_j;
+        var src_i = tgt_i - offset_x;
+        var src_j = tgt_j - offset_y;
+        if (src_i < 0 || src_j < 0 || src_width <= src_i || src_height <= src_j) continue;
+        var src_idx = src_i + src_width * src_j;
+        if (Math.abs(src_delta_gray[src_idx] - 128) < Math.abs(tgt_delta_gray[tgt_idx] - 128)) continue;
+        var di = [1, -1, 0, 0];
+        var dj = [0, 0, 1, -1];
+        var cnt = 0;
+        var sum = [0, 0, 0];
+        for (var k = 0; k < 4; ++k) {
+            var tgt_i2 = tgt_i + di[k];
+            var tgt_j2 = tgt_j + dj[k];
+            if (tgt_i2 < 0 || tgt_j2 < 0 || tgt_width <= tgt_i2 || tgt_height <= tgt_j2) continue;
+            ++cnt;
+            var tgt_idx2 = tgt_i2 + tgt_width * tgt_j2;
+            for (var c = 0; c < 3; ++c)
+                sum[c] += result.fdata[4 * tgt_idx2 + c];
+        }
+        for (var c = 0; c < 3; ++c)
+            result.data [4 * tgt_idx + c] =
+            result.fdata[4 * tgt_idx + c] = (src_delta.fdata[4 * src_idx + c] - 135) + sum[c] / cnt;
+    }
+};
+
 function augment_fdata(imgdata) {
     imgdata.fdata = new Float32Array(imgdata.data.length);
     for (var i = 0; i < imgdata.data.length; ++i)
@@ -107,8 +162,9 @@ window.onload = function() {
     // image data
     var source;
     var mask;
-    var delta;
+    var source_delta;
     var target;
+    var target_delta;
     var result;
     
     img_source.onload = function(){
@@ -117,10 +173,10 @@ window.onload = function() {
         source = read_img(context_hidden, img_source);
         context_mask.clearRect(0, 0, src_width, src_height);
         mask = context_mask.getImageData(0, 0, src_width, src_height);
-        delta = context_hidden.createImageData(src_width, src_height);
-        augment_fdata(delta);
-        compute_laplacian(source, delta);
-        write_img(context_hidden, img_source_delta, delta);
+        source_delta = context_hidden.createImageData(src_width, src_height);
+        augment_fdata(source_delta);
+        compute_laplacian(source, source_delta);
+        write_img(context_hidden, img_source_delta, source_delta);
     };
     document.getElementById("input_file_source").onchange = function(evt) {
         var reader = new FileReader();
@@ -134,10 +190,10 @@ window.onload = function() {
         tgt_width  = img_result.width  = this.width;
         tgt_height = img_result.height = this.height;
         target = read_img(context_hidden, img_target);
-        delta = context_hidden.createImageData(src_width, src_height);
-        augment_fdata(delta);
-        compute_laplacian(target, delta);
-        write_img(context_hidden, img_target_delta, delta);
+        target_delta = context_hidden.createImageData(src_width, src_height);
+        augment_fdata(target_delta);
+        compute_laplacian(target, target_delta);
+        write_img(context_hidden, img_target_delta, target_delta);
         init_result();
     };
     document.getElementById("input_file_target").onchange = function(evt) {
@@ -193,10 +249,10 @@ window.onload = function() {
         var numiter  = Number(document.getElementById("input_num_numiter" ).value);
         if (document.getElementById("input_chk_normal").checked)
             for (var i = 0; i < numiter; ++i)  
-                poisson_jacobi(mask, delta, offset_x, offset_y, result);
+                poisson_jacobi(mask, source_delta, offset_x, offset_y, result);
         else if (document.getElementById("input_chk_mixing").checked)
             for (var i = 0; i < numiter; ++i)
-                mixing
+                mixing_gradients(source, source_delta, target_delta, result, offset_x, offset_y);
         write_img(context_hidden, img_result, result);
     };
     document.getElementById("btn_clear").onclick = function() {
@@ -225,8 +281,10 @@ window.onload = function() {
         augment_fdata(result);
     };
     
-    img_source.src = "https://cdn.glitch.com/dd1057e3-9b69-4706-a8c9-e7f207f3d7cb%2Fpoisson_source.png?v=1562149016431";
-    img_target.src = "https://cdn.glitch.com/dd1057e3-9b69-4706-a8c9-e7f207f3d7cb%2Fpoisson_target.png?v=1562149016454";
+    // img_source.src = "https://cdn.glitch.com/dd1057e3-9b69-4706-a8c9-e7f207f3d7cb%2Fpoisson_source.png?v=1562149016431";
+    // img_target.src = "https://cdn.glitch.com/dd1057e3-9b69-4706-a8c9-e7f207f3d7cb%2Fpoisson_target.png?v=1562149016454";
+    img_source.src = poisson_url;
+    img_target.src = monalisa_url;
 };
 function toggle_opts(self) {
     if (self.id == "input_chk_normal")
@@ -238,4 +296,15 @@ function toggle_opts(self) {
         document.getElementById("target_delta").style.display = "table-cell";
     else
         document.getElementById("target_delta").style.display = "none";
+  
+    var img_source = document.getElementById("img_source");
+    var img_target = document.getElementById("img_target");
+    if (self.id == "input_chk_normal") {
+        img_source.src = poisson_url;
+        img_target.src = monalisa_url;
+    } else if (self.id == "input_chk_mixing") {
+        img_source.src = nabla_url;
+        img_target.src = wall_url;
+    }
+  
 };
