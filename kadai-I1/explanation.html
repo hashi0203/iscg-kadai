@@ -4,10 +4,8 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title id="title">[utokyo-iscg-2020] Basic Assignment R2 (Shading Models)</title>
 <script src="script.js"></script>
-<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=MML_SVG"></script>
-<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML"></script>
 <link rel="stylesheet" href="../style.css">
-<link rel="stylesheet" href="code.css">
 </head>
 <body>
   <h2><a target="_blank" href="http://research.nii.ac.jp/~takayama/teaching/utokyo-iscg-2020/assignments/iscg-2020-assignment-i1-filter.pdf"><script type="text/javascript">document.write(document.getElementById("title").innerHTML);</script></a></h2>
@@ -15,6 +13,14 @@
   <ul>
     <li>Bilateral Filter</li>
     <li>Bilateral Grid を使用した Bilateral Filter の高速化</li>
+    <ul>
+      <li>元の画像の各座標とその座標における輝度の3次元からなる Bilateral Grid を構成</li>
+      <li>輝度は人の視覚特性に応じて重み付けした \(\frac{77r+151g+28b}{256}\) を使用</li>
+      <li>座標を sigma_space で割り，輝度を sigma_range で割った座標が Bilateral Grid 上での座標に対応</li>
+      <li>Bilateral Grid 上で最も近い格子点に輝度の値を足し合わせ，いくつの点が足し合わされたのかも記録</li>
+      <li>こうしてできた Bilateral Grid 上でいくつの点が足し合わされているのかも考慮して，半径1の Gaussian Filter を適用</li>
+      <li>元の画像の各座標に対応する Bilateral Grid 上の座標の値を周囲8つの格子点の trilinear interpolation して求める</li>
+    </ul>
     <li>Bilateral Filter を使用した Stylization</li>
     <li>Bilateral Filter を使用した Tone Mapping</li>
     <li>Rolling Guidance Filter</li>
