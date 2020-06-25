@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title id="title">[utokyo-iscg-2020] Advanced Assignment I2 (Poisson Image Editing)</title>
+<script src="script.js"></script>
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML"></script>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <h2><a target="_blank" href="http://research.nii.ac.jp/~takayama/teaching/utokyo-iscg-2020/assignments/iscg-2020-assignment-i2-poisson.pdf"><script type="text/javascript">document.write(document.getElementById("title").innerHTML);</script></a></h2>
+  <h3>実装内容:</h3>
+  <ul>
+    <li>Source 勾配と Dest 勾配のうち大きい方を使うような Gradient の混合モード</li>
+    <ul>
+      <li>基本的には Dest に合わせて結果の画像を作成し，Source の勾配の方が大きいときのみその勾配を結果の画像に混ぜ合わせる</li>
+    </ul>
+  </ul>
+  
+  <input type="button" onclick="location.href='../'" value="課題一覧へ">
+  <input type="button" onclick="location.href='./'" value="課題へ">
+  <div class="glitchButton" style="position:fixed;top:20px;right:20px;"></div>
+  <script src="https://button.glitch.me/button.js"></script>
+</body>
+</html>
