@@ -122,7 +122,7 @@ function smooth_bilateral(width, height, color_img, texture_img, smoothed, sigma
         smoothed[4 * idx0 + 3] = 255;
     }
 };
-function trilinear_interpolation(x, y, sigma_space, sigma_range, grid, px, py, pz) {
+function trilinear_interpolation(x, y, sigma_space, sigma_range, grid, px, py, pz, i) {
     px /= sigma_space;
     py /= sigma_space;
     pz /= sigma_range;
@@ -130,15 +130,15 @@ function trilinear_interpolation(x, y, sigma_space, sigma_range, grid, px, py, p
     var y0 = Math.floor(py);
     var z0 = Math.floor(pz);
     var idx = x0 + x * y0 + x * y * z0;
-    var c000 = grid[idx];
-    var c001 = grid[idx + 1];
-    var c010 = grid[idx + x];
-    var c011 = grid[idx + 1 + x];
+    var c000 = grid[3 * idx + i];
+    var c001 = grid[3 * (idx + 1) + i];
+    var c010 = grid[3 * (idx + x) + i];
+    var c011 = grid[3 * (idx + 1 + x) + i];
     var idxz = idx + x * y;
-    var c100 = grid[idxz];
-    var c101 = grid[idxz + 1];
-    var c110 = grid[idxz + x];
-    var c111 = grid[idxz + 1 + x];
+    var c100 = grid[3 * idxz + i];
+    var c101 = grid[3 * (idxz + 1) + i];
+    var c110 = grid[3 * (idxz + x) + i];
+    var c111 = grid[3 * (idxz + 1 + x) + i];
     var px1 = px - x0;
     var px0 = 1 - px1;
     var py1 = py - y0;
@@ -146,26 +146,51 @@ function trilinear_interpolation(x, y, sigma_space, sigma_range, grid, px, py, p
     var pz1 = pz - z0;
     var pz0 = 1 - pz1;
     return c000*pz0*py0*px0 + c001*pz0*py0*px1 + c010*pz0*py1*px0 + c011*pz0*py1*px1 + c100*pz1*py0*px0 + c101*pz1*py0*px1 + c110*pz1*py1*px0 + c111*pz1*py1*px1;
+      
+  
+    // var c000 = grid[idx];
+    //   var c001 = grid[idx + 1];
+    //   var c010 = grid[idx + x];
+    //   var c011 = grid[idx + 1 + x];
+    //   var idxz = idx + x * y;
+    //   var c100 = grid[idxz];
+    //   var c101 = grid[idxz + 1];
+    //   var c110 = grid[idxz + x];
+    //   var c111 = grid[idxz + 1 + x];
+    //   var px1 = px - x0;
+    //   var px0 = 1 - px1;
+    //   var py1 = py - y0;
+    //   var py0 = 1 - py1;
+    //   var pz1 = pz - z0;
+    //   var pz0 = 1 - pz1;
+    //   return c000*pz0*py0*px0 + c001*pz0*py0*px1 + c010*pz0*py1*px0 + c011*pz0*py1*px1 + c100*pz1*py0*px0 + c101*pz1*py0*px1 + c110*pz1*py1*px0 + c111*pz1*py1*px1;
 };
 function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, sigma_space, sigma_range) {
-    var texture_gray = new Float32Array(width * height);
-    grayscale(width, height, texture_img, texture_gray);
-  
+    // var texture_gray = new Float32Array(width * height);
+    // grayscale(width, height, texture_img, texture_gray);
+    
     var x = Math.ceil((width-1)/sigma_space)+1;
     var y = Math.ceil((height-1)/sigma_space)+1;
     var z = Math.ceil(255/sigma_range)+1;
   
-    var bilateral_grid = new Float32Array(x * y * z).fill(0);
-    var bilateral_grid_cnt = new Float32Array(x * y * z).fill(0);
+    var bilateral_grid = new Float32Array(3 * x * y * z).fill(0);
+    var bilateral_grid_cnt = new Float32Array(3 * x * y * z).fill(0);
     // initialize grid
     for (var py = 0; py < height; py++)
     for (var px = 0; px < width;  px++)
     {
         var idx0 = px + width * py;
-        var l = texture_gray[idx0];
-        var idx1 = Math.round(px/sigma_space) + x * Math.round(py/sigma_space) + x * y * Math.round(l/sigma_range);
-        bilateral_grid[idx1] += l;
-        bilateral_grid_cnt[idx1] += 1;
+        // var l = texture_gray[idx0];
+        // var idx1 = Math.round(px/sigma_space) + x * Math.round(py/sigma_space) + x * y * Math.round(l/sigma_range);
+        // bilateral_grid[idx1] += l;
+        // bilateral_grid_cnt[idx1] += 1;
+        for (var i = 0; i < 3; i++) {
+            var l = texture_img[4 * idx0 + i];
+            var idx1 = Math.round(px/sigma_space) + x * Math.round(py/sigma_space) + x * y * Math.round(l/sigma_range);
+            bilateral_grid[3 * idx1 + i] += l;
+            bilateral_grid_cnt[3 * idx1 + 1] += 1;
+        }
+        
     }
     // console.log(bilateral_grid_cnt);
     // console.log(bilateral_grid);
@@ -184,14 +209,16 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
     }
   
     // apply filter to bilateral grid
-    var bilateral_grid_filtered = new Float32Array(x * y * z).fill(0);
+    var bilateral_grid_filtered = new Float32Array(3 * x * y * z).fill(0);
     for (var pz = 0; pz < z; pz++)
     for (var py = 0; py < y; py++)
     for (var px = 0; px < x; px++)
     {
         var idx0 = px + x * py + x * y * pz;
-        var l_sum = 0;
-        var w_sum = 0;
+        // var l_sum = 0;
+        // var w_sum = 0;
+        var l_sum = new Float32Array(3).fill(0);
+        var w_sum = new Float32Array(3).fill(0);
         for (var dz = -r; dz <= r; ++dz)
         for (var dy = -r; dy <= r; ++dy)
         for (var dx = -r; dx <= r; ++dx)
@@ -202,14 +229,25 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
             if (0 <= px1 && 0 <= py1 && 0 <= pz1 && px1 < x && py1 < y && pz1 < z) {
                 var w = stencil[dx + r + r2 * (dy + r) + r2 * r2 * (dz + r)];
                 var idx1 = px1 + x * py1 + x * y * pz1;
-                var l1 = bilateral_grid[idx1];
-                var cnt1 = bilateral_grid_cnt[idx1];
-                l_sum += w * l1;
-                w_sum += w * cnt1;
+                for (var i = 0; i < 3; i++) {
+                    var l1 = bilateral_grid[3 * idx1 + i];
+                    var cnt1 = bilateral_grid_cnt[3 * idx1 + i];
+                    l_sum[i] += w * l1;
+                    w_sum[i] += w * cnt1;
+                }
+                // var l1 = bilateral_grid[idx1];
+                // var cnt1 = bilateral_grid_cnt[idx1];
+                // l_sum += w * l1;
+                // w_sum += w * cnt1;
             }
         }      
-        if (w_sum != 0)
-            bilateral_grid_filtered[idx0] = l_sum / w_sum;
+        // if (w_sum != 0)
+        //     bilateral_grid_filtered[idx0] = l_sum / w_sum;
+        for (var i = 0; i < 3; i++) {
+            if (w_sum[i] != 0) {
+                bilateral_grid_filtered[3 * idx0 + i] = l_sum[i] / w_sum[i];
+            }
+        }
     }
   
     // apply bilateral grid to original image
@@ -217,14 +255,20 @@ function smooth_bilateral_grid(width, height, color_img, texture_img, smoothed, 
     for (var px = 0; px < width;  px++)
     {
         var idx0 = px + width * py;
-        var l = texture_gray[idx0];
-        var w = trilinear_interpolation(x, y, sigma_space, sigma_range, bilateral_grid_filtered, px, py, l)/l;
-        var r = color_img[4 * idx0];
-        var g = color_img[4 * idx0 + 1];
-        var b = color_img[4 * idx0 + 2];
-        smoothed[4 * idx0    ] = Math.min(r * w, 255);
-        smoothed[4 * idx0 + 1] = Math.min(g * w, 255);
-        smoothed[4 * idx0 + 2] = Math.min(b * w, 255);
+        // var l = texture_gray[idx0];
+        // var w = trilinear_interpolation(x, y, sigma_space, sigma_range, bilateral_grid_filtered, px, py, l)/l;
+        // var r = color_img[4 * idx0];
+        // var g = color_img[4 * idx0 + 1];
+        // var b = color_img[4 * idx0 + 2];
+        // smoothed[4 * idx0    ] = Math.min(r * w, 255);
+        // smoothed[4 * idx0 + 1] = Math.min(g * w, 255);
+        // smoothed[4 * idx0 + 2] = Math.min(b * w, 255);
+        for (var i = 0; i < 3; i++) {
+            var l = texture_img[4 * idx0 + i];
+            var w = trilinear_interpolation(x, y, sigma_space, sigma_range, bilateral_grid_filtered, px, py, l, i)/l;
+            var c = color_img[4 * idx0 + i];
+            smoothed[4 * idx0 + i] = c * w;
+        }
       
         // if (bilateral_grid[idx0] == 6375) {
         //   console.log(l, w, trilinear_interpolation(x, y, sigma_space, sigma_range, bilateral_grid_filtered, px, py, l));
