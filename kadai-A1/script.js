@@ -26,13 +26,17 @@ function update_position() {
 function compute_ik(target_position) {
   // TODO
   var end_position;
-  linkages.reverse.forEach(function(linkage, index){
+  linkages.reverse().forEach(function(linkage, index){
     if (index == linkages.length - 1) {
       end_position = linkage.position;
     } else {
       var v1 = vec3.create();
       var v2 = vec3.create();
-      vec3.direction(linkage.position, )
+      vec3.direction(linkage.position,end_position,v1);
+      vec3.direction(linkage.position,target_position,v2);
+      var angle = Math.acos(vec3.dot(v1,v2));
+      var cross = Math.sign(v1.x * v2.y - v1.y * v2.x);
+      linkage.angle += cross * angle;
     }
     
   });
