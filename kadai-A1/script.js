@@ -30,7 +30,9 @@ function compute_ik(target_position) {
     if (index == linkages.length - 1) {
       end_position = linkage.position;
     } else {
-      
+      var v1 = vec3.create();
+      var v2 = vec3.create();
+      vec3.direction(linkage.position, )
     }
     
   });
