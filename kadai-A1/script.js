@@ -25,7 +25,13 @@ function update_position() {
 
 function compute_ik(target_position) {
   // TODO
+  var end_position;
   linkages.reverse.forEach(function(linkage, index){
+    if (index == linkages.length - 1) {
+      end_position = linkage.position;
+    } else {
+      
+    }
     
   });
 };
