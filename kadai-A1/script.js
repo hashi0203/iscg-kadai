@@ -25,14 +25,13 @@ function update_position() {
 
 function compute_ik(target_position) {
   // TODO
-  console.log(linkages);
+  console.log(linkages[0].angle, linkages[1].angle, linkages[2].angle, linkages[3].angle);
   target_position = [target_position[0],target_position[1]];
   var end_position;
-  // console.log(target_position);
-  linkages.reverse().forEach(function(linkage, index){
+  console.log(target_position);
+  linkages.slice().reverse().forEach(function(linkage, index){
     if (index == 0) {
-      // end_position = linkage.position;
-      end_position = [1,2];
+      end_position = linkage.position;
     } else {
       var v1 = vec2.create();
       var v2 = vec2.create();
@@ -43,7 +42,7 @@ function compute_ik(target_position) {
       vec2.sub(v1,end_position,linkage.position);
       vec2.sub(v2,target_position,linkage.position);
       var angle = Math.acos(vec2.dot(v1,v2)/(vec2.length(v1)*vec2.length(v2))) * 180/Math.PI;
-      // console.log(angle);
+      console.log(angle);
       // console.log(v1,v2);
       var cross = Math.sign(v1[0] * v2[1] - v1[1] * v2[0]);
       // console.log(cross);
@@ -53,14 +52,13 @@ function compute_ik(target_position) {
       // console.log(linkages[linkages.length-index].angle);
       // console.log(cross * angle);
       // console.log("aaaa");
-      // linkages[linkages.length-index].angle += cross * angle;
-      // console.log(linkages[linkages.length-index].angle);
-      // console.log(linkages);
+      linkages[linkages.length-index].angle += cross * angle;
+      console.log(linkages[0].angle, linkages[1].angle, linkages[2].angle, linkages[3].angle);
       // console.log(linkages[linkages.length-index].angle,linkages.length-index);
     }
     
   });
-  console.log(linkages);
+  console.log(linkages[0].angle, linkages[1].angle, linkages[2].angle, linkages[3].angle);
   update_position();
 };
 
@@ -140,7 +138,6 @@ function init() {
   camera.center = [2, 0, 0];
   camera.eye = [2, 0, 7];
   update_position();
-  console.log(linkages);
   // event handlers
   canvas.onmousedown = function(evt) {
     var mouse_win = this.get_mousepos(evt);
@@ -159,7 +156,6 @@ function init() {
       return;
     }
     if (!is_dragging) return;
-    console.log(linkages);
     var viewport = [0, 0, canvas.width, canvas.height];
     mouse_win.push(1);
     var mouse_obj = glu.unproject(mouse_win, 
