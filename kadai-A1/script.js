@@ -27,7 +27,7 @@ function compute_ik(target_position) {
   // TODO
   target_position = [target_position[0],target_position[1]];
   var end_position;
-  console.log(target_position);
+  // console.log(target_position);
   linkages.reverse().forEach(function(linkage, index){
     if (index == 0) {
       end_position = linkage.position;
@@ -41,12 +41,19 @@ function compute_ik(target_position) {
       vec2.sub(v1,end_position,linkage.position);
       vec2.sub(v2,target_position,linkage.position);
       var angle = Math.acos(vec2.dot(v1,v2)/(vec2.length(v1)*vec2.length(v2))) * 180/Math.PI;
+      // console.log(angle);
       // console.log(v1,v2);
       var cross = Math.sign(v1[0] * v2[1] - v1[1] * v2[0]);
       // console.log(cross);
+      // console.log(cross);
       // console.log(vec2.cross(v1,v2));
       // var cross = Math.sign(vec2.cross(v1,v2));
-      linkage.angle += cross * angle;
+      // console.log(linkages[linkages.length-index].angle);
+      // console.log(cross * angle);
+      console.log("aaaa");
+      linkages[linkages.length-index].angle += cross * angle;
+      // console.log(linkages[linkages.length-index].angle);
+      console.log(linkages);
     }
     
   });
