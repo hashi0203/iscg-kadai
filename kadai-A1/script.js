@@ -25,6 +25,9 @@ function update_position() {
 
 function compute_ik(target_position) {
   // TODO
+  linkages.reverse.forEach(function(linkage, index){
+    
+  });
 };
 
 function draw() {
