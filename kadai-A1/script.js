@@ -25,12 +25,14 @@ function update_position() {
 
 function compute_ik(target_position) {
   // TODO
+  console.log(linkages);
   target_position = [target_position[0],target_position[1]];
   var end_position;
   // console.log(target_position);
   linkages.reverse().forEach(function(linkage, index){
     if (index == 0) {
-      end_position = linkage.position;
+      // end_position = linkage.position;
+      end_position = [1,2];
     } else {
       var v1 = vec2.create();
       var v2 = vec2.create();
@@ -50,10 +52,11 @@ function compute_ik(target_position) {
       // var cross = Math.sign(vec2.cross(v1,v2));
       // console.log(linkages[linkages.length-index].angle);
       // console.log(cross * angle);
-      console.log("aaaa");
-      linkages[linkages.length-index].angle += cross * angle;
+      // console.log("aaaa");
+      // linkages[linkages.length-index].angle += cross * angle;
       // console.log(linkages[linkages.length-index].angle);
-      console.log(linkages);
+      // console.log(linkages);
+      // console.log(linkages[linkages.length-index].angle,linkages.length-index);
     }
     
   });
@@ -137,6 +140,7 @@ function init() {
   camera.center = [2, 0, 0];
   camera.eye = [2, 0, 7];
   update_position();
+  console.log(linkages);
   // event handlers
   canvas.onmousedown = function(evt) {
     var mouse_win = this.get_mousepos(evt);
@@ -155,6 +159,7 @@ function init() {
       return;
     }
     if (!is_dragging) return;
+    console.log(linkages);
     var viewport = [0, 0, canvas.width, canvas.height];
     mouse_win.push(1);
     var mouse_obj = glu.unproject(mouse_win, 
