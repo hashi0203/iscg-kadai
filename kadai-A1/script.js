@@ -25,41 +25,27 @@ function update_position() {
 
 function compute_ik(target_position) {
   // TODO
-  console.log(linkages[0].angle, linkages[1].angle, linkages[2].angle, linkages[3].angle);
   target_position = [target_position[0],target_position[1]];
   var end_position;
   var base_position;
-  linkages.slice().reverse().forEach(function(linkage, index){
-    end_position = linkages[linkages.length-1].position;
-    base_position = (index == linkages.length - 1 ? [0,0] : linkages[linkages.length-index-2].position);
-    console.log(base_position[0], base_position[1]);
-    var v1 = vec2.create();
-    var v2 = vec2.create();
-    // vec3.direction(linkage.position,end_position,v1);
-    // vec3.direction(linkage.position,target_position,v2);
-    // console.log(end_position);
-    // console.log(linkage.position);
-    vec2.sub(v1,end_position,base_position);
-    vec2.sub(v2,target_position,base_position);
-    var angle = Math.acos(vec2.dot(v1,v2)/(vec2.length(v1)*vec2.length(v2))) * 180/Math.PI;
-    console.log(angle);
-    // console.log(v1,v2);
-    var cross = Math.sign(v1[0] * v2[1] - v1[1] * v2[0]);
-    // console.log(cross);
-    // console.log(cross);
-    // console.log(vec2.cross(v1,v2));
-    // var cross = Math.sign(vec2.cross(v1,v2));
-    // console.log(linkages[linkages.length-index].angle);
-    // console.log(cross * angle);
-    // console.log("aaaa");
-    linkage.angle += cross * angle;
-    // linkages[linkages.length-index].angle += cross * angle;
-    console.log(linkages[0].angle, linkages[1].angle, linkages[2].angle, linkages[3].angle);
-    update_position();
-    // console.log(linkages[linkages.length-index].angle,linkages.length-index);
-    
-  });
-  console.log(linkages[0].angle, linkages[1].angle, linkages[2].angle, linkages[3].angle);
+  var angle_diff = 100;
+  while (angle_diff > 1) {
+    var current_angle = linkages.reduce((sum,linkage) => sum + linkage.angle);
+    linkages.slice().reverse().forEach(function(linkage, index){
+      end_position = linkages[linkages.length-1].position;
+      base_position = (index == linkages.length - 1 ? [0,0] : linkages[linkages.length-index-2].position);
+      var v1 = vec2.create();
+      var v2 = vec2.create();
+      vec2.sub(v1,end_position,base_position);
+      vec2.sub(v2,target_position,base_position);
+      var angle = Math.acos(vec2.dot(v1,v2)/(vec2.length(v1)*vec2.length(v2))) * 180/Math.PI;
+      var sign = Math.sign(v1[0] * v2[1] - v1[1] * v2[0]);
+      linkage.angle += sign * angle;
+      update_position();
+    });
+    angle_diff = Math.abs(linkages.reduce((sum,linkage) => sum + linkage.angle) - current_angle);
+  }
+  // console.log(linkages[0].angle, linkages[1].angle, linkages[2].angle, linkages[3].angle);
 };
 
 function draw() {
