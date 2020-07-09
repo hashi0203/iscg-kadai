@@ -25,21 +25,30 @@ function update_position() {
 
 function compute_ik(target_position) {
   // TODO
+  console.log(target_position[0]);
+  target_position = vec2.create([target_position[0],target_position[1]]);
   var end_position;
+  console.log(target_position);
   linkages.reverse().forEach(function(linkage, index){
-    if (index == linkages.length - 1) {
-      end_position = linkage.position;
+    if (index == 0) {
+      end_position = vec2.create(linkage.position);
     } else {
-      var v1 = vec3.create();
-      var v2 = vec3.create();
-      vec3.direction(linkage.position,end_position,v1);
-      vec3.direction(linkage.position,target_position,v2);
-      var angle = Math.acos(vec3.dot(v1,v2));
-      var cross = Math.sign(v1.x * v2.y - v1.y * v2.x);
+      var v1 = vec2.create();
+      var v2 = vec2.create();
+      // vec3.direction(linkage.position,end_position,v1);
+      // vec3.direction(linkage.position,target_position,v2);
+      // console.log(end_position);
+      // console.log(linkage.position);
+      vec2.sub(v1,end_position,linkage.position);
+      vec2.sub(v2,target_position,linkage.position);
+      var angle = Math.acos(vec2.dot(v1,v2)/(vec2.length(v1)*vec2.length(v2)));
+      // var cross = Math.sign(v1.x * v2.y - v1.y * v2.x);
+      var cross = Math.sign(vec3.cross(v1,v2));
       linkage.angle += cross * angle;
     }
     
   });
+  update_position();
 };
 
 function draw() {
