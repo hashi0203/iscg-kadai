@@ -43,7 +43,7 @@ function compute_ik(target_position) {
       linkage.angle += sign * angle;
       update_position();
     });
-    angle_diff = Math.abs(linkages.reduce((sum,linkage) => sum + linkage.angle) - current_angle);
+    angle_diff = Math.abs(linkages.reduce((sum,linkage) => sum + linkage.angle) - current_angle)/linkages.length;
   }
   // console.log(linkages[0].angle, linkages[1].angle, linkages[2].angle, linkages[3].angle);
 };
